@@ -28,9 +28,9 @@ update msg model =
 
 view : Model -> Html msg
 view model =
-    div []
+    div [ id "container" ]
         [ h1 [] [ text "RuBRIC" ]
-        , p [] [ text "Template" ]
+        , h3 [ class "subtitle" ] [ text "A Proof of Concept" ]
         ]
 
 

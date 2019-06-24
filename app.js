@@ -4820,13 +4820,26 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 };
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
-var elm$html$Html$p = _VirtualDom_node('p');
+var elm$html$Html$h3 = _VirtualDom_node('h3');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$json$Json$Encode$string = _Json_wrap;
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var author$project$Main$view = function (model) {
 	return A2(
 		elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('container')
+			]),
 		_List_fromArray(
 			[
 				A2(
@@ -4837,11 +4850,14 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$text('RuBRIC')
 					])),
 				A2(
-				elm$html$Html$p,
-				_List_Nil,
+				elm$html$Html$h3,
 				_List_fromArray(
 					[
-						elm$html$Html$text('Template')
+						elm$html$Html$Attributes$class('subtitle')
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('A Proof of Concept')
 					]))
 			]));
 };
