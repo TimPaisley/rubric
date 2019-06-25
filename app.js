@@ -4310,7 +4310,6 @@ function _Browser_load(url)
 		}
 	}));
 }
-var author$project$Main$Model = {};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
@@ -4789,101 +4788,18 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (flags) {
-	return _Utils_Tuple2(author$project$Main$Model, elm$core$Platform$Cmd$none);
+	var model = {questions: _List_Nil};
+	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 };
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$subscriptions = function (_n0) {
 	return elm$core$Platform$Sub$none;
 };
-var author$project$Main$update = F2(
-	function (msg, model) {
-		return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+var elm$core$Basics$always = F2(
+	function (a, _n0) {
+		return a;
 	});
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
-var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$map2 = _Json_map2;
-var elm$json$Json$Decode$succeed = _Json_succeed;
-var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
-	switch (handler.$) {
-		case 'Normal':
-			return 0;
-		case 'MayStopPropagation':
-			return 1;
-		case 'MayPreventDefault':
-			return 2;
-		default:
-			return 3;
-	}
-};
-var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$h1 = _VirtualDom_node('h1');
-var elm$html$Html$h3 = _VirtualDom_node('h3');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$json$Json$Encode$string = _Json_wrap;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
-var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
-var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
-var author$project$Main$view = function (model) {
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$id('container')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$h1,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text('RuBRIC')
-					])),
-				A2(
-				elm$html$Html$h3,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('subtitle')
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text('A Proof of Concept')
-					]))
-			]));
-};
-var elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
-};
-var elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
-};
-var elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
-	}
-};
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
-var elm$core$Task$succeed = _Scheduler_succeed;
-var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
 		if (!ls.b) {
@@ -4953,6 +4869,254 @@ var elm$core$List$map = F2(
 			_List_Nil,
 			xs);
 	});
+var elm_community$list_extra$List$Extra$updateIf = F3(
+	function (predicate, update, list) {
+		return A2(
+			elm$core$List$map,
+			function (item) {
+				return predicate(item) ? update(item) : item;
+			},
+			list);
+	});
+var elm_community$list_extra$List$Extra$setIf = F3(
+	function (predicate, replacement, list) {
+		return A3(
+			elm_community$list_extra$List$Extra$updateIf,
+			predicate,
+			elm$core$Basics$always(replacement),
+			list);
+	});
+var author$project$Main$update = F2(
+	function (msg, model) {
+		if (msg.$ === 'NoOp') {
+			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+		} else {
+			var question = msg.a;
+			var val = msg.b;
+			var newQuestion = _Utils_update(
+				question,
+				{value: val});
+			var newQuestions = A3(
+				elm_community$list_extra$List$Extra$setIf,
+				function (q) {
+					return _Utils_eq(q.key, question.key);
+				},
+				newQuestion,
+				model.questions);
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{questions: newQuestions}),
+				elm$core$Platform$Cmd$none);
+		}
+	});
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$map2 = _Json_map2;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 'Normal':
+			return 0;
+		case 'MayStopPropagation':
+			return 1;
+		case 'MayPreventDefault':
+			return 2;
+		default:
+			return 3;
+	}
+};
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$form = _VirtualDom_node('form');
+var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$i = _VirtualDom_node('i');
+var elm$html$Html$input = _VirtualDom_node('input');
+var elm$html$Html$label = _VirtualDom_node('label');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$json$Json$Encode$string = _Json_wrap;
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
+var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
+var author$project$Main$renderContent = function (model) {
+	var testQuestions = _List_fromArray(
+		[
+			{input: 'text', key: 'activity', prompt: 'What activity do you want to perform?', units: '', value: ''},
+			{input: 'text', key: 'property', prompt: 'What is the address of the property?', units: '', value: ''},
+			{input: 'number', key: 'height', prompt: 'What is the height of the proposed building?', units: '', value: ''}
+		]);
+	var displayQuestion = function (q) {
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('question')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$label,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$for(q.key)
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(q.prompt)
+						])),
+					A2(
+					elm$html$Html$input,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$id(q.key),
+							elm$html$Html$Attributes$type_(q.input)
+						]),
+					_List_Nil),
+					A2(
+					elm$html$Html$i,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('fa fa-user fa-lg fa-fw')
+						]),
+					_List_Nil)
+				]));
+	};
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('content')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Submit an Application')
+					])),
+				A2(
+				elm$html$Html$form,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('questions')
+					]),
+				_Utils_ap(
+					A2(elm$core$List$map, displayQuestion, testQuestions),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$input,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$type_('submit')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text('Submit')
+								]))
+						])))
+			]));
+};
+var elm$html$Html$h3 = _VirtualDom_node('h3');
+var author$project$Main$renderSidebar = function () {
+	var sections = _List_fromArray(
+		['First Section', 'Second Section', 'Third Section']);
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('sidebar')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('RuBRIC')
+					])),
+				A2(
+				elm$html$Html$h3,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('subtitle')
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('A Proof of Concept')
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('sections')
+					]),
+				A2(
+					elm$core$List$map,
+					function (s) {
+						return A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('section')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(s)
+								]));
+					},
+					sections))
+			]));
+}();
+var author$project$Main$view = function (model) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$id('container')
+			]),
+		_List_fromArray(
+			[
+				author$project$Main$renderSidebar,
+				author$project$Main$renderContent(model)
+			]));
+};
+var elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var elm$core$Task$succeed = _Scheduler_succeed;
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
 var elm$core$Task$andThen = _Scheduler_andThen;
 var elm$core$Task$map = F2(
 	function (func, taskA) {
