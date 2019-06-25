@@ -5,7 +5,12 @@ import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
+import Http
 import List.Extra as ListX
+
+
+
+-- MODEL
 
 
 type alias Model =
@@ -14,7 +19,7 @@ type alias Model =
 
 type Msg
     = NoOp
-    | AnswerQuestion Question String
+    | InputAnswer String String
 
 
 type alias Question =
@@ -28,62 +33,6 @@ type alias Question =
 
 init : () -> ( Model, Cmd Msg )
 init flags =
-    let
-        model =
-            { questions = [] }
-    in
-    ( model, Cmd.none )
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        NoOp ->
-            ( model, Cmd.none )
-
-        AnswerQuestion question val ->
-            let
-                newQuestion =
-                    { question | value = val }
-
-                newQuestions =
-                    ListX.setIf (\q -> q.key == question.key) newQuestion model.questions
-            in
-            ( { model | questions = newQuestions }, Cmd.none )
-
-
-view : Model -> Html Msg
-view model =
-    div [ id "container" ]
-        [ renderSidebar
-        , renderContent model
-        ]
-
-
-viewInput : String -> String -> String -> (String -> msg) -> Html msg
-viewInput t p v toMsg =
-    div []
-        [ label [ for <| v ] [ text p ]
-        , input [ id v, type_ t, placeholder p, value v, onInput toMsg ] []
-        ]
-
-
-renderSidebar : Html msg
-renderSidebar =
-    let
-        sections =
-            [ "First Section", "Second Section", "Third Section" ]
-    in
-    div [ id "sidebar" ]
-        [ h1 [] [ text "RuBRIC" ]
-        , h3 [ class "subtitle" ] [ text "A Proof of Concept" ]
-        , div [ class "sections" ]
-            (List.map (\s -> div [ class "section" ] [ text s ]) sections)
-        ]
-
-
-renderContent : Model -> Html Msg
-renderContent model =
     let
         testQuestions =
             [ { key = "activity"
@@ -106,18 +55,78 @@ renderContent model =
               }
             ]
 
+        model =
+            { questions = testQuestions }
+    in
+    ( model, Cmd.none )
+
+
+
+-- UPDATE
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
+        InputAnswer key val ->
+            let
+                newQuestions =
+                    ListX.updateIf
+                        (\q -> q.key == key)
+                        (\q -> { q | value = val })
+                        model.questions
+            in
+            ( { model | questions = newQuestions }, Cmd.none )
+
+
+
+-- VIEW
+
+
+view : Model -> Html Msg
+view model =
+    div [ id "container" ]
+        [ renderSidebar
+        , renderContent model
+        ]
+
+
+renderSidebar : Html msg
+renderSidebar =
+    let
+        sections =
+            [ "First Section", "Second Section", "Third Section" ]
+    in
+    div [ id "sidebar" ]
+        [ h1 [] [ text "RuBRIC" ]
+        , h3 [ class "subtitle" ] [ text "A Proof of Concept" ]
+        , div [ class "sections" ]
+            (List.map (\s -> div [ class "section" ] [ text s ]) sections)
+        ]
+
+
+renderContent : Model -> Html Msg
+renderContent model =
+    let
         displayQuestion q =
             div [ class "question" ]
                 [ label [ for q.key ] [ text q.prompt ]
-                , input [ id q.key, type_ q.input ] []
+                , input [ id q.key, type_ q.input, onInput <| InputAnswer q.key ] []
                 ]
     in
     div [ id "content" ]
         [ h1 [] [ text "Submit an Application" ]
         , Html.form [ class "questions" ] <|
-            List.map displayQuestion testQuestions
+            List.map displayQuestion model.questions
                 ++ [ input [ type_ "submit" ] [ text "Submit" ] ]
         ]
+
+
+
+-- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
