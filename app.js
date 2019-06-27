@@ -4788,37 +4788,159 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (flags) {
-	var testQuestions = _List_fromArray(
-		[
-			{input: 'text', key: 'test1', prompt: 'Test Question 1', units: '', value: ''},
-			{input: 'text', key: 'test2', prompt: 'Test Question 2', units: '', value: ''},
-			{input: 'number', key: 'height', prompt: 'What is the height of the proposed building?', units: '', value: ''}
-		]);
-	var model = {questions: testQuestions, selectedProperty: elm$core$Maybe$Nothing};
+	var model = {questions: _List_Nil, selectedProperty: elm$core$Maybe$Nothing};
 	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+};
+var author$project$Main$Receive = function (a) {
+	return {$: 'Receive', a: a};
 };
 var author$project$Main$SelectMapProperty = function (a) {
 	return {$: 'SelectMapProperty', a: a};
 };
 var elm$json$Json$Decode$value = _Json_decodeValue;
+var author$project$Main$receive = _Platform_incomingPort('receive', elm$json$Json$Decode$value);
 var author$project$Main$selectMapProperty = _Platform_incomingPort('selectMapProperty', elm$json$Json$Decode$value);
+var elm$core$Platform$Sub$batch = _Platform_batch;
 var author$project$Main$subscriptions = function (_n0) {
-	return author$project$Main$selectMapProperty(author$project$Main$SelectMapProperty);
+	return elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				author$project$Main$selectMapProperty(author$project$Main$SelectMapProperty),
+				author$project$Main$receive(author$project$Main$Receive)
+			]));
 };
-var author$project$Main$Property = F2(
-	function (address, wufi) {
-		return {address: address, wufi: wufi};
+var elm$json$Json$Decode$map2 = _Json_map2;
+var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = elm$json$Json$Decode$map2(elm$core$Basics$apR);
+var elm$json$Json$Decode$andThen = _Json_andThen;
+var elm$json$Json$Decode$decodeValue = _Json_run;
+var elm$json$Json$Decode$fail = _Json_fail;
+var elm$json$Json$Decode$null = _Json_decodeNull;
+var elm$json$Json$Decode$oneOf = _Json_oneOf;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _n0 = A2(elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_n0.$ === 'Ok') {
+				var rawValue = _n0.a;
+				var _n1 = A2(
+					elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_n1.$ === 'Ok') {
+					var finalResult = _n1.a;
+					return elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _n1.a;
+					return elm$json$Json$Decode$fail(
+						elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2(elm$json$Json$Decode$andThen, handleResult, elm$json$Json$Decode$value);
 	});
 var elm$json$Json$Decode$field = _Json_decodeField;
+var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2(elm$json$Json$Decode$field, key, elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2(elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var author$project$Main$Property = F8(
+	function (fullAddress, streetNumber, streetName, suburb, postCode, title, valuationId, valuationWufi) {
+		return {fullAddress: fullAddress, postCode: postCode, streetName: streetName, streetNumber: streetNumber, suburb: suburb, title: title, valuationId: valuationId, valuationWufi: valuationWufi};
+	});
 var elm$json$Json$Decode$int = _Json_decodeInt;
-var elm$json$Json$Decode$map2 = _Json_map2;
 var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Main$decodeProperty = A3(
-	elm$json$Json$Decode$map2,
-	author$project$Main$Property,
-	A2(elm$json$Json$Decode$field, 'address', elm$json$Json$Decode$string),
-	A2(elm$json$Json$Decode$field, 'wufi', elm$json$Json$Decode$int));
-var elm$json$Json$Decode$decodeValue = _Json_run;
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'valuationWufi',
+	elm$json$Json$Decode$int,
+	A3(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'valuationId',
+		elm$json$Json$Decode$string,
+		A4(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'title',
+			elm$json$Json$Decode$string,
+			'No Associated Title',
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'postCode',
+				elm$json$Json$Decode$string,
+				A3(
+					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'suburb',
+					elm$json$Json$Decode$string,
+					A3(
+						NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'streetName',
+						elm$json$Json$Decode$string,
+						A3(
+							NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'streetNumber',
+							elm$json$Json$Decode$string,
+							A3(
+								NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'fullAddress',
+								elm$json$Json$Decode$string,
+								elm$json$Json$Decode$succeed(author$project$Main$Property)))))))));
+var author$project$Main$Question = F5(
+	function (key, prompt, units, input, value) {
+		return {input: input, key: key, prompt: prompt, units: units, value: value};
+	});
+var author$project$Main$decodeQuestion = A3(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'value',
+	elm$json$Json$Decode$string,
+	A3(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'input',
+		elm$json$Json$Decode$string,
+		A3(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'units',
+			elm$json$Json$Decode$string,
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'prompt',
+				elm$json$Json$Decode$string,
+				A3(
+					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'key',
+					elm$json$Json$Decode$string,
+					elm$json$Json$Decode$succeed(author$project$Main$Question))))));
+var elm$json$Json$Decode$list = _Json_decodeList;
+var author$project$Main$decodeQuestions = elm$json$Json$Decode$list(author$project$Main$decodeQuestion);
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var author$project$Main$submit = _Platform_outgoingPort('submit', elm$core$Basics$identity);
+var elm$core$Debug$log = _Debug_log;
+var elm$json$Json$Encode$null = _Json_encodeNull;
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
 		if (!ls.b) {
@@ -4911,6 +5033,7 @@ var author$project$Main$update = F2(
 						return elm$core$Maybe$Just(p);
 					} else {
 						var err = _n1.a;
+						var error = A2(elm$core$Debug$log, 'Failed to decode property: ', err);
 						return elm$core$Maybe$Nothing;
 					}
 				}();
@@ -4919,7 +5042,7 @@ var author$project$Main$update = F2(
 						model,
 						{selectedProperty: newProperty}),
 					elm$core$Platform$Cmd$none);
-			default:
+			case 'InputAnswer':
 				var key = msg.a;
 				var val = msg.b;
 				var newQuestions = A3(
@@ -4938,17 +5061,36 @@ var author$project$Main$update = F2(
 						model,
 						{questions: newQuestions}),
 					elm$core$Platform$Cmd$none);
+			case 'Receive':
+				var questionsValue = msg.a;
+				var newQuestions = function () {
+					var _n2 = A2(elm$json$Json$Decode$decodeValue, author$project$Main$decodeQuestions, questionsValue);
+					if (_n2.$ === 'Ok') {
+						var qs = _n2.a;
+						return qs;
+					} else {
+						var err = _n2.a;
+						var error = A2(elm$core$Debug$log, 'Failed to decode questions: ', err);
+						return _List_Nil;
+					}
+				}();
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{questions: newQuestions}),
+					elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(
+					model,
+					author$project$Main$submit(elm$json$Json$Encode$null));
 		}
 	});
 var author$project$Main$InputAnswer = F2(
 	function (a, b) {
 		return {$: 'InputAnswer', a: a, b: b};
 	});
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
+var author$project$Main$Submit = {$: 'Submit'};
 var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$succeed = _Json_succeed;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
 		case 'Normal':
@@ -4966,8 +5108,12 @@ var elm$html$Html$form = _VirtualDom_node('form');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
+var elm$html$Html$li = _VirtualDom_node('li');
+var elm$html$Html$option = _VirtualDom_node('option');
+var elm$html$Html$select = _VirtualDom_node('select');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$html$Html$ul = _VirtualDom_node('ul');
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -4979,24 +5125,30 @@ var elm$html$Html$Attributes$stringProperty = F2(
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
-var elm$json$Json$Encode$bool = _Json_wrap;
-var elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$bool(bool));
-	});
-var elm$html$Html$Attributes$readonly = elm$html$Html$Attributes$boolProperty('readOnly');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
-var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
 var elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
 var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -5024,13 +5176,59 @@ var elm$html$Html$Events$onInput = function (tagger) {
 };
 var author$project$Main$renderContent = function (model) {
 	var propertySelect = function () {
-		var selectedPropertyLabel = function () {
+		var propertyTable = function () {
 			var _n0 = model.selectedProperty;
 			if (_n0.$ === 'Just') {
 				var p = _n0.a;
-				return p.address;
+				return A2(
+					elm$html$Html$ul,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('property-table')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('Full Address: ' + p.fullAddress)
+								])),
+							A2(
+							elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('Title: ' + p.title)
+								])),
+							A2(
+							elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('ValuationID: ' + p.valuationId)
+								])),
+							A2(
+							elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text(
+									'ValuationWUFI: ' + elm$core$String$fromInt(p.valuationWufi))
+								]))
+						]));
 			} else {
-				return 'Please use the map to select a property.';
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('property-table')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('Please use the map to select a property.')
+						]));
 			}
 		}();
 		return A2(
@@ -5058,16 +5256,7 @@ var author$project$Main$renderContent = function (model) {
 							elm$html$Html$Attributes$id('map')
 						]),
 					_List_Nil),
-					A2(
-					elm$html$Html$input,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$id('property-select'),
-							elm$html$Html$Attributes$type_('text'),
-							elm$html$Html$Attributes$value(selectedPropertyLabel),
-							elm$html$Html$Attributes$readonly(true)
-						]),
-					_List_Nil)
+					propertyTable
 				]));
 	}();
 	var displayQuestion = function (q) {
@@ -5120,13 +5309,35 @@ var author$project$Main$renderContent = function (model) {
 						elm$html$Html$text('What do you want to do?')
 					])),
 				A2(
-				elm$html$Html$input,
+				elm$html$Html$select,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$id('activity-select'),
-						elm$html$Html$Attributes$type_('text')
+						elm$html$Html$Attributes$id('activity-select')
 					]),
-				_List_Nil)
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$option,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Activity A')
+							])),
+						A2(
+						elm$html$Html$option,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Activity B')
+							])),
+						A2(
+						elm$html$Html$option,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Activity C')
+							]))
+					]))
 			]));
 	return A2(
 		elm$html$Html$div,
@@ -5157,10 +5368,11 @@ var author$project$Main$renderContent = function (model) {
 						_List_fromArray(
 							[
 								A2(
-								elm$html$Html$input,
+								elm$html$Html$div,
 								_List_fromArray(
 									[
-										elm$html$Html$Attributes$type_('submit')
+										elm$html$Html$Attributes$class('button'),
+										elm$html$Html$Events$onClick(author$project$Main$Submit)
 									]),
 								_List_fromArray(
 									[

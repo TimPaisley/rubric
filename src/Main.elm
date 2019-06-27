@@ -4,9 +4,11 @@ import Browser
 import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder, float, int, string)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required)
+import Json.Encode as Encode
 import List.Extra as ListX
 
 
@@ -24,11 +26,19 @@ type Msg
     = NoOp
     | SelectMapProperty Decode.Value
     | InputAnswer String String
+    | Receive Decode.Value
+    | Submit
 
 
 type alias Property =
-    { address : String
-    , wufi : Int
+    { fullAddress : String
+    , streetNumber : String
+    , streetName : String
+    , suburb : String
+    , postCode : String
+    , title : String
+    , valuationId : String
+    , valuationWufi : Int
     }
 
 
@@ -44,30 +54,9 @@ type alias Question =
 init : () -> ( Model, Cmd Msg )
 init flags =
     let
-        testQuestions =
-            [ { key = "test1"
-              , prompt = "Test Question 1"
-              , units = ""
-              , input = "text"
-              , value = ""
-              }
-            , { key = "test2"
-              , prompt = "Test Question 2"
-              , units = ""
-              , input = "text"
-              , value = ""
-              }
-            , { key = "height"
-              , prompt = "What is the height of the proposed building?"
-              , units = ""
-              , input = "number"
-              , value = ""
-              }
-            ]
-
         model =
             { selectedProperty = Nothing
-            , questions = testQuestions
+            , questions = []
             }
     in
     ( model, Cmd.none )
@@ -91,6 +80,10 @@ update msg model =
                             Just p
 
                         Err err ->
+                            let
+                                error =
+                                    Debug.log "Failed to decode property: " err
+                            in
                             Nothing
             in
             ( { model | selectedProperty = newProperty }, Cmd.none )
@@ -105,13 +98,52 @@ update msg model =
             in
             ( { model | questions = newQuestions }, Cmd.none )
 
+        Receive questionsValue ->
+            let
+                newQuestions =
+                    case Decode.decodeValue decodeQuestions questionsValue of
+                        Ok qs ->
+                            qs
+
+                        Err err ->
+                            let
+                                error =
+                                    Debug.log "Failed to decode questions: " err
+                            in
+                            []
+            in
+            ( { model | questions = newQuestions }, Cmd.none )
+
+        Submit ->
+            ( model, submit Encode.null )
+
 
 decodeProperty : Decode.Decoder Property
 decodeProperty =
-    Decode.map2
-        Property
-        (Decode.field "address" Decode.string)
-        (Decode.field "wufi" Decode.int)
+    Decode.succeed Property
+        |> required "fullAddress" string
+        |> required "streetNumber" string
+        |> required "streetName" string
+        |> required "suburb" string
+        |> required "postCode" string
+        |> optional "title" string "No Associated Title"
+        |> required "valuationId" string
+        |> required "valuationWufi" int
+
+
+decodeQuestions : Decode.Decoder (List Question)
+decodeQuestions =
+    Decode.list decodeQuestion
+
+
+decodeQuestion : Decode.Decoder Question
+decodeQuestion =
+    Decode.succeed Question
+        |> required "key" string
+        |> required "prompt" string
+        |> required "units" string
+        |> required "input" string
+        |> required "value" string
 
 
 
@@ -147,30 +179,34 @@ renderContent model =
             div [ class "question" ]
                 [ label [ for "activity-select" ]
                     [ text "What do you want to do?" ]
-                , input [ id "activity-select", type_ "text" ] []
+                , select [ id "activity-select" ]
+                    [ option [] [ text "Activity A" ]
+                    , option [] [ text "Activity B" ]
+                    , option [] [ text "Activity C" ]
+                    ]
                 ]
 
         propertySelect =
             let
-                selectedPropertyLabel =
+                propertyTable =
                     case model.selectedProperty of
                         Just p ->
-                            p.address
+                            ul [ class "property-table" ]
+                                [ li [] [ text <| "Full Address: " ++ p.fullAddress ]
+                                , li [] [ text <| "Title: " ++ p.title ]
+                                , li [] [ text <| "ValuationID: " ++ p.valuationId ]
+                                , li [] [ text <| "ValuationWUFI: " ++ String.fromInt p.valuationWufi ]
+                                ]
 
                         Nothing ->
-                            "Please use the map to select a property."
+                            div [ class "property-table" ]
+                                [ text "Please use the map to select a property." ]
             in
             div [ class "question" ]
                 [ label [ for "property-select" ]
                     [ text "What is the address of the property?" ]
                 , div [ id "map" ] []
-                , input
-                    [ id "property-select"
-                    , type_ "text"
-                    , value selectedPropertyLabel
-                    , readonly True
-                    ]
-                    []
+                , propertyTable
                 ]
 
         displayQuestion q =
@@ -184,7 +220,7 @@ renderContent model =
         , Html.form [ class "questions" ] <|
             [ activitySelect, propertySelect ]
                 ++ List.map displayQuestion model.questions
-                ++ [ input [ type_ "submit" ] [ text "Submit" ] ]
+                ++ [ div [ class "button", onClick Submit ] [ text "Submit" ] ]
         ]
 
 
@@ -195,9 +231,18 @@ renderContent model =
 port selectMapProperty : (Decode.Value -> msg) -> Sub msg
 
 
+port receive : (Decode.Value -> msg) -> Sub msg
+
+
+port submit : Encode.Value -> Cmd msg
+
+
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    selectMapProperty SelectMapProperty
+    Sub.batch
+        [ selectMapProperty SelectMapProperty
+        , receive Receive
+        ]
 
 
 

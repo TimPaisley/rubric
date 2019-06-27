@@ -59,7 +59,16 @@
               searchFields: ["FullAddress"],
               displayField: "FullAddress",
               exactMatch: false,
-              outFields: ["FullAddress", "Suburb", "ValuationWUFI"],
+              outFields: [
+                "FullAddress",
+                "StreetNumber",
+                "StreetName",
+                "Suburb",
+                "PostCode",
+                "Title",
+                "ValuationID",
+                "ValuationWUFI"
+              ],
               name: "District Plan Zones",
               placeholder: "Enter an Address"
             }
@@ -72,13 +81,43 @@
 
         searchWidget.on("select-result", function(event) {
           var attributes = event.result.feature.attributes;
+          console.log(attributes);
           var property = {
-            address: attributes.FullAddress,
-            wufi: attributes.ValuationWUFI
+            fullAddress: attributes.FullAddress,
+            streetNumber: attributes.StreetNumber,
+            streetName: attributes.StreetName,
+            suburb: attributes.Suburb,
+            postCode: attributes.PostCode,
+            title: attributes.Title,
+            valuationId: attributes.ValuationID,
+            valuationWufi: attributes.ValuationWUFI
           };
 
           app.ports.selectMapProperty.send(property);
         });
+      });
+
+      app.ports.submit.subscribe(function(data) {
+        console.log(data);
+
+        var testQuestions = [
+          {
+            key: "test1",
+            prompt: "Test Question 1: Text",
+            units: "",
+            input: "Text",
+            value: ""
+          },
+          {
+            key: "test2",
+            prompt: "Test Question 2: Number",
+            units: "",
+            input: "Number",
+            value: ""
+          }
+        ];
+
+        app.ports.receive.send(testQuestions);
       });
     </script>
   </body>
