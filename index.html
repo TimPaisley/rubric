@@ -30,11 +30,17 @@
         "esri/Map",
         "esri/views/MapView",
         "esri/layers/FeatureLayer",
-        "esri/widgets/Search"
-      ], function(Map, MapView, FeatureLayer, Search) {
+        "esri/widgets/Search",
+        "esri/tasks/support/Query"
+      ], function(Map, MapView, FeatureLayer, Search, Query) {
         const layer = new FeatureLayer({
           url:
             "https://gis.wcc.govt.nz/arcgis/rest/services/PropertyAndBoundaries/Property/MapServer"
+        });
+
+        const activityAreas = new FeatureLayer({
+          url:
+            "http://gis.wcc.govt.nz/arcgis/rest/services/DistrictPlan/DistrictPlan/MapServer/59"
         });
 
         var map = new Map({
@@ -81,19 +87,30 @@
 
         searchWidget.on("select-result", function(event) {
           var attributes = event.result.feature.attributes;
-          console.log(attributes);
-          var property = {
-            fullAddress: attributes.FullAddress,
-            streetNumber: attributes.StreetNumber,
-            streetName: attributes.StreetName,
-            suburb: attributes.Suburb,
-            postCode: attributes.PostCode,
-            title: attributes.Title,
-            valuationId: attributes.ValuationID,
-            valuationWufi: attributes.ValuationWUFI
-          };
 
-          app.ports.selectMapProperty.send(property);
+          var query = activityAreas.createQuery();
+          query.geometry = event.result.feature.geometry;
+          query.spatialRelationship = "intersects";
+          query.returnGeometry = true;
+          query.outFields = ["dp_zone"];
+
+          activityAreas.queryFeatures(query).then(function(intersection) {
+            dp_zone = intersection.features[0].attributes.dp_zone;
+
+            var property = {
+              fullAddress: attributes.FullAddress,
+              streetNumber: attributes.StreetNumber,
+              streetName: attributes.StreetName,
+              suburb: attributes.Suburb,
+              postCode: attributes.PostCode,
+              title: attributes.Title,
+              valuationId: attributes.ValuationID,
+              valuationWufi: attributes.ValuationWUFI,
+              dpZone: dp_zone
+            };
+
+            app.ports.selectMapProperty.send(property);
+          });
         });
       });
 

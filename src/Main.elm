@@ -39,6 +39,7 @@ type alias Property =
     , title : String
     , valuationId : String
     , valuationWufi : Int
+    , dpZone : String
     }
 
 
@@ -129,6 +130,7 @@ decodeProperty =
         |> optional "title" string "No Associated Title"
         |> required "valuationId" string
         |> required "valuationWufi" int
+        |> required "dpZone" string
 
 
 decodeQuestions : Decode.Decoder (List Question)
@@ -196,6 +198,7 @@ renderContent model =
                                 , li [] [ text <| "Title: " ++ p.title ]
                                 , li [] [ text <| "ValuationID: " ++ p.valuationId ]
                                 , li [] [ text <| "ValuationWUFI: " ++ String.fromInt p.valuationWufi ]
+                                , li [] [ text <| "DP Zone: " ++ p.dpZone ]
                                 ]
 
                         Nothing ->
