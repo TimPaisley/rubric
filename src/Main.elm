@@ -2,6 +2,8 @@ port module Main exposing (Model)
 
 import Browser
 import Browser.Navigation as Nav
+import ElmEscapeHtml exposing (escape, unescape)
+import FeatherIcons
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -10,6 +12,7 @@ import Json.Decode as Decode exposing (Decoder, float, int, string)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import List.Extra as ListX
+import RemoteData exposing (RemoteData(..), WebData)
 
 
 
@@ -18,15 +21,14 @@ import List.Extra as ListX
 
 type alias Model =
     { selectedProperty : Maybe Property
-    , questions : List Question
+    , questions : WebData (List Question)
     }
 
 
 type Msg
     = NoOp
     | SelectMapProperty Decode.Value
-    | InputAnswer String String
-    | Receive Decode.Value
+    | QuestionsResponse (WebData (List Question))
     | Submit
 
 
@@ -57,7 +59,7 @@ init flags =
     let
         model =
             { selectedProperty = Nothing
-            , questions = []
+            , questions = NotAsked
             }
     in
     ( model, Cmd.none )
@@ -89,34 +91,19 @@ update msg model =
             in
             ( { model | selectedProperty = newProperty }, Cmd.none )
 
-        InputAnswer key val ->
-            let
-                newQuestions =
-                    ListX.updateIf
-                        (\q -> q.key == key)
-                        (\q -> { q | value = val })
-                        model.questions
-            in
-            ( { model | questions = newQuestions }, Cmd.none )
-
-        Receive questionsValue ->
-            let
-                newQuestions =
-                    case Decode.decodeValue decodeQuestions questionsValue of
-                        Ok qs ->
-                            qs
-
-                        Err err ->
-                            let
-                                error =
-                                    Debug.log "Failed to decode questions: " err
-                            in
-                            []
-            in
-            ( { model | questions = newQuestions }, Cmd.none )
+        QuestionsResponse response ->
+            ( { model | questions = response }, Cmd.none )
 
         Submit ->
-            ( model, submit Encode.null )
+            ( { model | questions = Loading }, Cmd.batch [ sendQuestions Encode.null, getQuestions ] )
+
+
+getQuestions : Cmd Msg
+getQuestions =
+    Http.get
+        { url = "https://opentdb.com/api.php?amount=3"
+        , expect = Http.expectJson (RemoteData.fromResult >> QuestionsResponse) decodeQuestions
+        }
 
 
 decodeProperty : Decode.Decoder Property
@@ -135,7 +122,18 @@ decodeProperty =
 
 decodeQuestions : Decode.Decoder (List Question)
 decodeQuestions =
-    Decode.list decodeQuestion
+    Decode.at [ "results" ] <|
+        Decode.list decodeTrivia
+
+
+decodeTrivia : Decode.Decoder Question
+decodeTrivia =
+    Decode.succeed Question
+        |> required "correct_answer" string
+        |> required "question" string
+        |> hardcoded ""
+        |> hardcoded "text"
+        |> hardcoded ""
 
 
 decodeQuestion : Decode.Decoder Question
@@ -214,16 +212,30 @@ renderContent model =
 
         displayQuestion q =
             div [ class "question" ]
-                [ label [ for q.key ] [ text q.prompt ]
-                , input [ id q.key, type_ q.input, onInput <| InputAnswer q.key ] []
+                [ label [ for q.key ] [ text <| unescape q.prompt ]
+                , input [ id q.key, type_ q.input ] []
                 ]
+
+        submitButton =
+            case model.questions of
+                Loading ->
+                    div [ class "button", onClick Submit ]
+                        [ FeatherIcons.loader
+                            |> FeatherIcons.withClass "spin"
+                            |> FeatherIcons.withSize 15
+                            |> FeatherIcons.toHtml []
+                        ]
+
+                _ ->
+                    div [ class "button", onClick Submit ]
+                        [ text "Submit" ]
     in
     div [ id "content" ]
         [ h1 [] [ text "Submit an Application" ]
         , Html.form [ class "questions" ] <|
             [ activitySelect, propertySelect ]
-                ++ List.map displayQuestion model.questions
-                ++ [ div [ class "button", onClick Submit ] [ text "Submit" ] ]
+                ++ (List.map displayQuestion <| RemoteData.withDefault [] model.questions)
+                ++ [ submitButton ]
         ]
 
 
@@ -234,18 +246,12 @@ renderContent model =
 port selectMapProperty : (Decode.Value -> msg) -> Sub msg
 
 
-port receive : (Decode.Value -> msg) -> Sub msg
-
-
-port submit : Encode.Value -> Cmd msg
+port sendQuestions : Encode.Value -> Cmd msg
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch
-        [ selectMapProperty SelectMapProperty
-        , receive Receive
-        ]
+    selectMapProperty SelectMapProperty
 
 
 
