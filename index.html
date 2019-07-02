@@ -10,6 +10,7 @@
 
     <link rel="stylesheet" href="css/styles.css?v=1.0" />
 
+    <script src="https://wcc-rubric.azurewebsites.net/rubric.min.js"></script>
     <script src="app.js"></script>
 
     <link
@@ -117,8 +118,37 @@
         });
       });
 
-      app.ports.sendQuestions.subscribe(function(data) {
-        console.log(data);
+      app.ports.generateStandards.subscribe(function(data) {
+        engine = new rubric.Engine();
+
+        var testQuestions = [
+          {
+            key: "test1",
+            prompt: data.dp_zone + " Question 1",
+            units: "",
+            input: "text",
+            value: ""
+          },
+          {
+            key: "test2",
+            prompt: data.dp_zone + " Question 2",
+            units: "",
+            input: "text",
+            value: ""
+          },
+          {
+            key: "test3",
+            prompt: data.dp_zone + " Question 3",
+            units: "",
+            input: "text",
+            value: ""
+          }
+        ];
+
+        app.ports.receiveStandards.send({
+          name: "Test Section",
+          questions: testQuestions
+        });
       });
     </script>
   </body>

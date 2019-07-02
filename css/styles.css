@@ -42,6 +42,15 @@ h1 {
   margin: 0;
 }
 
+.error-message {
+  position: fixed;
+  margin: 1rem;
+  padding: 0.5rem;
+  background-color: #ea1b44;
+  right: 0;
+  max-width: 300px;
+}
+
 .subtitle {
   opacity: 0.5;
   margin: 0;
@@ -50,12 +59,16 @@ h1 {
 .sections {
   margin-top: 1rem;
   font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .sections .section {
   padding: 0.5rem;
   cursor: pointer;
   user-select: none;
+  color: white;
+  text-decoration: none;
 }
 
 .sections .section:hover {

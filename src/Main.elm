@@ -7,12 +7,12 @@ import FeatherIcons
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Http
 import Json.Decode as Decode exposing (Decoder, float, int, string)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import List.Extra as ListX
-import RemoteData exposing (RemoteData(..), WebData)
+import Process
+import Task
 
 
 
@@ -21,15 +21,24 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 type alias Model =
     { selectedProperty : Maybe Property
-    , questions : WebData (List Question)
+    , sections : List Section
+    , errors : List String
+    }
+
+
+type alias Section =
+    { name : String
+    , questions : List Question
     }
 
 
 type Msg
     = NoOp
+    | AddError String
+    | ExpireError
     | SelectMapProperty Decode.Value
-    | QuestionsResponse (WebData (List Question))
-    | Submit
+    | ReceiveStandards Decode.Value
+    | GenerateStandards
 
 
 type alias Property =
@@ -59,7 +68,8 @@ init flags =
     let
         model =
             { selectedProperty = Nothing
-            , questions = NotAsked
+            , sections = []
+            , errors = []
             }
     in
     ( model, Cmd.none )
@@ -75,35 +85,54 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        AddError e ->
+            ( { model | errors = model.errors ++ [ e ] }, delay 5000 ExpireError )
+
+        ExpireError ->
+            ( { model | errors = List.drop 1 model.errors }, Cmd.none )
+
         SelectMapProperty propertyValue ->
-            let
-                newProperty =
-                    case Decode.decodeValue decodeProperty propertyValue of
-                        Ok p ->
-                            Just p
+            case Decode.decodeValue decodeProperty propertyValue of
+                Ok p ->
+                    ( { model | selectedProperty = Just p }, Cmd.none )
 
-                        Err err ->
-                            let
-                                error =
-                                    Debug.log "Failed to decode property: " err
-                            in
-                            Nothing
-            in
-            ( { model | selectedProperty = newProperty }, Cmd.none )
+                Err err ->
+                    let
+                        debug =
+                            Debug.log "Error decoding section: "
+                                <| Decode.errorToString err
+                    in
+                    ( model, addError "Oops! An error has occurred. Check the console for more details." )
 
-        QuestionsResponse response ->
-            ( { model | questions = response }, Cmd.none )
+        ReceiveStandards val ->
+            case Decode.decodeValue decodeSection val of
+                Ok s ->
+                    ( { model | sections = model.sections ++ [ s ] }, Cmd.none )
 
-        Submit ->
-            ( { model | questions = Loading }, Cmd.batch [ sendQuestions Encode.null, getQuestions ] )
+                Err err ->
+                    let
+                        debug =
+                            Debug.log "Error decoding section: "
+                                <| Decode.errorToString err
+                    in
+                    ( model, addError "Oops! An error has occurred. Check the console for more details." )
+
+        GenerateStandards ->
+            case model.selectedProperty of
+                Just p ->
+                    ( model, generateStandards <| encodeProperty p )
+
+                Nothing ->
+                    ( model, addError "You need to select a property first!" )
 
 
-getQuestions : Cmd Msg
-getQuestions =
-    Http.get
-        { url = "https://opentdb.com/api.php?amount=3"
-        , expect = Http.expectJson (RemoteData.fromResult >> QuestionsResponse) decodeQuestions
-        }
+encodeProperty : Property -> Encode.Value
+encodeProperty p =
+    Encode.object
+        [ ( "full_address", Encode.string p.fullAddress )
+        , ( "valuation_wufi", Encode.int p.valuationWufi )
+        , ( "dp_zone", Encode.string p.dpZone )
+        ]
 
 
 decodeProperty : Decode.Decoder Property
@@ -120,20 +149,11 @@ decodeProperty =
         |> required "dpZone" string
 
 
-decodeQuestions : Decode.Decoder (List Question)
-decodeQuestions =
-    Decode.at [ "results" ] <|
-        Decode.list decodeTrivia
-
-
-decodeTrivia : Decode.Decoder Question
-decodeTrivia =
-    Decode.succeed Question
-        |> required "correct_answer" string
-        |> required "question" string
-        |> hardcoded ""
-        |> hardcoded "text"
-        |> hardcoded ""
+decodeSection : Decode.Decoder Section
+decodeSection =
+    Decode.succeed Section
+        |> required "name" string
+        |> required "questions" (Decode.list decodeQuestion)
 
 
 decodeQuestion : Decode.Decoder Question
@@ -152,23 +172,29 @@ decodeQuestion =
 
 view : Model -> Html Msg
 view model =
+    let
+        errorMessage e =
+            div [ class "error-message" ] [ text e ]
+    in
     div [ id "container" ]
-        [ renderSidebar
+        [ div [ class "errors" ] (List.map errorMessage model.errors)
+        , renderSidebar model.sections
         , renderContent model
         ]
 
 
-renderSidebar : Html msg
-renderSidebar =
+renderSidebar : List Section -> Html msg
+renderSidebar sections =
     let
-        sections =
-            [ "First Section", "Second Section", "Third Section" ]
+        sectionButton i s =
+            a [ class "section", href <| "#section-" ++ String.fromInt i ]
+                [ text s.name ]
     in
     div [ id "sidebar" ]
         [ h1 [] [ text "RuBRIC" ]
         , h3 [ class "subtitle" ] [ text "A Proof of Concept" ]
-        , div [ class "sections" ]
-            (List.map (\s -> div [ class "section" ] [ text s ]) sections)
+        , div [ class "sections" ] <|
+            List.indexedMap sectionButton sections
         ]
 
 
@@ -210,6 +236,13 @@ renderContent model =
                 , propertyTable
                 ]
 
+        displaySection i s =
+            div [ class "section", id <| "section-" ++ String.fromInt i ]
+                [ h2 [] [ text s.name ]
+                , div [ class "questions" ] <|
+                    List.map displayQuestion s.questions
+                ]
+
         displayQuestion q =
             div [ class "question" ]
                 [ label [ for q.key ] [ text <| unescape q.prompt ]
@@ -217,24 +250,14 @@ renderContent model =
                 ]
 
         submitButton =
-            case model.questions of
-                Loading ->
-                    div [ class "button", onClick Submit ]
-                        [ FeatherIcons.loader
-                            |> FeatherIcons.withClass "spin"
-                            |> FeatherIcons.withSize 15
-                            |> FeatherIcons.toHtml []
-                        ]
-
-                _ ->
-                    div [ class "button", onClick Submit ]
-                        [ text "Submit" ]
+            div [ class "button", onClick GenerateStandards ]
+                [ text "Generate Standards" ]
     in
     div [ id "content" ]
         [ h1 [] [ text "Submit an Application" ]
         , Html.form [ class "questions" ] <|
             [ activitySelect, propertySelect ]
-                ++ (List.map displayQuestion <| RemoteData.withDefault [] model.questions)
+                ++ List.indexedMap displaySection model.sections
                 ++ [ submitButton ]
         ]
 
@@ -246,12 +269,15 @@ renderContent model =
 port selectMapProperty : (Decode.Value -> msg) -> Sub msg
 
 
-port sendQuestions : Encode.Value -> Cmd msg
+port generateStandards : Encode.Value -> Cmd msg
+
+
+port receiveStandards : (Decode.Value -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    selectMapProperty SelectMapProperty
+    Sub.batch [ selectMapProperty SelectMapProperty, receiveStandards ReceiveStandards ]
 
 
 
@@ -266,3 +292,20 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
+
+
+-- HELPERS
+
+
+addError : String -> Cmd Msg
+addError s =
+    AddError s
+        |> Task.succeed
+        |> Task.perform identity
+
+
+delay : Float -> msg -> Cmd msg
+delay time msg =
+    Process.sleep time
+        |> Task.perform (\_ -> msg)
