@@ -121,34 +121,73 @@
       app.ports.generateStandards.subscribe(function(data) {
         engine = new rubric.Engine();
 
-        var testQuestions = [
+        var testStandards = [
           {
-            key: "test1",
-            prompt: data.dp_zone + " Question 1",
-            units: "",
-            input: "text",
-            value: ""
+            id: "1.2.1",
+            name: "Standard A",
+            questions: [
+              {
+                id: "1.2.1.Q1",
+                prompt: "Question 1",
+                input: "text"
+              },
+              {
+                id: "1.2.1.Q2",
+                prompt: "Question 2",
+                input: "number"
+              },
+              {
+                id: "1.2.1.Q3",
+                prompt: "Question 3",
+                input: "multichoice"
+              }
+            ]
           },
           {
-            key: "test2",
-            prompt: data.dp_zone + " Question 2",
-            units: "",
-            input: "text",
-            value: ""
+            id: "1.2.2",
+            name: "Standard B",
+            questions: [
+              {
+                id: "1.2.2.Q1",
+                prompt: "Question 1",
+                input: "text"
+              },
+              {
+                id: "1.2.2.Q2",
+                prompt: "Question 2",
+                input: "number"
+              },
+              {
+                id: "1.2.2.Q3",
+                prompt: "Question 3",
+                input: "multichoice"
+              }
+            ]
           },
           {
-            key: "test3",
-            prompt: data.dp_zone + " Question 3",
-            units: "",
-            input: "text",
-            value: ""
+            id: "1.2.3",
+            name: "Standard C",
+            questions: [
+              {
+                id: "1.2.3.Q1",
+                prompt: "Question 1",
+                input: "text"
+              },
+              {
+                id: "1.2.3.Q2",
+                prompt: "Question 2",
+                input: "number"
+              },
+              {
+                id: "1.2.3.Q3",
+                prompt: "Question 3",
+                input: "multichoice"
+              }
+            ]
           }
         ];
 
-        app.ports.receiveStandards.send({
-          name: "Test Section",
-          questions: testQuestions
-        });
+        app.ports.receiveStandards.send(testStandards);
       });
     </script>
   </body>

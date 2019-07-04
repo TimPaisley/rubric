@@ -24,16 +24,18 @@ body {
   max-width: 960px;
   margin-left: auto;
   margin-right: auto;
-  display: flex;
 }
 
 #sidebar {
+  position: fixed;
+  height: 100%;
+  width: 240px;
   padding: 1rem;
 }
 
 #content {
   padding: 1rem;
-  flex: 1;
+  margin-left: 240px;
 }
 
 h1 {
@@ -56,14 +58,14 @@ h1 {
   margin: 0;
 }
 
-.sections {
+.standards {
   margin-top: 1rem;
   font-size: 0.8rem;
   display: flex;
   flex-direction: column;
 }
 
-.sections .section {
+.standards .standard {
   padding: 0.5rem;
   cursor: pointer;
   user-select: none;
@@ -71,7 +73,7 @@ h1 {
   text-decoration: none;
 }
 
-.sections .section:hover {
+.standards .standard:hover {
   background-color: #ffcc00;
   color: #333;
 }
@@ -142,4 +144,34 @@ label {
   100% {
     transform: rotate(360deg);
   }
+}
+
+details {
+  margin-bottom: 20px;
+}
+
+details p {
+  padding: 20px;
+}
+
+summary {
+  color: #fff;
+  font-size: 1.2rem;
+  outline: none;
+  cursor: pointer;
+}
+
+summary:hover {
+  color: #ffcc00;
+}
+
+section {
+  max-width: 80%;
+  width: 100%;
+}
+
+.status {
+  position: absolute;
+  bottom: 1rem;
+  font-size: 0.8rem;
 }

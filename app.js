@@ -4310,6 +4310,7 @@ function _Browser_load(url)
 		}
 	}));
 }
+var author$project$Main$Unknown = {$: 'Unknown'};
 var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
@@ -4788,7 +4789,7 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (flags) {
-	var model = {errors: _List_Nil, sections: _List_Nil, selectedProperty: elm$core$Maybe$Nothing};
+	var model = {errors: _List_Nil, selectedProperty: elm$core$Maybe$Nothing, standards: _List_Nil, status: author$project$Main$Unknown};
 	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 };
 var author$project$Main$ReceiveStandards = function (a) {
@@ -5074,37 +5075,43 @@ var author$project$Main$decodeProperty = A3(
 									'fullAddress',
 									elm$json$Json$Decode$string,
 									elm$json$Json$Decode$succeed(author$project$Main$Property))))))))));
-var author$project$Main$Section = F2(
-	function (name, questions) {
-		return {name: name, questions: questions};
+var author$project$Main$Standard = F3(
+	function (id, name, questions) {
+		return {id: id, name: name, questions: questions};
 	});
-var author$project$Main$Question = F5(
-	function (key, prompt, units, input, value) {
-		return {input: input, key: key, prompt: prompt, units: units, value: value};
+var author$project$Main$Question = F4(
+	function (id, prompt, input, value) {
+		return {id: id, input: input, prompt: prompt, value: value};
 	});
-var author$project$Main$decodeQuestion = A3(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$nullable = function (decoder) {
+	return elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				elm$json$Json$Decode$null(elm$core$Maybe$Nothing),
+				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
+			]));
+};
+var author$project$Main$decodeQuestion = A4(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'value',
-	elm$json$Json$Decode$string,
+	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string),
+	elm$core$Maybe$Nothing,
 	A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 		'input',
 		elm$json$Json$Decode$string,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'units',
+			'prompt',
 			elm$json$Json$Decode$string,
 			A3(
 				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'prompt',
+				'id',
 				elm$json$Json$Decode$string,
-				A3(
-					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'key',
-					elm$json$Json$Decode$string,
-					elm$json$Json$Decode$succeed(author$project$Main$Question))))));
+				elm$json$Json$Decode$succeed(author$project$Main$Question)))));
 var elm$json$Json$Decode$list = _Json_decodeList;
-var author$project$Main$decodeSection = A3(
+var author$project$Main$decodeStandard = A3(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 	'questions',
 	elm$json$Json$Decode$list(author$project$Main$decodeQuestion),
@@ -5112,7 +5119,12 @@ var author$project$Main$decodeSection = A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 		'name',
 		elm$json$Json$Decode$string,
-		elm$json$Json$Decode$succeed(author$project$Main$Section)));
+		A3(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'id',
+			elm$json$Json$Decode$string,
+			elm$json$Json$Decode$succeed(author$project$Main$Standard))));
+var author$project$Main$decodeStandards = elm$json$Json$Decode$list(author$project$Main$decodeStandard);
 var elm$core$Process$sleep = _Process_sleep;
 var author$project$Main$delay = F2(
 	function (time, msg) {
@@ -5225,18 +5237,13 @@ var author$project$Main$update = F2(
 				}
 			case 'ReceiveStandards':
 				var val = msg.a;
-				var _n2 = A2(elm$json$Json$Decode$decodeValue, author$project$Main$decodeSection, val);
+				var _n2 = A2(elm$json$Json$Decode$decodeValue, author$project$Main$decodeStandards, val);
 				if (_n2.$ === 'Ok') {
 					var s = _n2.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{
-								sections: _Utils_ap(
-									model.sections,
-									_List_fromArray(
-										[s]))
-							}),
+							{standards: s}),
 						elm$core$Platform$Cmd$none);
 				} else {
 					var err = _n2.a;
@@ -5264,7 +5271,6 @@ var author$project$Main$update = F2(
 		}
 	});
 var author$project$Main$GenerateStandards = {$: 'GenerateStandards'};
-var elm$json$Json$Decode$map = _Json_map1;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
 		case 'Normal':
@@ -5277,18 +5283,27 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
+var elm$html$Html$datalist = _VirtualDom_node('datalist');
+var elm$html$Html$details = _VirtualDom_node('details');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$form = _VirtualDom_node('form');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
-var elm$html$Html$h2 = _VirtualDom_node('h2');
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
 var elm$html$Html$li = _VirtualDom_node('li');
 var elm$html$Html$option = _VirtualDom_node('option');
-var elm$html$Html$select = _VirtualDom_node('select');
+var elm$html$Html$summary = _VirtualDom_node('summary');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$html$Html$ul = _VirtualDom_node('ul');
+var elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var elm$html$Html$Attributes$attribute = elm$virtual_dom$VirtualDom$attribute;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -5299,7 +5314,9 @@ var elm$html$Html$Attributes$stringProperty = F2(
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+var elm$html$Html$Attributes$list = _VirtualDom_attribute('list');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
+var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -6157,6 +6174,8 @@ var marcosh$elm_html_to_unicode$ElmEscapeHtml$unescapeChars = function (list) {
 };
 var marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape = marcosh$elm_html_to_unicode$ElmEscapeHtml$convert(marcosh$elm_html_to_unicode$ElmEscapeHtml$unescapeChars);
 var author$project$Main$renderContent = function (model) {
+	var testActivities = _List_fromArray(
+		['Activity A', 'Activity B', 'Activity C']);
 	var submitButton = A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -6272,7 +6291,7 @@ var author$project$Main$renderContent = function (model) {
 					elm$html$Html$label,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$for(q.key)
+							elm$html$Html$Attributes$for(q.id)
 						]),
 					_List_fromArray(
 						[
@@ -6283,26 +6302,27 @@ var author$project$Main$renderContent = function (model) {
 					elm$html$Html$input,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$id(q.key),
+							elm$html$Html$Attributes$id(q.id),
 							elm$html$Html$Attributes$type_(q.input)
 						]),
 					_List_Nil)
 				]));
 	};
-	var displaySection = F2(
+	var displayStandards = F2(
 		function (i, s) {
 			return A2(
-				elm$html$Html$div,
+				elm$html$Html$details,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$class('section'),
+						elm$html$Html$Attributes$class('standards'),
 						elm$html$Html$Attributes$id(
-						'section-' + elm$core$String$fromInt(i))
+						'standards-' + elm$core$String$fromInt(i)),
+						A2(elm$html$Html$Attributes$attribute, 'open', 'true')
 					]),
 				_List_fromArray(
 					[
 						A2(
-						elm$html$Html$h2,
+						elm$html$Html$summary,
 						_List_Nil,
 						_List_fromArray(
 							[
@@ -6336,35 +6356,31 @@ var author$project$Main$renderContent = function (model) {
 						elm$html$Html$text('What do you want to do?')
 					])),
 				A2(
-				elm$html$Html$select,
+				elm$html$Html$input,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$id('activity-select')
+						elm$html$Html$Attributes$id('activity-select'),
+						elm$html$Html$Attributes$list('activities')
 					]),
+				_List_Nil),
+				A2(
+				elm$html$Html$datalist,
 				_List_fromArray(
 					[
-						A2(
-						elm$html$Html$option,
-						_List_Nil,
-						_List_fromArray(
-							[
-								elm$html$Html$text('Activity A')
-							])),
-						A2(
-						elm$html$Html$option,
-						_List_Nil,
-						_List_fromArray(
-							[
-								elm$html$Html$text('Activity B')
-							])),
-						A2(
-						elm$html$Html$option,
-						_List_Nil,
-						_List_fromArray(
-							[
-								elm$html$Html$text('Activity C')
-							]))
-					]))
+						elm$html$Html$Attributes$id('activities')
+					]),
+				A2(
+					elm$core$List$map,
+					function (a) {
+						return A2(
+							elm$html$Html$option,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$value(a)
+								]),
+							_List_Nil);
+					},
+					testActivities))
 			]));
 	return A2(
 		elm$html$Html$div,
@@ -6383,15 +6399,12 @@ var author$project$Main$renderContent = function (model) {
 					])),
 				A2(
 				elm$html$Html$form,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('questions')
-					]),
+				_List_Nil,
 				_Utils_ap(
 					_List_fromArray(
 						[activitySelect, propertySelect]),
 					_Utils_ap(
-						A2(elm$core$List$indexedMap, displaySection, model.sections),
+						A2(elm$core$List$indexedMap, displayStandards, model.standards),
 						_List_fromArray(
 							[submitButton]))))
 			]));
@@ -6404,56 +6417,84 @@ var elm$html$Html$Attributes$href = function (url) {
 		'href',
 		_VirtualDom_noJavaScriptUri(url));
 };
-var author$project$Main$renderSidebar = function (sections) {
-	var sectionButton = F2(
-		function (i, s) {
-			return A2(
-				elm$html$Html$a,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('section'),
-						elm$html$Html$Attributes$href(
-						'#section-' + elm$core$String$fromInt(i))
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text(s.name)
-					]));
-		});
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$id('sidebar')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$h1,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text('RuBRIC')
-					])),
-				A2(
-				elm$html$Html$h3,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('subtitle')
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text('A Proof of Concept')
-					])),
-				A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('sections')
-					]),
-				A2(elm$core$List$indexedMap, sectionButton, sections))
-			]));
-};
+var author$project$Main$renderSidebar = F2(
+	function (standards, status) {
+		var statusToString = function () {
+			switch (status.$) {
+				case 'Permitted':
+					return 'Permitted';
+				case 'Controlled':
+					return 'Controlled';
+				case 'DiscretionaryRestricted':
+					return 'Discretionary Restricted';
+				case 'DiscretionaryUnrestricted':
+					return 'Discretionary Unrestricted';
+				case 'NonCompliant':
+					return 'Non-compliant';
+				default:
+					return 'Status unknown: You\'ll need to provide more information.';
+			}
+		}();
+		var statusBox = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('status')
+				]),
+			_List_fromArray(
+				[
+					elm$html$Html$text(statusToString)
+				]));
+		var sectionButton = F2(
+			function (i, s) {
+				return A2(
+					elm$html$Html$a,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('standard'),
+							elm$html$Html$Attributes$href(
+							'#standard-' + elm$core$String$fromInt(i))
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(s.name)
+						]));
+			});
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$id('sidebar')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h1,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('RuBRIC')
+						])),
+					A2(
+					elm$html$Html$h3,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('subtitle')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('A Proof of Concept')
+						])),
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('standards')
+						]),
+					A2(elm$core$List$indexedMap, sectionButton, standards)),
+					statusBox
+				]));
+	});
 var author$project$Main$view = function (model) {
 	var errorMessage = function (e) {
 		return A2(
@@ -6482,7 +6523,7 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$Attributes$class('errors')
 					]),
 				A2(elm$core$List$map, errorMessage, model.errors)),
-				author$project$Main$renderSidebar(model.sections),
+				A2(author$project$Main$renderSidebar, model.standards, model.status),
 				author$project$Main$renderContent(model)
 			]));
 };

@@ -7,7 +7,7 @@ import FeatherIcons
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Json.Decode as Decode exposing (Decoder, float, int, string)
+import Json.Decode as Decode exposing (Decoder, float, int, nullable, string)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import List.Extra as ListX
@@ -21,24 +21,10 @@ import Task
 
 type alias Model =
     { selectedProperty : Maybe Property
-    , sections : List Section
+    , standards : List Standard
+    , status : Status
     , errors : List String
     }
-
-
-type alias Section =
-    { name : String
-    , questions : List Question
-    }
-
-
-type Msg
-    = NoOp
-    | AddError String
-    | ExpireError
-    | SelectMapProperty Decode.Value
-    | ReceiveStandards Decode.Value
-    | GenerateStandards
 
 
 type alias Property =
@@ -54,13 +40,37 @@ type alias Property =
     }
 
 
-type alias Question =
-    { key : String
-    , prompt : String
-    , units : String
-    , input : String
-    , value : String
+type alias Standard =
+    { id : String
+    , name : String
+    , questions : List Question
     }
+
+
+type alias Question =
+    { id : String
+    , prompt : String
+    , input : String
+    , value : Maybe String
+    }
+
+
+type Status
+    = Permitted
+    | Controlled
+    | DiscretionaryRestricted
+    | DiscretionaryUnrestricted
+    | NonCompliant
+    | Unknown
+
+
+type Msg
+    = NoOp
+    | AddError String
+    | ExpireError
+    | SelectMapProperty Decode.Value
+    | ReceiveStandards Decode.Value
+    | GenerateStandards
 
 
 init : () -> ( Model, Cmd Msg )
@@ -68,8 +78,9 @@ init flags =
     let
         model =
             { selectedProperty = Nothing
-            , sections = []
+            , standards = []
             , errors = []
+            , status = Unknown
             }
     in
     ( model, Cmd.none )
@@ -99,21 +110,21 @@ update msg model =
                 Err err ->
                     let
                         debug =
-                            Debug.log "Error decoding section: "
-                                <| Decode.errorToString err
+                            Debug.log "Error decoding section: " <|
+                                Decode.errorToString err
                     in
                     ( model, addError "Oops! An error has occurred. Check the console for more details." )
 
         ReceiveStandards val ->
-            case Decode.decodeValue decodeSection val of
+            case Decode.decodeValue decodeStandards val of
                 Ok s ->
-                    ( { model | sections = model.sections ++ [ s ] }, Cmd.none )
+                    ( { model | standards = s }, Cmd.none )
 
                 Err err ->
                     let
                         debug =
-                            Debug.log "Error decoding section: "
-                                <| Decode.errorToString err
+                            Debug.log "Error decoding section: " <|
+                                Decode.errorToString err
                     in
                     ( model, addError "Oops! An error has occurred. Check the console for more details." )
 
@@ -149,9 +160,15 @@ decodeProperty =
         |> required "dpZone" string
 
 
-decodeSection : Decode.Decoder Section
-decodeSection =
-    Decode.succeed Section
+decodeStandards : Decode.Decoder (List Standard)
+decodeStandards =
+    Decode.list decodeStandard
+
+
+decodeStandard : Decode.Decoder Standard
+decodeStandard =
+    Decode.succeed Standard
+        |> required "id" string
         |> required "name" string
         |> required "questions" (Decode.list decodeQuestion)
 
@@ -159,11 +176,10 @@ decodeSection =
 decodeQuestion : Decode.Decoder Question
 decodeQuestion =
     Decode.succeed Question
-        |> required "key" string
+        |> required "id" string
         |> required "prompt" string
-        |> required "units" string
         |> required "input" string
-        |> required "value" string
+        |> optional "value" (nullable string) Nothing
 
 
 
@@ -178,38 +194,65 @@ view model =
     in
     div [ id "container" ]
         [ div [ class "errors" ] (List.map errorMessage model.errors)
-        , renderSidebar model.sections
+        , renderSidebar model.standards model.status
         , renderContent model
         ]
 
 
-renderSidebar : List Section -> Html msg
-renderSidebar sections =
+renderSidebar : List Standard -> Status -> Html msg
+renderSidebar standards status =
     let
         sectionButton i s =
-            a [ class "section", href <| "#section-" ++ String.fromInt i ]
+            a [ class "standard", href <| "#standard-" ++ String.fromInt i ]
                 [ text s.name ]
+
+        statusToString =
+            case status of
+                Permitted ->
+                    "Permitted"
+
+                Controlled ->
+                    "Controlled"
+
+                DiscretionaryRestricted ->
+                    "Discretionary Restricted"
+
+                DiscretionaryUnrestricted ->
+                    "Discretionary Unrestricted"
+
+                NonCompliant ->
+                    "Non-compliant"
+
+                Unknown ->
+                    "Status unknown: You'll need to provide more information."
+
+        statusBox =
+            div [ class "status" ] [ text statusToString ]
     in
     div [ id "sidebar" ]
         [ h1 [] [ text "RuBRIC" ]
         , h3 [ class "subtitle" ] [ text "A Proof of Concept" ]
-        , div [ class "sections" ] <|
-            List.indexedMap sectionButton sections
+        , div [ class "standards" ] <|
+            List.indexedMap sectionButton standards
+        , statusBox
         ]
 
 
 renderContent : Model -> Html Msg
 renderContent model =
     let
+        testActivities =
+            [ "Activity A"
+            , "Activity B"
+            , "Activity C"
+            ]
+
         activitySelect =
             div [ class "question" ]
                 [ label [ for "activity-select" ]
                     [ text "What do you want to do?" ]
-                , select [ id "activity-select" ]
-                    [ option [] [ text "Activity A" ]
-                    , option [] [ text "Activity B" ]
-                    , option [] [ text "Activity C" ]
-                    ]
+                , input [ id "activity-select", list "activities" ] []
+                , datalist [ id "activities" ] (List.map (\a -> option [ value a ] []) testActivities)
                 ]
 
         propertySelect =
@@ -236,17 +279,17 @@ renderContent model =
                 , propertyTable
                 ]
 
-        displaySection i s =
-            div [ class "section", id <| "section-" ++ String.fromInt i ]
-                [ h2 [] [ text s.name ]
+        displayStandards i s =
+            details [ class "standards", id <| "standards-" ++ String.fromInt i, attribute "open" "true" ]
+                [ summary [] [ text s.name ]
                 , div [ class "questions" ] <|
                     List.map displayQuestion s.questions
                 ]
 
         displayQuestion q =
             div [ class "question" ]
-                [ label [ for q.key ] [ text <| unescape q.prompt ]
-                , input [ id q.key, type_ q.input ] []
+                [ label [ for q.id ] [ text <| unescape q.prompt ]
+                , input [ id q.id, type_ q.input ] []
                 ]
 
         submitButton =
@@ -255,9 +298,9 @@ renderContent model =
     in
     div [ id "content" ]
         [ h1 [] [ text "Submit an Application" ]
-        , Html.form [ class "questions" ] <|
+        , Html.form [] <|
             [ activitySelect, propertySelect ]
-                ++ List.indexedMap displaySection model.sections
+                ++ List.indexedMap displayStandards model.standards
                 ++ [ submitButton ]
         ]
 
