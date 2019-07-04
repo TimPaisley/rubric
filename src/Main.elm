@@ -20,11 +20,17 @@ import Task
 
 
 type alias Model =
-    { selectedProperty : Maybe Property
+    { activities : List Activity
+    , selectedActivity : Maybe Activity
+    , selectedProperty : Maybe Property
     , standards : List Standard
     , status : Status
     , errors : List String
     }
+
+
+type alias Activity =
+    String
 
 
 type alias Property =
@@ -68,16 +74,19 @@ type Msg
     = NoOp
     | AddError String
     | ExpireError
+    | SelectActivity Activity
     | SelectMapProperty Decode.Value
     | ReceiveStandards Decode.Value
     | GenerateStandards
 
 
-init : () -> ( Model, Cmd Msg )
+init : List String -> ( Model, Cmd Msg )
 init flags =
     let
         model =
-            { selectedProperty = Nothing
+            { activities = flags
+            , selectedActivity = Nothing
+            , selectedProperty = Nothing
             , standards = []
             , errors = []
             , status = Unknown
@@ -101,6 +110,9 @@ update msg model =
 
         ExpireError ->
             ( { model | errors = List.drop 1 model.errors }, Cmd.none )
+
+        SelectActivity activity ->
+            ( { model | selectedActivity = Just activity }, Cmd.none )
 
         SelectMapProperty propertyValue ->
             case Decode.decodeValue decodeProperty propertyValue of
@@ -129,18 +141,25 @@ update msg model =
                     ( model, addError "Oops! An error has occurred. Check the console for more details." )
 
         GenerateStandards ->
-            case model.selectedProperty of
-                Just p ->
-                    ( model, generateStandards <| encodeProperty p )
+            case ( model.selectedActivity, model.selectedProperty ) of
+                ( Just a, Just p ) ->
+                    ( model, generateStandards <| encodeInit a p )
 
-                Nothing ->
+                ( Nothing, Just p ) ->
+                    ( model, addError "You need to select an activity first!" )
+
+                ( Just a, Nothing ) ->
                     ( model, addError "You need to select a property first!" )
 
+                ( Nothing, Nothing ) ->
+                    ( model, addError "You need to select a property and an activity first!" )
 
-encodeProperty : Property -> Encode.Value
-encodeProperty p =
+
+encodeInit : Activity -> Property -> Encode.Value
+encodeInit a p =
     Encode.object
-        [ ( "full_address", Encode.string p.fullAddress )
+        [ ( "activity", Encode.string a )
+        , ( "full_address", Encode.string p.fullAddress )
         , ( "valuation_wufi", Encode.int p.valuationWufi )
         , ( "dp_zone", Encode.string p.dpZone )
         ]
@@ -241,18 +260,13 @@ renderSidebar standards status =
 renderContent : Model -> Html Msg
 renderContent model =
     let
-        testActivities =
-            [ "Activity A"
-            , "Activity B"
-            , "Activity C"
-            ]
-
         activitySelect =
             div [ class "question" ]
                 [ label [ for "activity-select" ]
                     [ text "What do you want to do?" ]
-                , input [ id "activity-select", list "activities" ] []
-                , datalist [ id "activities" ] (List.map (\a -> option [ value a ] []) testActivities)
+                , select [ id "activity-select", onInput SelectActivity ] <|
+                    option [ hidden True, disabled True, selected True ] [ text "Select an activity..." ]
+                        :: List.map (\a -> option [ value a ] [ text a ]) model.activities
                 ]
 
         propertySelect =
@@ -260,17 +274,10 @@ renderContent model =
                 propertyTable =
                     case model.selectedProperty of
                         Just p ->
-                            ul [ class "property-table" ]
-                                [ li [] [ text <| "Full Address: " ++ p.fullAddress ]
-                                , li [] [ text <| "Title: " ++ p.title ]
-                                , li [] [ text <| "ValuationID: " ++ p.valuationId ]
-                                , li [] [ text <| "ValuationWUFI: " ++ String.fromInt p.valuationWufi ]
-                                , li [] [ text <| "DP Zone: " ++ p.dpZone ]
-                                ]
+                            input [ class "property-input", readonly True, value p.fullAddress ] []
 
                         Nothing ->
-                            div [ class "property-table" ]
-                                [ text "Please use the map to select a property." ]
+                            input [ class "property-input", readonly True, placeholder "Please use the map to select a property..." ] []
             in
             div [ class "question" ]
                 [ label [ for "property-select" ]
@@ -293,8 +300,12 @@ renderContent model =
                 ]
 
         submitButton =
-            div [ class "button", onClick GenerateStandards ]
-                [ text "Generate Standards" ]
+            if List.isEmpty model.standards then
+                div [ class "button", onClick GenerateStandards ]
+                    [ text "Generate Standards" ]
+
+            else
+                div [] []
     in
     div [ id "content" ]
         [ h1 [] [ text "Submit an Application" ]
@@ -327,7 +338,7 @@ subscriptions _ =
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program (List String) Model Msg
 main =
     Browser.element
         { init = init

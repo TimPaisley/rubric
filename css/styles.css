@@ -105,9 +105,7 @@ select {
 }
 
 input[readonly] {
-  color: #fff;
-  background-color: transparent;
-  border: 0;
+  background-color: #eee;
 }
 
 input:focus {
