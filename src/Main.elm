@@ -43,6 +43,7 @@ type alias Property =
     , valuationId : String
     , valuationWufi : Int
     , dpZone : String
+    , specialResidentialArea : String
     }
 
 
@@ -59,6 +60,13 @@ type alias Question =
     , input : String
     , value : Maybe String
     }
+
+
+type Input
+    = Text
+    | Number
+    | Multichoice (List String)
+    | File
 
 
 type Status
@@ -159,9 +167,10 @@ encodeInit : Activity -> Property -> Encode.Value
 encodeInit a p =
     Encode.object
         [ ( "activity", Encode.string a )
-        , ( "full_address", Encode.string p.fullAddress )
+        , ( "zone", Encode.string p.dpZone )
+        , ( "address", Encode.string p.fullAddress )
+        , ( "area_specific_layers", Encode.string p.specialResidentialArea )
         , ( "valuation_wufi", Encode.int p.valuationWufi )
-        , ( "dp_zone", Encode.string p.dpZone )
         ]
 
 
@@ -177,6 +186,7 @@ decodeProperty =
         |> required "valuationId" string
         |> required "valuationWufi" int
         |> required "dpZone" string
+        |> required "specialResidentialArea" string
 
 
 decodeStandards : Decode.Decoder (List Standard)

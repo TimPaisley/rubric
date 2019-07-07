@@ -5031,50 +5031,71 @@ var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 			A2(elm$json$Json$Decode$field, key, valDecoder),
 			decoder);
 	});
-var author$project$Main$Property = F9(
-	function (fullAddress, streetNumber, streetName, suburb, postCode, title, valuationId, valuationWufi, dpZone) {
-		return {dpZone: dpZone, fullAddress: fullAddress, postCode: postCode, streetName: streetName, streetNumber: streetNumber, suburb: suburb, title: title, valuationId: valuationId, valuationWufi: valuationWufi};
-	});
+var author$project$Main$Property = function (fullAddress) {
+	return function (streetNumber) {
+		return function (streetName) {
+			return function (suburb) {
+				return function (postCode) {
+					return function (title) {
+						return function (valuationId) {
+							return function (valuationWufi) {
+								return function (dpZone) {
+									return function (specialResidentialArea) {
+										return {dpZone: dpZone, fullAddress: fullAddress, postCode: postCode, specialResidentialArea: specialResidentialArea, streetName: streetName, streetNumber: streetNumber, suburb: suburb, title: title, valuationId: valuationId, valuationWufi: valuationWufi};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var elm$json$Json$Decode$int = _Json_decodeInt;
 var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Main$decodeProperty = A3(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'dpZone',
+	'specialResidentialArea',
 	elm$json$Json$Decode$string,
 	A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'valuationWufi',
-		elm$json$Json$Decode$int,
+		'dpZone',
+		elm$json$Json$Decode$string,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'valuationId',
-			elm$json$Json$Decode$string,
-			A4(
-				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'title',
+			'valuationWufi',
+			elm$json$Json$Decode$int,
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'valuationId',
 				elm$json$Json$Decode$string,
-				'No Associated Title',
-				A3(
-					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'postCode',
+				A4(
+					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'title',
 					elm$json$Json$Decode$string,
+					'No Associated Title',
 					A3(
 						NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'suburb',
+						'postCode',
 						elm$json$Json$Decode$string,
 						A3(
 							NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'streetName',
+							'suburb',
 							elm$json$Json$Decode$string,
 							A3(
 								NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'streetNumber',
+								'streetName',
 								elm$json$Json$Decode$string,
 								A3(
 									NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-									'fullAddress',
+									'streetNumber',
 									elm$json$Json$Decode$string,
-									elm$json$Json$Decode$succeed(author$project$Main$Property))))))))));
+									A3(
+										NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+										'fullAddress',
+										elm$json$Json$Decode$string,
+										elm$json$Json$Decode$succeed(author$project$Main$Property)))))))))));
 var author$project$Main$Standard = F3(
 	function (id, name, questions) {
 		return {id: id, name: name, questions: questions};
@@ -5166,7 +5187,10 @@ var author$project$Main$encodeInit = F2(
 					elm$json$Json$Encode$int(p.valuationWufi)),
 					_Utils_Tuple2(
 					'dp_zone',
-					elm$json$Json$Encode$string(p.dpZone))
+					elm$json$Json$Encode$string(p.dpZone)),
+					_Utils_Tuple2(
+					'special_residential_area',
+					elm$json$Json$Encode$string(p.specialResidentialArea))
 				]));
 	});
 var author$project$Main$generateStandards = _Platform_outgoingPort('generateStandards', elm$core$Basics$identity);

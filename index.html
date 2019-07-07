@@ -23,8 +23,6 @@
   <body>
     <div id="elm"></div>
     <script>
-      engine = new rubric.Engine();
-
       var app = Elm.Main.init({
         node: document.getElementById("elm"),
         flags: Object.values(rubric.Types.activity)
@@ -45,6 +43,11 @@
         const activityAreas = new FeatureLayer({
           url:
             "http://gis.wcc.govt.nz/arcgis/rest/services/DistrictPlan/DistrictPlan/MapServer/59"
+        });
+
+        const specialResidentialAreas = new FeatureLayer({
+          url:
+            "http://gis.wcc.govt.nz/arcgis/rest/services/DistrictPlan/DistrictPlan/MapServer/36"
         });
 
         var map = new Map({
@@ -99,27 +102,41 @@
           query.outFields = ["dp_zone"];
 
           activityAreas.queryFeatures(query).then(function(intersection) {
-            dp_zone = intersection.features[0].attributes.dp_zone;
+            var dp_zone = intersection.features[0].attributes.dp_zone;
 
-            var property = {
-              fullAddress: attributes.FullAddress,
-              streetNumber: attributes.StreetNumber,
-              streetName: attributes.StreetName,
-              suburb: attributes.Suburb,
-              postCode: attributes.PostCode,
-              title: attributes.Title,
-              valuationId: attributes.ValuationID,
-              valuationWufi: attributes.ValuationWUFI,
-              dpZone: dp_zone
-            };
+            query.outFields = ["Area_Name"];
+            specialResidentialAreas
+              .queryFeatures(query)
+              .then(function(intersection) {
+                var sra_name;
+                if (intersection.features[0]) {
+                  sra_name = intersection.features[0].attributes.Area_Name;
+                } else {
+                  sra_name = "Unknown";
+                }
 
-            app.ports.selectMapProperty.send(property);
+                var property = {
+                  fullAddress: attributes.FullAddress,
+                  streetNumber: attributes.StreetNumber,
+                  streetName: attributes.StreetName,
+                  suburb: attributes.Suburb,
+                  postCode: attributes.PostCode,
+                  title: attributes.Title,
+                  valuationId: attributes.ValuationID,
+                  valuationWufi: attributes.ValuationWUFI,
+                  dpZone: dp_zone,
+                  specialResidentialArea: sra_name
+                };
+
+                app.ports.selectMapProperty.send(property);
+              });
           });
         });
       });
 
       app.ports.generateStandards.subscribe(function(data) {
         console.log(data);
+        engine = new rubric.Engine(data);
 
         var testStandards = [
           {
