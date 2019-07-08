@@ -48,25 +48,28 @@ type alias Property =
 
 
 type alias Standard =
-    { id : String
+    { key : String
+    , description : String
     , name : String
     , questions : List Question
+    , section : String
+    , status : String
     }
 
 
 type alias Question =
-    { id : String
-    , prompt : String
-    , input : String
-    , value : Maybe String
+    { key : String
+    , input : Input
+    , unit : String
+    , value : String
     }
 
 
 type Input
-    = Text
-    | Number
-    | Multichoice (List String)
-    | File
+    = Text String
+    | Number String
+    | Multichoice String (List String)
+    | File String
 
 
 type Status
@@ -163,6 +166,19 @@ update msg model =
                     ( model, addError "You need to select a property and an activity first!" )
 
 
+
+-- INTEROP
+
+
+port selectMapProperty : (Decode.Value -> msg) -> Sub msg
+
+
+port generateStandards : Encode.Value -> Cmd msg
+
+
+port receiveStandards : (Decode.Value -> msg) -> Sub msg
+
+
 encodeInit : Activity -> Property -> Encode.Value
 encodeInit a p =
     Encode.object
@@ -197,18 +213,51 @@ decodeStandards =
 decodeStandard : Decode.Decoder Standard
 decodeStandard =
     Decode.succeed Standard
-        |> required "id" string
+        |> required "key" string
+        |> required "description" string
         |> required "name" string
         |> required "questions" (Decode.list decodeQuestion)
+        |> required "section" string
+        |> optional "activityStatus" string "Unknown"
 
 
 decodeQuestion : Decode.Decoder Question
 decodeQuestion =
     Decode.succeed Question
-        |> required "id" string
-        |> required "prompt" string
-        |> required "input" string
-        |> optional "value" (nullable string) Nothing
+        |> required "key" string
+        |> required "input" decodeInput
+        |> required "unit" string
+        |> hardcoded ""
+
+
+decodeInput : Decode.Decoder Input
+decodeInput =
+    Decode.field "format" Decode.string
+        |> Decode.andThen matchInput
+
+
+matchInput : String -> Decode.Decoder Input
+matchInput format =
+    case format of
+        "text" ->
+            Decode.succeed Text
+                |> required "prompt" string
+
+        "number" ->
+            Decode.succeed Number
+                |> required "prompt" string
+
+        "multichoice" ->
+            Decode.succeed Multichoice
+                |> required "prompt" string
+                |> required "options" (Decode.list string)
+
+        "file" ->
+            Decode.succeed File
+                |> required "prompt" string
+
+        _ ->
+            Decode.fail ("Invalid format: " ++ format)
 
 
 
@@ -304,10 +353,30 @@ renderContent model =
                 ]
 
         displayQuestion q =
-            div [ class "question" ]
-                [ label [ for q.id ] [ text <| unescape q.prompt ]
-                , input [ id q.id, type_ q.input ] []
-                ]
+            case q.input of
+                Text p ->
+                    div [ class "question" ]
+                        [ label [ for q.key ] [ text <| unescape p ]
+                        , input [ id q.key, type_ "text" ] []
+                        ]
+
+                Number p ->
+                    div [ class "question" ]
+                        [ label [ for q.key ] [ text <| unescape p ]
+                        , input [ id q.key, type_ "number" ] []
+                        ]
+
+                Multichoice p ops ->
+                    div [ class "question" ]
+                        [ label [ for q.key ] [ text <| unescape p ]
+                        , input [ id q.key, type_ "text" ] []
+                        ]
+
+                File p ->
+                    div [ class "question" ]
+                        [ label [ for q.key ] [ text <| unescape p ]
+                        , input [ id q.key, type_ "file" ] []
+                        ]
 
         submitButton =
             if List.isEmpty model.standards then
@@ -318,7 +387,7 @@ renderContent model =
                 div [] []
     in
     div [ id "content" ]
-        [ h1 [] [ text "Submit an Application" ]
+        [ h1 [] [ text "Submit a Building & Structure Consent Application" ]
         , Html.form [] <|
             [ activitySelect, propertySelect ]
                 ++ List.indexedMap displayStandards model.standards
@@ -328,15 +397,6 @@ renderContent model =
 
 
 -- SUBSCRIPTIONS
-
-
-port selectMapProperty : (Decode.Value -> msg) -> Sub msg
-
-
-port generateStandards : Encode.Value -> Cmd msg
-
-
-port receiveStandards : (Decode.Value -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg

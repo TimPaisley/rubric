@@ -5096,55 +5096,114 @@ var author$project$Main$decodeProperty = A3(
 										'fullAddress',
 										elm$json$Json$Decode$string,
 										elm$json$Json$Decode$succeed(author$project$Main$Property)))))))))));
-var author$project$Main$Standard = F3(
-	function (id, name, questions) {
-		return {id: id, name: name, questions: questions};
+var author$project$Main$Standard = F6(
+	function (key, description, name, questions, section, status) {
+		return {description: description, key: key, name: name, questions: questions, section: section, status: status};
 	});
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2(elm$core$Basics$composeR, elm$json$Json$Decode$succeed, NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
 var author$project$Main$Question = F4(
-	function (id, prompt, input, value) {
-		return {id: id, input: input, prompt: prompt, value: value};
+	function (key, input, unit, value) {
+		return {input: input, key: key, unit: unit, value: value};
 	});
-var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$nullable = function (decoder) {
-	return elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				elm$json$Json$Decode$null(elm$core$Maybe$Nothing),
-				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
-			]));
+var author$project$Main$File = function (a) {
+	return {$: 'File', a: a};
 };
-var author$project$Main$decodeQuestion = A4(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'value',
-	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string),
-	elm$core$Maybe$Nothing,
+var author$project$Main$Multichoice = F2(
+	function (a, b) {
+		return {$: 'Multichoice', a: a, b: b};
+	});
+var author$project$Main$Number = function (a) {
+	return {$: 'Number', a: a};
+};
+var author$project$Main$Text = function (a) {
+	return {$: 'Text', a: a};
+};
+var elm$json$Json$Decode$list = _Json_decodeList;
+var author$project$Main$matchInput = function (format) {
+	switch (format) {
+		case 'text':
+			return A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'prompt',
+				elm$json$Json$Decode$string,
+				elm$json$Json$Decode$succeed(author$project$Main$Text));
+		case 'number':
+			return A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'prompt',
+				elm$json$Json$Decode$string,
+				elm$json$Json$Decode$succeed(author$project$Main$Number));
+		case 'multichoice':
+			return A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'options',
+				elm$json$Json$Decode$list(elm$json$Json$Decode$string),
+				A3(
+					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'prompt',
+					elm$json$Json$Decode$string,
+					elm$json$Json$Decode$succeed(author$project$Main$Multichoice)));
+		case 'file':
+			return A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'prompt',
+				elm$json$Json$Decode$string,
+				elm$json$Json$Decode$succeed(author$project$Main$File));
+		default:
+			return elm$json$Json$Decode$fail('Invalid format: ' + format);
+	}
+};
+var author$project$Main$decodeInput = A2(
+	elm$json$Json$Decode$andThen,
+	author$project$Main$matchInput,
+	A2(elm$json$Json$Decode$field, 'format', elm$json$Json$Decode$string));
+var author$project$Main$decodeQuestion = A2(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	'',
 	A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'input',
+		'unit',
 		elm$json$Json$Decode$string,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'prompt',
-			elm$json$Json$Decode$string,
+			'input',
+			author$project$Main$decodeInput,
 			A3(
 				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'id',
+				'key',
 				elm$json$Json$Decode$string,
 				elm$json$Json$Decode$succeed(author$project$Main$Question)))));
-var elm$json$Json$Decode$list = _Json_decodeList;
-var author$project$Main$decodeStandard = A3(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'questions',
-	elm$json$Json$Decode$list(author$project$Main$decodeQuestion),
+var author$project$Main$decodeStandard = A4(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'activityStatus',
+	elm$json$Json$Decode$string,
+	'Unknown',
 	A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'name',
+		'section',
 		elm$json$Json$Decode$string,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'id',
-			elm$json$Json$Decode$string,
-			elm$json$Json$Decode$succeed(author$project$Main$Standard))));
+			'questions',
+			elm$json$Json$Decode$list(author$project$Main$decodeQuestion),
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'name',
+				elm$json$Json$Decode$string,
+				A3(
+					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'description',
+					elm$json$Json$Decode$string,
+					A3(
+						NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'key',
+						elm$json$Json$Decode$string,
+						elm$json$Json$Decode$succeed(author$project$Main$Standard)))))));
 var author$project$Main$decodeStandards = elm$json$Json$Decode$list(author$project$Main$decodeStandard);
 var elm$core$Process$sleep = _Process_sleep;
 var author$project$Main$delay = F2(
@@ -5180,17 +5239,17 @@ var author$project$Main$encodeInit = F2(
 					'activity',
 					elm$json$Json$Encode$string(a)),
 					_Utils_Tuple2(
-					'full_address',
-					elm$json$Json$Encode$string(p.fullAddress)),
-					_Utils_Tuple2(
-					'valuation_wufi',
-					elm$json$Json$Encode$int(p.valuationWufi)),
-					_Utils_Tuple2(
-					'dp_zone',
+					'zone',
 					elm$json$Json$Encode$string(p.dpZone)),
 					_Utils_Tuple2(
-					'special_residential_area',
-					elm$json$Json$Encode$string(p.specialResidentialArea))
+					'address',
+					elm$json$Json$Encode$string(p.fullAddress)),
+					_Utils_Tuple2(
+					'area_specific_layers',
+					elm$json$Json$Encode$string(p.specialResidentialArea)),
+					_Utils_Tuple2(
+					'valuation_wufi',
+					elm$json$Json$Encode$int(p.valuationWufi))
 				]));
 	});
 var author$project$Main$generateStandards = _Platform_outgoingPort('generateStandards', elm$core$Basics$identity);
@@ -5337,6 +5396,7 @@ var elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
+var elm$json$Json$Decode$map = _Json_map1;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
 		case 'Normal':
@@ -6287,9 +6347,9 @@ var author$project$Main$renderContent = function (model) {
 			])) : A2(elm$html$Html$div, _List_Nil, _List_Nil);
 	var propertySelect = function () {
 		var propertyTable = function () {
-			var _n0 = model.selectedProperty;
-			if (_n0.$ === 'Just') {
-				var p = _n0.a;
+			var _n1 = model.selectedProperty;
+			if (_n1.$ === 'Just') {
+				var p = _n1.a;
 				return A2(
 					elm$html$Html$input,
 					_List_fromArray(
@@ -6340,34 +6400,130 @@ var author$project$Main$renderContent = function (model) {
 				]));
 	}();
 	var displayQuestion = function (q) {
-		return A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('question')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$label,
+		var _n0 = q.input;
+		switch (_n0.$) {
+			case 'Text':
+				var p = _n0.a;
+				return A2(
+					elm$html$Html$div,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$for(q.id)
+							elm$html$Html$Attributes$class('question')
 						]),
 					_List_fromArray(
 						[
-							elm$html$Html$text(
-							marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(q.prompt))
-						])),
-					A2(
-					elm$html$Html$input,
+							A2(
+							elm$html$Html$label,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$for(q.key)
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(
+									marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
+								])),
+							A2(
+							elm$html$Html$input,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$id(q.key),
+									elm$html$Html$Attributes$type_('text')
+								]),
+							_List_Nil)
+						]));
+			case 'Number':
+				var p = _n0.a;
+				return A2(
+					elm$html$Html$div,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$id(q.id),
-							elm$html$Html$Attributes$type_(q.input)
+							elm$html$Html$Attributes$class('question')
 						]),
-					_List_Nil)
-				]));
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$label,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$for(q.key)
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(
+									marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
+								])),
+							A2(
+							elm$html$Html$input,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$id(q.key),
+									elm$html$Html$Attributes$type_('number')
+								]),
+							_List_Nil)
+						]));
+			case 'Multichoice':
+				var p = _n0.a;
+				var ops = _n0.b;
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('question')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$label,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$for(q.key)
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(
+									marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
+								])),
+							A2(
+							elm$html$Html$input,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$id(q.key),
+									elm$html$Html$Attributes$type_('text')
+								]),
+							_List_Nil)
+						]));
+			default:
+				var p = _n0.a;
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('question')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$label,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$for(q.key)
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(
+									marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
+								])),
+							A2(
+							elm$html$Html$input,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$id(q.key),
+									elm$html$Html$Attributes$type_('file')
+								]),
+							_List_Nil)
+						]));
+		}
 	};
 	var displayStandards = F2(
 		function (i, s) {
@@ -6466,7 +6622,7 @@ var author$project$Main$renderContent = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						elm$html$Html$text('Submit an Application')
+						elm$html$Html$text('Submit a Building & Structure Consent Application')
 					])),
 				A2(
 				elm$html$Html$form,
