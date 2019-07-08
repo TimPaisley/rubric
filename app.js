@@ -4972,6 +4972,7 @@ var author$project$Main$addError = function (s) {
 		elm$core$Task$succeed(
 			author$project$Main$AddError(s)));
 };
+var author$project$Main$askRubric = _Platform_outgoingPort('askRubric', elm$core$Basics$identity);
 var elm$json$Json$Decode$map2 = _Json_map2;
 var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = elm$json$Json$Decode$map2(elm$core$Basics$apR);
 var elm$json$Json$Decode$andThen = _Json_andThen;
@@ -5107,8 +5108,8 @@ var elm$core$Basics$composeR = F3(
 	});
 var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2(elm$core$Basics$composeR, elm$json$Json$Decode$succeed, NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
 var author$project$Main$Question = F4(
-	function (key, input, unit, value) {
-		return {input: input, key: key, unit: unit, value: value};
+	function (key, input, unit, answer) {
+		return {answer: answer, input: input, key: key, unit: unit};
 	});
 var author$project$Main$File = function (a) {
 	return {$: 'File', a: a};
@@ -5215,7 +5216,6 @@ var author$project$Main$delay = F2(
 			},
 			elm$core$Process$sleep(time));
 	});
-var elm$json$Json$Encode$int = _Json_wrap;
 var elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -5230,7 +5230,17 @@ var elm$json$Json$Encode$object = function (pairs) {
 			pairs));
 };
 var elm$json$Json$Encode$string = _Json_wrap;
-var author$project$Main$encodeInit = F2(
+var author$project$Main$encodeAnswers = function (questions) {
+	var formatAnswer = function (q) {
+		return _Utils_Tuple2(
+			q.key,
+			elm$json$Json$Encode$string(q.answer));
+	};
+	return elm$json$Json$Encode$object(
+		A2(elm$core$List$map, formatAnswer, questions));
+};
+var elm$json$Json$Encode$int = _Json_wrap;
+var author$project$Main$encodeScenario = F2(
 	function (a, p) {
 		return elm$json$Json$Encode$object(
 			_List_fromArray(
@@ -5252,7 +5262,19 @@ var author$project$Main$encodeInit = F2(
 					elm$json$Json$Encode$int(p.valuationWufi))
 				]));
 	});
-var author$project$Main$generateStandards = _Platform_outgoingPort('generateStandards', elm$core$Basics$identity);
+var author$project$Main$encodePayload = F3(
+	function (a, p, qs) {
+		return elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'scenario',
+					A2(author$project$Main$encodeScenario, a, p)),
+					_Utils_Tuple2(
+					'answers',
+					author$project$Main$encodeAnswers(qs))
+				]));
+	});
 var elm$core$Debug$log = _Debug_log;
 var elm$core$List$drop = F2(
 	function (n, list) {
@@ -5274,6 +5296,15 @@ var elm$core$List$drop = F2(
 				}
 			}
 		}
+	});
+var elm_community$list_extra$List$Extra$updateIf = F3(
+	function (predicate, update, list) {
+		return A2(
+			elm$core$List$map,
+			function (item) {
+				return predicate(item) ? update(item) : item;
+			},
+			list);
 	});
 var author$project$Main$update = F2(
 	function (msg, model) {
@@ -5351,16 +5382,58 @@ var author$project$Main$update = F2(
 						model,
 						author$project$Main$addError('Oops! An error has occurred. Check the console for more details.'));
 				}
+			case 'InputAnswer':
+				var standard = msg.a;
+				var question = msg.b;
+				var answer = msg.c;
+				var updateQuestion = function (q) {
+					return _Utils_update(
+						q,
+						{answer: answer});
+				};
+				var updateStandard = function (s) {
+					return _Utils_update(
+						s,
+						{
+							questions: A3(
+								elm_community$list_extra$List$Extra$updateIf,
+								function (q) {
+									return _Utils_eq(q.key, question.key);
+								},
+								updateQuestion,
+								s.questions)
+						});
+				};
+				var newStandards = A3(
+					elm_community$list_extra$List$Extra$updateIf,
+					function (s) {
+						return _Utils_eq(s.key, standard.key);
+					},
+					updateStandard,
+					model.standards);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{standards: newStandards}),
+					elm$core$Platform$Cmd$none);
 			default:
 				var _n3 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
 				if (_n3.a.$ === 'Just') {
 					if (_n3.b.$ === 'Just') {
 						var a = _n3.a.a;
 						var p = _n3.b.a;
+						var allQuestions = A3(
+							elm$core$List$foldl,
+							F2(
+								function (s, l) {
+									return _Utils_ap(s.questions, l);
+								}),
+							_List_Nil,
+							model.standards);
 						return _Utils_Tuple2(
 							model,
-							author$project$Main$generateStandards(
-								A2(author$project$Main$encodeInit, a, p)));
+							author$project$Main$askRubric(
+								A3(author$project$Main$encodePayload, a, p, allQuestions)));
 					} else {
 						var a = _n3.a.a;
 						var _n5 = _n3.b;
@@ -5385,16 +5458,13 @@ var author$project$Main$update = F2(
 				}
 		}
 	});
-var author$project$Main$GenerateStandards = {$: 'GenerateStandards'};
+var author$project$Main$AskRubric = {$: 'AskRubric'};
+var author$project$Main$InputAnswer = F3(
+	function (a, b, c) {
+		return {$: 'InputAnswer', a: a, b: b, c: c};
+	});
 var author$project$Main$SelectActivity = function (a) {
 	return {$: 'SelectActivity', a: a};
-};
-var elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
 };
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
@@ -5530,6 +5600,13 @@ var elm$core$List$append = F2(
 			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
 		}
 	});
+var elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var elm$core$List$concat = function (lists) {
 	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
 };
@@ -6334,17 +6411,17 @@ var marcosh$elm_html_to_unicode$ElmEscapeHtml$unescapeChars = function (list) {
 };
 var marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape = marcosh$elm_html_to_unicode$ElmEscapeHtml$convert(marcosh$elm_html_to_unicode$ElmEscapeHtml$unescapeChars);
 var author$project$Main$renderContent = function (model) {
-	var submitButton = elm$core$List$isEmpty(model.standards) ? A2(
+	var submitButton = A2(
 		elm$html$Html$div,
 		_List_fromArray(
 			[
 				elm$html$Html$Attributes$class('button'),
-				elm$html$Html$Events$onClick(author$project$Main$GenerateStandards)
+				elm$html$Html$Events$onClick(author$project$Main$AskRubric)
 			]),
 		_List_fromArray(
 			[
-				elm$html$Html$text('Generate Standards')
-			])) : A2(elm$html$Html$div, _List_Nil, _List_Nil);
+				elm$html$Html$text('Ask Rubric')
+			]));
 	var propertySelect = function () {
 		var propertyTable = function () {
 			var _n1 = model.selectedProperty;
@@ -6399,132 +6476,145 @@ var author$project$Main$renderContent = function (model) {
 					propertyTable
 				]));
 	}();
-	var displayQuestion = function (q) {
-		var _n0 = q.input;
-		switch (_n0.$) {
-			case 'Text':
-				var p = _n0.a;
-				return A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('question')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$label,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$for(q.key)
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text(
-									marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
-								])),
-							A2(
-							elm$html$Html$input,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$id(q.key),
-									elm$html$Html$Attributes$type_('text')
-								]),
-							_List_Nil)
-						]));
-			case 'Number':
-				var p = _n0.a;
-				return A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('question')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$label,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$for(q.key)
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text(
-									marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
-								])),
-							A2(
-							elm$html$Html$input,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$id(q.key),
-									elm$html$Html$Attributes$type_('number')
-								]),
-							_List_Nil)
-						]));
-			case 'Multichoice':
-				var p = _n0.a;
-				var ops = _n0.b;
-				return A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('question')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$label,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$for(q.key)
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text(
-									marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
-								])),
-							A2(
-							elm$html$Html$input,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$id(q.key),
-									elm$html$Html$Attributes$type_('text')
-								]),
-							_List_Nil)
-						]));
-			default:
-				var p = _n0.a;
-				return A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('question')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$label,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$for(q.key)
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text(
-									marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
-								])),
-							A2(
-							elm$html$Html$input,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$id(q.key),
-									elm$html$Html$Attributes$type_('file')
-								]),
-							_List_Nil)
-						]));
-		}
-	};
+	var displayQuestion = F2(
+		function (s, q) {
+			var _n0 = q.input;
+			switch (_n0.$) {
+				case 'Text':
+					var p = _n0.a;
+					return A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('question')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$label,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$for(q.key)
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
+									])),
+								A2(
+								elm$html$Html$input,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$id(q.key),
+										elm$html$Html$Attributes$type_('text'),
+										elm$html$Html$Attributes$value(q.answer),
+										elm$html$Html$Events$onInput(
+										A2(author$project$Main$InputAnswer, s, q))
+									]),
+								_List_Nil)
+							]));
+				case 'Number':
+					var p = _n0.a;
+					return A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('question')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$label,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$for(q.key)
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
+									])),
+								A2(
+								elm$html$Html$input,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$id(q.key),
+										elm$html$Html$Attributes$type_('number'),
+										elm$html$Html$Attributes$value(q.answer),
+										elm$html$Html$Events$onInput(
+										A2(author$project$Main$InputAnswer, s, q))
+									]),
+								_List_Nil)
+							]));
+				case 'Multichoice':
+					var p = _n0.a;
+					var ops = _n0.b;
+					return A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('question')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$label,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$for(q.key)
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
+									])),
+								A2(
+								elm$html$Html$input,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$id(q.key),
+										elm$html$Html$Attributes$type_('text'),
+										elm$html$Html$Attributes$value(q.answer),
+										elm$html$Html$Events$onInput(
+										A2(author$project$Main$InputAnswer, s, q))
+									]),
+								_List_Nil)
+							]));
+				default:
+					var p = _n0.a;
+					return A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('question')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$label,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$for(q.key)
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
+									])),
+								A2(
+								elm$html$Html$input,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$id(q.key),
+										elm$html$Html$Attributes$type_('file'),
+										elm$html$Html$Attributes$value(q.answer),
+										elm$html$Html$Events$onInput(
+										A2(author$project$Main$InputAnswer, s, q))
+									]),
+								_List_Nil)
+							]));
+			}
+		});
 	var displayStandards = F2(
 		function (i, s) {
 			return A2(
@@ -6543,7 +6633,7 @@ var author$project$Main$renderContent = function (model) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text(s.name)
+								elm$html$Html$text(s.name + (' [Status: ' + (s.status + ']')))
 							])),
 						A2(
 						elm$html$Html$div,
@@ -6551,7 +6641,10 @@ var author$project$Main$renderContent = function (model) {
 							[
 								elm$html$Html$Attributes$class('questions')
 							]),
-						A2(elm$core$List$map, displayQuestion, s.questions))
+						A2(
+							elm$core$List$map,
+							displayQuestion(s),
+							s.questions))
 					]));
 		});
 	var activitySelect = A2(

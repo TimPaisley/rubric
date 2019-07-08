@@ -61,7 +61,7 @@ type alias Question =
     { key : String
     , input : Input
     , unit : String
-    , value : String
+    , answer : String
     }
 
 
@@ -88,7 +88,8 @@ type Msg
     | SelectActivity Activity
     | SelectMapProperty Decode.Value
     | ReceiveStandards Decode.Value
-    | GenerateStandards
+    | InputAnswer Standard Question String
+    | AskRubric
 
 
 init : List String -> ( Model, Cmd Msg )
@@ -151,10 +152,27 @@ update msg model =
                     in
                     ( model, addError "Oops! An error has occurred. Check the console for more details." )
 
-        GenerateStandards ->
+        InputAnswer standard question answer ->
+            let
+                updateQuestion q =
+                    { q | answer = answer }
+
+                updateStandard s =
+                    { s | questions = ListX.updateIf (\q -> q.key == question.key) updateQuestion s.questions }
+
+                newStandards =
+                    ListX.updateIf (\s -> s.key == standard.key) updateStandard model.standards
+            in
+            ( { model | standards = newStandards }, Cmd.none )
+
+        AskRubric ->
             case ( model.selectedActivity, model.selectedProperty ) of
                 ( Just a, Just p ) ->
-                    ( model, generateStandards <| encodeInit a p )
+                    let
+                        allQuestions =
+                            List.foldl (\s l -> s.questions ++ l) [] model.standards
+                    in
+                    ( model, askRubric <| encodePayload a p allQuestions )
 
                 ( Nothing, Just p ) ->
                     ( model, addError "You need to select an activity first!" )
@@ -173,14 +191,22 @@ update msg model =
 port selectMapProperty : (Decode.Value -> msg) -> Sub msg
 
 
-port generateStandards : Encode.Value -> Cmd msg
+port askRubric : Encode.Value -> Cmd msg
 
 
 port receiveStandards : (Decode.Value -> msg) -> Sub msg
 
 
-encodeInit : Activity -> Property -> Encode.Value
-encodeInit a p =
+encodePayload : Activity -> Property -> List Question -> Encode.Value
+encodePayload a p qs =
+    Encode.object
+        [ ( "scenario", encodeScenario a p )
+        , ( "answers", encodeAnswers qs )
+        ]
+
+
+encodeScenario : Activity -> Property -> Encode.Value
+encodeScenario a p =
     Encode.object
         [ ( "activity", Encode.string a )
         , ( "zone", Encode.string p.dpZone )
@@ -188,6 +214,16 @@ encodeInit a p =
         , ( "area_specific_layers", Encode.string p.specialResidentialArea )
         , ( "valuation_wufi", Encode.int p.valuationWufi )
         ]
+
+
+encodeAnswers : List Question -> Encode.Value
+encodeAnswers questions =
+    let
+        formatAnswer q =
+            ( q.key, Encode.string q.answer )
+    in
+    List.map formatAnswer questions
+        |> Encode.object
 
 
 decodeProperty : Decode.Decoder Property
@@ -347,44 +383,40 @@ renderContent model =
 
         displayStandards i s =
             details [ class "standards", id <| "standards-" ++ String.fromInt i, attribute "open" "true" ]
-                [ summary [] [ text s.name ]
+                [ summary [] [ text <| s.name ++ " [Status: " ++ s.status ++ "]" ]
                 , div [ class "questions" ] <|
-                    List.map displayQuestion s.questions
+                    List.map (displayQuestion s) s.questions
                 ]
 
-        displayQuestion q =
+        displayQuestion s q =
             case q.input of
                 Text p ->
                     div [ class "question" ]
                         [ label [ for q.key ] [ text <| unescape p ]
-                        , input [ id q.key, type_ "text" ] []
+                        , input [ id q.key, type_ "text", value q.answer, onInput (InputAnswer s q) ] []
                         ]
 
                 Number p ->
                     div [ class "question" ]
                         [ label [ for q.key ] [ text <| unescape p ]
-                        , input [ id q.key, type_ "number" ] []
+                        , input [ id q.key, type_ "number", value q.answer, onInput (InputAnswer s q) ] []
                         ]
 
                 Multichoice p ops ->
                     div [ class "question" ]
                         [ label [ for q.key ] [ text <| unescape p ]
-                        , input [ id q.key, type_ "text" ] []
+                        , input [ id q.key, type_ "text", value q.answer, onInput (InputAnswer s q) ] []
                         ]
 
                 File p ->
                     div [ class "question" ]
                         [ label [ for q.key ] [ text <| unescape p ]
-                        , input [ id q.key, type_ "file" ] []
+                        , input [ id q.key, type_ "file", value q.answer, onInput (InputAnswer s q) ] []
                         ]
 
         submitButton =
-            if List.isEmpty model.standards then
-                div [ class "button", onClick GenerateStandards ]
-                    [ text "Generate Standards" ]
-
-            else
-                div [] []
+            div [ class "button", onClick AskRubric ]
+                [ text "Ask Rubric" ]
     in
     div [ id "content" ]
         [ h1 [] [ text "Submit a Building & Structure Consent Application" ]

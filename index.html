@@ -148,9 +148,16 @@
         });
       });
 
-      app.ports.generateStandards.subscribe(function(data) {
+      var engine = null;
+      app.ports.askRubric.subscribe(function(data) {
         console.log(data);
-        engine = new rubric.Engine({ fields: data });
+
+        if (engine) {
+          engine.process(data.answers);
+        } else {
+          engine = new rubric.Engine({ fields: data.scenario });
+        }
+
         console.log(engine.standards);
         app.ports.receiveStandards.send(engine.standards);
       });
