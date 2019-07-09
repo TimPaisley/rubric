@@ -42,8 +42,9 @@ type alias Property =
     , title : String
     , valuationId : String
     , valuationWufi : Int
-    , dpZone : String
+    , zone : String
     , specialResidentialArea : String
+    , hazardFaultLineArea : String
     }
 
 
@@ -223,10 +224,11 @@ encodeScenario : Activity -> Property -> Encode.Value
 encodeScenario a p =
     Encode.object
         [ ( "activity", Encode.string a )
-        , ( "zone", Encode.string p.dpZone )
         , ( "address", Encode.string p.fullAddress )
-        , ( "area_specific_layers", Encode.string p.specialResidentialArea )
         , ( "valuation_wufi", Encode.int p.valuationWufi )
+        , ( "zone", Encode.string p.zone )
+        , ( "area_specific_layers", Encode.string p.specialResidentialArea )
+        , ( "hazard_fault_line_area", Encode.string p.hazardFaultLineArea )
         ]
 
 
@@ -268,8 +270,9 @@ decodeProperty =
         |> optional "title" string "No Associated Title"
         |> required "valuationId" string
         |> required "valuationWufi" int
-        |> required "dpZone" string
-        |> required "specialResidentialArea" string
+        |> required "zone" string
+        |> optional "specialResidentialArea" string ""
+        |> optional "hazardFaultLineArea" string ""
 
 
 decodeStandards : Decode.Decoder (List Standard)
