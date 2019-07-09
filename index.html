@@ -50,6 +50,8 @@
             "http://gis.wcc.govt.nz/arcgis/rest/services/DistrictPlan/DistrictPlan/MapServer/36"
         });
 
+        // 49, 65
+
         var map = new Map({
           basemap: "dark-gray-vector",
           layers: [layer]
@@ -97,7 +99,7 @@
           dpZone: "Inner Residential",
           fullAddress: "101 Wakefield Street, Wellington Central",
           postCode: "6011",
-          specialResidentialArea: "Unknown",
+          specialResidentialArea: "IR 3 - Aro Valley",
           streetName: "Wakefield Street",
           streetNumber: "101",
           suburb: "Wellington Central",
@@ -153,13 +155,14 @@
         console.log(data);
 
         if (engine) {
-          engine.process(data.answers);
+          engine.process(data.answers).then(() => {
+            console.log(engine.standards);
+            app.ports.receiveStandards.send(engine.standards);
+          });
         } else {
           engine = new rubric.Engine({ fields: data.scenario });
+          app.ports.receiveStandards.send(engine.standards);
         }
-
-        console.log(engine.standards);
-        app.ports.receiveStandards.send(engine.standards);
       });
     </script>
   </body>

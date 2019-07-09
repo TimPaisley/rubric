@@ -4811,6 +4811,22 @@ var author$project$Main$subscriptions = function (_n0) {
 			]));
 };
 var author$project$Main$ExpireError = {$: 'ExpireError'};
+var author$project$Main$File = F2(
+	function (a, b) {
+		return {$: 'File', a: a, b: b};
+	});
+var author$project$Main$Multichoice = F3(
+	function (a, b, c) {
+		return {$: 'Multichoice', a: a, b: b, c: c};
+	});
+var author$project$Main$Number = F2(
+	function (a, b) {
+		return {$: 'Number', a: a, b: b};
+	});
+var author$project$Main$Text = F2(
+	function (a, b) {
+		return {$: 'Text', a: a, b: b};
+	});
 var author$project$Main$AddError = function (a) {
 	return {$: 'AddError', a: a};
 };
@@ -5101,30 +5117,20 @@ var author$project$Main$Standard = F6(
 	function (key, description, name, questions, section, status) {
 		return {description: description, key: key, name: name, questions: questions, section: section, status: status};
 	});
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
+var author$project$Main$Question = F3(
+	function (key, input, unit) {
+		return {input: input, key: key, unit: unit};
 	});
-var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2(elm$core$Basics$composeR, elm$json$Json$Decode$succeed, NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
-var author$project$Main$Question = F4(
-	function (key, input, unit, answer) {
-		return {answer: answer, input: input, key: key, unit: unit};
-	});
-var author$project$Main$File = function (a) {
-	return {$: 'File', a: a};
-};
-var author$project$Main$Multichoice = F2(
-	function (a, b) {
-		return {$: 'Multichoice', a: a, b: b};
-	});
-var author$project$Main$Number = function (a) {
-	return {$: 'Number', a: a};
-};
-var author$project$Main$Text = function (a) {
-	return {$: 'Text', a: a};
-};
 var elm$json$Json$Decode$list = _Json_decodeList;
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$nullable = function (decoder) {
+	return elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				elm$json$Json$Decode$null(elm$core$Maybe$Nothing),
+				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
+			]));
+};
 var author$project$Main$matchInput = function (format) {
 	switch (format) {
 		case 'text':
@@ -5132,13 +5138,21 @@ var author$project$Main$matchInput = function (format) {
 				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 				'prompt',
 				elm$json$Json$Decode$string,
-				elm$json$Json$Decode$succeed(author$project$Main$Text));
+				A3(
+					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'previousAnswer',
+					elm$json$Json$Decode$nullable(elm$json$Json$Decode$string),
+					elm$json$Json$Decode$succeed(author$project$Main$Text)));
 		case 'number':
 			return A3(
 				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 				'prompt',
 				elm$json$Json$Decode$string,
-				elm$json$Json$Decode$succeed(author$project$Main$Number));
+				A3(
+					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'previousAnswer',
+					elm$json$Json$Decode$nullable(elm$json$Json$Decode$int),
+					elm$json$Json$Decode$succeed(author$project$Main$Number)));
 		case 'multichoice':
 			return A3(
 				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
@@ -5148,13 +5162,21 @@ var author$project$Main$matchInput = function (format) {
 					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 					'prompt',
 					elm$json$Json$Decode$string,
-					elm$json$Json$Decode$succeed(author$project$Main$Multichoice)));
+					A3(
+						NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'previousAnswer',
+						elm$json$Json$Decode$nullable(elm$json$Json$Decode$string),
+						elm$json$Json$Decode$succeed(author$project$Main$Multichoice))));
 		case 'file':
 			return A3(
 				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 				'prompt',
 				elm$json$Json$Decode$string,
-				elm$json$Json$Decode$succeed(author$project$Main$File));
+				A3(
+					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'previousAnswer',
+					elm$json$Json$Decode$nullable(elm$json$Json$Decode$string),
+					elm$json$Json$Decode$succeed(author$project$Main$File)));
 		default:
 			return elm$json$Json$Decode$fail('Invalid format: ' + format);
 	}
@@ -5163,22 +5185,19 @@ var author$project$Main$decodeInput = A2(
 	elm$json$Json$Decode$andThen,
 	author$project$Main$matchInput,
 	A2(elm$json$Json$Decode$field, 'format', elm$json$Json$Decode$string));
-var author$project$Main$decodeQuestion = A2(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-	'',
+var author$project$Main$decodeQuestion = A3(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'unit',
+	elm$json$Json$Decode$string,
 	A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'unit',
-		elm$json$Json$Decode$string,
+		'input',
+		author$project$Main$decodeInput,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'input',
-			author$project$Main$decodeInput,
-			A3(
-				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'key',
-				elm$json$Json$Decode$string,
-				elm$json$Json$Decode$succeed(author$project$Main$Question)))));
+			'key',
+			elm$json$Json$Decode$string,
+			elm$json$Json$Decode$succeed(author$project$Main$Question))));
 var author$project$Main$decodeStandard = A4(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'activityStatus',
@@ -5216,6 +5235,32 @@ var author$project$Main$delay = F2(
 			},
 			elm$core$Process$sleep(time));
 	});
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var elm$json$Json$Encode$int = _Json_wrap;
+var elm$json$Json$Encode$null = _Json_encodeNull;
 var elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -5231,15 +5276,36 @@ var elm$json$Json$Encode$object = function (pairs) {
 };
 var elm$json$Json$Encode$string = _Json_wrap;
 var author$project$Main$encodeAnswers = function (questions) {
+	var encodeMaybe = function (encoder) {
+		return A2(
+			elm$core$Basics$composeR,
+			elm$core$Maybe$map(encoder),
+			elm$core$Maybe$withDefault(elm$json$Json$Encode$null));
+	};
+	var getInputAnswer = function (i) {
+		switch (i.$) {
+			case 'Text':
+				var a = i.a;
+				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
+			case 'Number':
+				var a = i.a;
+				return A2(encodeMaybe, elm$json$Json$Encode$int, a);
+			case 'Multichoice':
+				var a = i.a;
+				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
+			default:
+				var a = i.a;
+				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
+		}
+	};
 	var formatAnswer = function (q) {
 		return _Utils_Tuple2(
 			q.key,
-			elm$json$Json$Encode$string(q.answer));
+			getInputAnswer(q.input));
 	};
 	return elm$json$Json$Encode$object(
 		A2(elm$core$List$map, formatAnswer, questions));
 };
-var elm$json$Json$Encode$int = _Json_wrap;
 var author$project$Main$encodeScenario = F2(
 	function (a, p) {
 		return elm$json$Json$Encode$object(
@@ -5297,6 +5363,7 @@ var elm$core$List$drop = F2(
 			}
 		}
 	});
+var elm$core$String$toInt = _String_toInt;
 var elm_community$list_extra$List$Extra$updateIf = F3(
 	function (predicate, update, list) {
 		return A2(
@@ -5386,10 +5453,42 @@ var author$project$Main$update = F2(
 				var standard = msg.a;
 				var question = msg.b;
 				var answer = msg.c;
+				var updateInput = function (i) {
+					switch (i.$) {
+						case 'Text':
+							var p = i.b;
+							return A2(
+								author$project$Main$Text,
+								elm$core$Maybe$Just(answer),
+								p);
+						case 'Number':
+							var p = i.b;
+							return A2(
+								author$project$Main$Number,
+								elm$core$String$toInt(answer),
+								p);
+						case 'Multichoice':
+							var p = i.b;
+							var ops = i.c;
+							return A3(
+								author$project$Main$Multichoice,
+								elm$core$Maybe$Just(answer),
+								p,
+								ops);
+						default:
+							var p = i.b;
+							return A2(
+								author$project$Main$File,
+								elm$core$Maybe$Just(answer),
+								p);
+					}
+				};
 				var updateQuestion = function (q) {
 					return _Utils_update(
 						q,
-						{answer: answer});
+						{
+							input: updateInput(q.input)
+						});
 				};
 				var updateStandard = function (s) {
 					return _Utils_update(
@@ -5417,11 +5516,11 @@ var author$project$Main$update = F2(
 						{standards: newStandards}),
 					elm$core$Platform$Cmd$none);
 			default:
-				var _n3 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
-				if (_n3.a.$ === 'Just') {
-					if (_n3.b.$ === 'Just') {
-						var a = _n3.a.a;
-						var p = _n3.b.a;
+				var _n4 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
+				if (_n4.a.$ === 'Just') {
+					if (_n4.b.$ === 'Just') {
+						var a = _n4.a.a;
+						var p = _n4.b.a;
 						var allQuestions = A3(
 							elm$core$List$foldl,
 							F2(
@@ -5435,22 +5534,22 @@ var author$project$Main$update = F2(
 							author$project$Main$askRubric(
 								A3(author$project$Main$encodePayload, a, p, allQuestions)));
 					} else {
-						var a = _n3.a.a;
-						var _n5 = _n3.b;
+						var a = _n4.a.a;
+						var _n6 = _n4.b;
 						return _Utils_Tuple2(
 							model,
 							author$project$Main$addError('You need to select a property first!'));
 					}
 				} else {
-					if (_n3.b.$ === 'Just') {
-						var _n4 = _n3.a;
-						var p = _n3.b.a;
+					if (_n4.b.$ === 'Just') {
+						var _n5 = _n4.a;
+						var p = _n4.b.a;
 						return _Utils_Tuple2(
 							model,
 							author$project$Main$addError('You need to select an activity first!'));
 					} else {
-						var _n6 = _n3.a;
-						var _n7 = _n3.b;
+						var _n7 = _n4.a;
+						var _n8 = _n4.b;
 						return _Utils_Tuple2(
 							model,
 							author$project$Main$addError('You need to select a property and an activity first!'));
@@ -5466,7 +5565,6 @@ var author$project$Main$InputAnswer = F3(
 var author$project$Main$SelectActivity = function (a) {
 	return {$: 'SelectActivity', a: a};
 };
-var elm$json$Json$Decode$map = _Json_map1;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
 		case 'Normal':
@@ -6175,7 +6273,6 @@ var marcosh$elm_html_to_unicode$ElmEscapeHtml$convertFriendlyCode = A2(
 		return _List_fromArray(
 			[_char]);
 	});
-var elm$core$String$toInt = _String_toInt;
 var marcosh$elm_html_to_unicode$ElmEscapeHtml$convertDecimalCode = A2(
 	marcosh$elm_html_to_unicode$ElmEscapeHtml$convertCode,
 	elm$core$String$toInt,
@@ -6481,7 +6578,8 @@ var author$project$Main$renderContent = function (model) {
 			var _n0 = q.input;
 			switch (_n0.$) {
 				case 'Text':
-					var p = _n0.a;
+					var a = _n0.a;
+					var p = _n0.b;
 					return A2(
 						elm$html$Html$div,
 						_List_fromArray(
@@ -6507,14 +6605,16 @@ var author$project$Main$renderContent = function (model) {
 									[
 										elm$html$Html$Attributes$id(q.key),
 										elm$html$Html$Attributes$type_('text'),
-										elm$html$Html$Attributes$value(q.answer),
+										elm$html$Html$Attributes$value(
+										A2(elm$core$Maybe$withDefault, '', a)),
 										elm$html$Html$Events$onInput(
 										A2(author$project$Main$InputAnswer, s, q))
 									]),
 								_List_Nil)
 							]));
 				case 'Number':
-					var p = _n0.a;
+					var a = _n0.a;
+					var p = _n0.b;
 					return A2(
 						elm$html$Html$div,
 						_List_fromArray(
@@ -6540,15 +6640,21 @@ var author$project$Main$renderContent = function (model) {
 									[
 										elm$html$Html$Attributes$id(q.key),
 										elm$html$Html$Attributes$type_('number'),
-										elm$html$Html$Attributes$value(q.answer),
+										elm$html$Html$Attributes$value(
+										A3(
+											elm$core$Basics$composeR,
+											elm$core$Maybe$map(elm$core$String$fromInt),
+											elm$core$Maybe$withDefault(''),
+											a)),
 										elm$html$Html$Events$onInput(
 										A2(author$project$Main$InputAnswer, s, q))
 									]),
 								_List_Nil)
 							]));
 				case 'Multichoice':
-					var p = _n0.a;
-					var ops = _n0.b;
+					var a = _n0.a;
+					var p = _n0.b;
+					var ops = _n0.c;
 					return A2(
 						elm$html$Html$div,
 						_List_fromArray(
@@ -6574,14 +6680,16 @@ var author$project$Main$renderContent = function (model) {
 									[
 										elm$html$Html$Attributes$id(q.key),
 										elm$html$Html$Attributes$type_('text'),
-										elm$html$Html$Attributes$value(q.answer),
+										elm$html$Html$Attributes$value(
+										A2(elm$core$Maybe$withDefault, '', a)),
 										elm$html$Html$Events$onInput(
 										A2(author$project$Main$InputAnswer, s, q))
 									]),
 								_List_Nil)
 							]));
 				default:
-					var p = _n0.a;
+					var a = _n0.a;
+					var p = _n0.b;
 					return A2(
 						elm$html$Html$div,
 						_List_fromArray(
@@ -6607,7 +6715,8 @@ var author$project$Main$renderContent = function (model) {
 									[
 										elm$html$Html$Attributes$id(q.key),
 										elm$html$Html$Attributes$type_('file'),
-										elm$html$Html$Attributes$value(q.answer),
+										elm$html$Html$Attributes$value(
+										A2(elm$core$Maybe$withDefault, '', a)),
 										elm$html$Html$Events$onInput(
 										A2(author$project$Main$InputAnswer, s, q))
 									]),

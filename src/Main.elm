@@ -8,7 +8,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode as Decode exposing (Decoder, float, int, nullable, string)
-import Json.Decode.Pipeline exposing (hardcoded, optional, required)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required, requiredAt)
 import Json.Encode as Encode
 import List.Extra as ListX
 import Process
@@ -61,15 +61,14 @@ type alias Question =
     { key : String
     , input : Input
     , unit : String
-    , answer : String
     }
 
 
 type Input
-    = Text String
-    | Number String
-    | Multichoice String (List String)
-    | File String
+    = Text (Maybe String) String
+    | Number (Maybe Int) String
+    | Multichoice (Maybe String) String (List String)
+    | File (Maybe String) String
 
 
 type Status
@@ -154,8 +153,23 @@ update msg model =
 
         InputAnswer standard question answer ->
             let
+                -- oof ouch elm
+                updateInput i =
+                    case i of
+                        Text _ p ->
+                            Text (Just answer) p
+
+                        Number _ p ->
+                            Number (String.toInt answer) p
+
+                        Multichoice _ p ops ->
+                            Multichoice (Just answer) p ops
+
+                        File _ p ->
+                            File (Just answer) p
+
                 updateQuestion q =
-                    { q | answer = answer }
+                    { q | input = updateInput q.input }
 
                 updateStandard s =
                     { s | questions = ListX.updateIf (\q -> q.key == question.key) updateQuestion s.questions }
@@ -220,7 +234,24 @@ encodeAnswers : List Question -> Encode.Value
 encodeAnswers questions =
     let
         formatAnswer q =
-            ( q.key, Encode.string q.answer )
+            ( q.key, getInputAnswer q.input )
+
+        encodeMaybe encoder =
+            Maybe.map encoder >> Maybe.withDefault Encode.null
+
+        getInputAnswer i =
+            case i of
+                Text a _ ->
+                    encodeMaybe Encode.string a
+
+                Number a _ ->
+                    encodeMaybe Encode.int a
+
+                Multichoice a _ _ ->
+                    encodeMaybe Encode.string a
+
+                File a _ ->
+                    encodeMaybe Encode.string a
     in
     List.map formatAnswer questions
         |> Encode.object
@@ -263,7 +294,6 @@ decodeQuestion =
         |> required "key" string
         |> required "input" decodeInput
         |> required "unit" string
-        |> hardcoded ""
 
 
 decodeInput : Decode.Decoder Input
@@ -277,19 +307,23 @@ matchInput format =
     case format of
         "text" ->
             Decode.succeed Text
+                |> required "previousAnswer" (nullable string)
                 |> required "prompt" string
 
         "number" ->
             Decode.succeed Number
+                |> required "previousAnswer" (nullable int)
                 |> required "prompt" string
 
         "multichoice" ->
             Decode.succeed Multichoice
+                |> required "previousAnswer" (nullable string)
                 |> required "prompt" string
                 |> required "options" (Decode.list string)
 
         "file" ->
             Decode.succeed File
+                |> required "previousAnswer" (nullable string)
                 |> required "prompt" string
 
         _ ->
@@ -390,28 +424,52 @@ renderContent model =
 
         displayQuestion s q =
             case q.input of
-                Text p ->
+                Text a p ->
                     div [ class "question" ]
                         [ label [ for q.key ] [ text <| unescape p ]
-                        , input [ id q.key, type_ "text", value q.answer, onInput (InputAnswer s q) ] []
+                        , input
+                            [ id q.key
+                            , type_ "text"
+                            , value <| Maybe.withDefault "" a
+                            , onInput (InputAnswer s q)
+                            ]
+                            []
                         ]
 
-                Number p ->
+                Number a p ->
                     div [ class "question" ]
                         [ label [ for q.key ] [ text <| unescape p ]
-                        , input [ id q.key, type_ "number", value q.answer, onInput (InputAnswer s q) ] []
+                        , input
+                            [ id q.key
+                            , type_ "number"
+                            , value <| Maybe.map String.fromInt >> Maybe.withDefault "" <| a
+                            , onInput (InputAnswer s q)
+                            ]
+                            []
                         ]
 
-                Multichoice p ops ->
+                Multichoice a p ops ->
                     div [ class "question" ]
                         [ label [ for q.key ] [ text <| unescape p ]
-                        , input [ id q.key, type_ "text", value q.answer, onInput (InputAnswer s q) ] []
+                        , input
+                            [ id q.key
+                            , type_ "text"
+                            , value <| Maybe.withDefault "" a
+                            , onInput (InputAnswer s q)
+                            ]
+                            []
                         ]
 
-                File p ->
+                File a p ->
                     div [ class "question" ]
                         [ label [ for q.key ] [ text <| unescape p ]
-                        , input [ id q.key, type_ "file", value q.answer, onInput (InputAnswer s q) ] []
+                        , input
+                            [ id q.key
+                            , type_ "file"
+                            , value <| Maybe.withDefault "" a
+                            , onInput (InputAnswer s q)
+                            ]
+                            []
                         ]
 
         submitButton =
