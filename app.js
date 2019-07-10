@@ -5607,14 +5607,6 @@ var elm$virtual_dom$VirtualDom$attribute = F2(
 			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
 var elm$html$Html$Attributes$attribute = elm$virtual_dom$VirtualDom$attribute;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
-var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$json$Json$Encode$bool = _Json_wrap;
 var elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
@@ -5623,10 +5615,20 @@ var elm$html$Html$Attributes$boolProperty = F2(
 			key,
 			elm$json$Json$Encode$bool(bool));
 	});
+var elm$html$Html$Attributes$checked = elm$html$Html$Attributes$boolProperty('checked');
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
 var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
 var elm$html$Html$Attributes$hidden = elm$html$Html$Attributes$boolProperty('hidden');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+var elm$html$Html$Attributes$name = elm$html$Html$Attributes$stringProperty('name');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
 var elm$html$Html$Attributes$readonly = elm$html$Html$Attributes$boolProperty('readOnly');
 var elm$html$Html$Attributes$selected = elm$html$Html$Attributes$boolProperty('selected');
@@ -6666,6 +6668,43 @@ var author$project$Main$renderContent = function (model) {
 					var a = _n0.a;
 					var p = _n0.b;
 					var ops = _n0.c;
+					var radioButton = function (o) {
+						return A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('radio-button')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$input,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$name(q.key),
+											elm$html$Html$Attributes$type_('radio'),
+											elm$html$Html$Attributes$value(o),
+											elm$html$Html$Attributes$id(o),
+											elm$html$Html$Events$onInput(
+											A2(author$project$Main$InputAnswer, s, q)),
+											elm$html$Html$Attributes$checked(
+											_Utils_eq(
+												a,
+												elm$core$Maybe$Just(o)))
+										]),
+									_List_Nil),
+									A2(
+									elm$html$Html$label,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$for(o)
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(o)
+										]))
+								]));
+					};
 					return A2(
 						elm$html$Html$div,
 						_List_fromArray(
@@ -6676,27 +6715,19 @@ var author$project$Main$renderContent = function (model) {
 							[
 								A2(
 								elm$html$Html$label,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$for(q.key)
-									]),
+								_List_Nil,
 								_List_fromArray(
 									[
 										elm$html$Html$text(
 										marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(p))
 									])),
 								A2(
-								elm$html$Html$input,
+								elm$html$Html$div,
 								_List_fromArray(
 									[
-										elm$html$Html$Attributes$id(q.key),
-										elm$html$Html$Attributes$type_('text'),
-										elm$html$Html$Attributes$value(
-										A2(elm$core$Maybe$withDefault, '', a)),
-										elm$html$Html$Events$onInput(
-										A2(author$project$Main$InputAnswer, s, q))
+										elm$html$Html$Attributes$class('radio-buttons')
 									]),
-								_List_Nil)
+								A2(elm$core$List$map, radioButton, ops))
 							]));
 				default:
 					var a = _n0.a;

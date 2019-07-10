@@ -452,15 +452,24 @@ renderContent model =
                         ]
 
                 Multichoice a p ops ->
+                    let
+                        radioButton o =
+                            div [ class "radio-button" ]
+                                [ input
+                                    [ name q.key
+                                    , type_ "radio"
+                                    , value o
+                                    , id o
+                                    , onInput (InputAnswer s q)
+                                    , checked (a == Just o)
+                                    ]
+                                    []
+                                , label [ for o ] [ text o ]
+                                ]
+                    in
                     div [ class "question" ]
-                        [ label [ for q.key ] [ text <| unescape p ]
-                        , input
-                            [ id q.key
-                            , type_ "text"
-                            , value <| Maybe.withDefault "" a
-                            , onInput (InputAnswer s q)
-                            ]
-                            []
+                        [ label [] [ text <| unescape p ]
+                        , div [ class "radio-buttons" ] (List.map radioButton ops)
                         ]
 
                 File a p ->

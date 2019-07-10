@@ -123,6 +123,11 @@ input[type="submit"]:hover {
   color: #fff;
 }
 
+input[type="radio"] {
+  width: auto;
+  height: 20px;
+}
+
 label {
   margin: 0.5rem 0;
 }
@@ -172,4 +177,22 @@ section {
   position: absolute;
   bottom: 1rem;
   font-size: 0.8rem;
+}
+
+.radio-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.radio-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.radio-button label {
+  width: 100%;
+  padding-left: 10px;
 }
