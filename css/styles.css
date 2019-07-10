@@ -173,10 +173,11 @@ section {
   width: 100%;
 }
 
-.status {
-  position: absolute;
-  bottom: 1rem;
+.disclaimer {
   font-size: 0.8rem;
+  margin: 10px 0;
+  padding: 5px;
+  border: 1px solid #fff;
 }
 
 .radio-buttons {
@@ -195,4 +196,33 @@ section {
 .radio-button label {
   width: 100%;
   padding-left: 10px;
+}
+
+.status {
+  float: right;
+  font-size: 0.6rem;
+  color: #fff;
+  text-transform: uppercase;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.status[data-status="Controlled"] {
+  background-color: #df5017;
+}
+
+.status[data-status="Discretionary Restricted"] {
+  background-color: #0066cc;
+}
+
+.status[data-status="Discretionary Unrestricted"] {
+  background-color: #0066cc;
+}
+
+.status[data-status="Non-compliant"] {
+  background-color: #ca173b;
+}
+
+.status[data-status="Permitted"] {
+  background-color: #75be4b;
 }

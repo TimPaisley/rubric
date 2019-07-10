@@ -5206,11 +5206,36 @@ var author$project$Main$decodeQuestion = A3(
 			'key',
 			elm$json$Json$Decode$string,
 			elm$json$Json$Decode$succeed(author$project$Main$Question))));
+var author$project$Main$Controlled = {$: 'Controlled'};
+var author$project$Main$DiscretionaryRestricted = {$: 'DiscretionaryRestricted'};
+var author$project$Main$DiscretionaryUnrestricted = {$: 'DiscretionaryUnrestricted'};
+var author$project$Main$NonCompliant = {$: 'NonCompliant'};
+var author$project$Main$Permitted = {$: 'Permitted'};
+var author$project$Main$decodeStatus = A2(
+	elm$json$Json$Decode$andThen,
+	function (status) {
+		switch (status) {
+			case 'Controlled':
+				return elm$json$Json$Decode$succeed(author$project$Main$Controlled);
+			case 'Discretionary Restricted':
+				return elm$json$Json$Decode$succeed(author$project$Main$DiscretionaryRestricted);
+			case 'Discretionary Unrestricted':
+				return elm$json$Json$Decode$succeed(author$project$Main$DiscretionaryUnrestricted);
+			case 'Non-complying':
+				return elm$json$Json$Decode$succeed(author$project$Main$NonCompliant);
+			case 'Permitted':
+				return elm$json$Json$Decode$succeed(author$project$Main$Permitted);
+			default:
+				var unknown = status;
+				return elm$json$Json$Decode$fail('Unknown status: ' + unknown);
+		}
+	},
+	elm$json$Json$Decode$string);
 var author$project$Main$decodeStandard = A4(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'activityStatus',
-	elm$json$Json$Decode$string,
-	'Unknown',
+	author$project$Main$decodeStatus,
+	author$project$Main$Unknown,
 	A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 		'section',
@@ -5576,6 +5601,22 @@ var author$project$Main$InputAnswer = F3(
 var author$project$Main$SelectActivity = function (a) {
 	return {$: 'SelectActivity', a: a};
 };
+var author$project$Main$statusToString = function (status) {
+	switch (status.$) {
+		case 'Controlled':
+			return 'Controlled';
+		case 'DiscretionaryRestricted':
+			return 'Discretionary Restricted';
+		case 'DiscretionaryUnrestricted':
+			return 'Discretionary Unrestricted';
+		case 'NonCompliant':
+			return 'Non-compliant';
+		case 'Permitted':
+			return 'Permitted';
+		default:
+			return 'Status Unknown';
+	}
+};
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
 		case 'Normal':
@@ -5596,6 +5637,7 @@ var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
 var elm$html$Html$option = _VirtualDom_node('option');
 var elm$html$Html$select = _VirtualDom_node('select');
+var elm$html$Html$span = _VirtualDom_node('span');
 var elm$html$Html$summary = _VirtualDom_node('summary');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
@@ -6784,7 +6826,22 @@ var author$project$Main$renderContent = function (model) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text(s.name + (' [Status: ' + (s.status + ']')))
+								elm$html$Html$text(s.name),
+								A2(
+								elm$html$Html$span,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('status'),
+										A2(
+										elm$html$Html$Attributes$attribute,
+										'data-status',
+										author$project$Main$statusToString(s.status))
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										author$project$Main$statusToString(s.status))
+									]))
 							])),
 						A2(
 						elm$html$Html$div,
@@ -6890,32 +6947,6 @@ var elm$html$Html$Attributes$href = function (url) {
 };
 var author$project$Main$renderSidebar = F2(
 	function (standards, status) {
-		var statusToString = function () {
-			switch (status.$) {
-				case 'Permitted':
-					return 'Permitted';
-				case 'Controlled':
-					return 'Controlled';
-				case 'DiscretionaryRestricted':
-					return 'Discretionary Restricted';
-				case 'DiscretionaryUnrestricted':
-					return 'Discretionary Unrestricted';
-				case 'NonCompliant':
-					return 'Non-compliant';
-				default:
-					return 'Status unknown: You\'ll need to provide more information.';
-			}
-		}();
-		var statusBox = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('status')
-				]),
-			_List_fromArray(
-				[
-					elm$html$Html$text(statusToString)
-				]));
 		var sectionButton = F2(
 			function (i, s) {
 				return A2(
@@ -6931,6 +6962,16 @@ var author$project$Main$renderSidebar = F2(
 							elm$html$Html$text(s.name)
 						]));
 			});
+		var disclaimer = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('disclaimer')
+				]),
+			_List_fromArray(
+				[
+					elm$html$Html$text('This tool is only intended to give an indication of District Plan compliance.')
+				]));
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -6956,14 +6997,14 @@ var author$project$Main$renderSidebar = F2(
 						[
 							elm$html$Html$text('A Proof of Concept')
 						])),
+					disclaimer,
 					A2(
 					elm$html$Html$div,
 					_List_fromArray(
 						[
 							elm$html$Html$Attributes$class('standards')
 						]),
-					A2(elm$core$List$indexedMap, sectionButton, standards)),
-					statusBox
+					A2(elm$core$List$indexedMap, sectionButton, standards))
 				]));
 	});
 var author$project$Main$view = function (model) {

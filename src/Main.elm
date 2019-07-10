@@ -54,7 +54,7 @@ type alias Standard =
     , name : String
     , questions : List Question
     , section : String
-    , status : String
+    , status : Status
     }
 
 
@@ -288,7 +288,7 @@ decodeStandard =
         |> required "name" string
         |> required "questions" (Decode.list decodeQuestion)
         |> required "section" string
-        |> optional "activityStatus" string "Unknown"
+        |> optional "activityStatus" decodeStatus Unknown
 
 
 decodeQuestion : Decode.Decoder Question
@@ -333,6 +333,32 @@ matchInput format =
             Decode.fail ("Invalid format: " ++ format)
 
 
+decodeStatus : Decode.Decoder Status
+decodeStatus =
+    Decode.string
+        |> Decode.andThen
+            (\status ->
+                case status of
+                    "Controlled" ->
+                        Decode.succeed Controlled
+
+                    "Discretionary Restricted" ->
+                        Decode.succeed DiscretionaryRestricted
+
+                    "Discretionary Unrestricted" ->
+                        Decode.succeed DiscretionaryUnrestricted
+
+                    "Non-complying" ->
+                        Decode.succeed NonCompliant
+
+                    "Permitted" ->
+                        Decode.succeed Permitted
+
+                    unknown ->
+                        Decode.fail <| "Unknown status: " ++ unknown
+            )
+
+
 
 -- VIEW
 
@@ -357,35 +383,16 @@ renderSidebar standards status =
             a [ class "standard", href <| "#standard-" ++ String.fromInt i ]
                 [ text s.name ]
 
-        statusToString =
-            case status of
-                Permitted ->
-                    "Permitted"
-
-                Controlled ->
-                    "Controlled"
-
-                DiscretionaryRestricted ->
-                    "Discretionary Restricted"
-
-                DiscretionaryUnrestricted ->
-                    "Discretionary Unrestricted"
-
-                NonCompliant ->
-                    "Non-compliant"
-
-                Unknown ->
-                    "Status unknown: You'll need to provide more information."
-
-        statusBox =
-            div [ class "status" ] [ text statusToString ]
+        disclaimer =
+            div [ class "disclaimer" ]
+                [ text "This tool is only intended to give an indication of District Plan compliance." ]
     in
     div [ id "sidebar" ]
         [ h1 [] [ text "RuBRIC" ]
         , h3 [ class "subtitle" ] [ text "A Proof of Concept" ]
+        , disclaimer
         , div [ class "standards" ] <|
             List.indexedMap sectionButton standards
-        , statusBox
         ]
 
 
@@ -420,7 +427,12 @@ renderContent model =
 
         displayStandards i s =
             details [ class "standards", id <| "standards-" ++ String.fromInt i, attribute "open" "true" ]
-                [ summary [] [ text <| s.name ++ " [Status: " ++ s.status ++ "]" ]
+                [ summary []
+                    [ text s.name
+                    , span
+                        [ class "status", attribute "data-status" (statusToString s.status) ]
+                        [ text <| statusToString s.status ]
+                    ]
                 , div [ class "questions" ] <|
                     List.map (displayQuestion s) s.questions
                 ]
@@ -535,3 +547,26 @@ delay : Float -> msg -> Cmd msg
 delay time msg =
     Process.sleep time
         |> Task.perform (\_ -> msg)
+
+
+statusToString : Status -> String
+statusToString status =
+    case status of
+        Controlled ->
+            "Controlled"
+
+        -- orange
+        DiscretionaryRestricted ->
+            "Discretionary Restricted"
+
+        DiscretionaryUnrestricted ->
+            "Discretionary Unrestricted"
+
+        NonCompliant ->
+            "Non-compliant"
+
+        Permitted ->
+            "Permitted"
+
+        Unknown ->
+            "Status Unknown"
