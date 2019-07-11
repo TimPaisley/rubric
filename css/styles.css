@@ -169,6 +169,7 @@ summary {
   font-size: 1.2rem;
   outline: none;
   cursor: pointer;
+  user-select: none;
 }
 
 summary:hover {

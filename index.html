@@ -25,7 +25,7 @@
     <script>
       var app = Elm.Main.init({
         node: document.getElementById("elm"),
-        flags: Object.values(rubric.Types.activity)
+        flags: Object.values(Rubric.Types.activity)
       });
 
       require([
@@ -57,6 +57,7 @@
             "http://gis.wcc.govt.nz/arcgis/services/Imagery/Imagery2017/ImageServer/WMSServer"
         });
 
+        // since this layer isn't added to the map, we need to "sideload" it
         wms.load();
 
         referenceLayers = [
@@ -201,7 +202,7 @@
             app.ports.receiveStandards.send(engine.standards);
           });
         } else {
-          engine = new rubric.Engine({ fields: data.scenario });
+          engine = new Rubric({ fields: data.scenario });
           app.ports.receiveStandards.send(engine.standards);
         }
       });
