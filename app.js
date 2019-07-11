@@ -5059,7 +5059,9 @@ var author$project$Main$Property = function (fullAddress) {
 								return function (zone) {
 									return function (specialResidentialArea) {
 										return function (hazardFaultLineArea) {
-											return {fullAddress: fullAddress, hazardFaultLineArea: hazardFaultLineArea, postCode: postCode, specialResidentialArea: specialResidentialArea, streetName: streetName, streetNumber: streetNumber, suburb: suburb, title: title, valuationId: valuationId, valuationWufi: valuationWufi, zone: zone};
+											return function (imageUrl) {
+												return {fullAddress: fullAddress, hazardFaultLineArea: hazardFaultLineArea, imageUrl: imageUrl, postCode: postCode, specialResidentialArea: specialResidentialArea, streetName: streetName, streetNumber: streetNumber, suburb: suburb, title: title, valuationId: valuationId, valuationWufi: valuationWufi, zone: zone};
+											};
 										};
 									};
 								};
@@ -5073,54 +5075,58 @@ var author$project$Main$Property = function (fullAddress) {
 };
 var elm$json$Json$Decode$int = _Json_decodeInt;
 var elm$json$Json$Decode$string = _Json_decodeString;
-var author$project$Main$decodeProperty = A4(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'hazardFaultLineArea',
+var author$project$Main$decodeProperty = A3(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'imageUrl',
 	elm$json$Json$Decode$string,
-	'',
 	A4(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'specialResidentialArea',
+		'hazardFaultLineArea',
 		elm$json$Json$Decode$string,
 		'',
-		A3(
-			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'zone',
+		A4(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'specialResidentialArea',
 			elm$json$Json$Decode$string,
+			'',
 			A3(
 				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'valuationWufi',
-				elm$json$Json$Decode$int,
+				'zone',
+				elm$json$Json$Decode$string,
 				A3(
 					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'valuationId',
-					elm$json$Json$Decode$string,
-					A4(
-						NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-						'title',
+					'valuationWufi',
+					elm$json$Json$Decode$int,
+					A3(
+						NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'valuationId',
 						elm$json$Json$Decode$string,
-						'No Associated Title',
-						A3(
-							NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'postCode',
+						A4(
+							NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+							'title',
 							elm$json$Json$Decode$string,
+							'No Associated Title',
 							A3(
 								NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'suburb',
+								'postCode',
 								elm$json$Json$Decode$string,
 								A3(
 									NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-									'streetName',
+									'suburb',
 									elm$json$Json$Decode$string,
 									A3(
 										NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-										'streetNumber',
+										'streetName',
 										elm$json$Json$Decode$string,
 										A3(
 											NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-											'fullAddress',
+											'streetNumber',
 											elm$json$Json$Decode$string,
-											elm$json$Json$Decode$succeed(author$project$Main$Property))))))))))));
+											A3(
+												NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+												'fullAddress',
+												elm$json$Json$Decode$string,
+												elm$json$Json$Decode$succeed(author$project$Main$Property)))))))))))));
 var author$project$Main$Standard = F6(
 	function (key, description, name, questions, section, status) {
 		return {description: description, key: key, name: name, questions: questions, section: section, status: status};
@@ -6939,14 +6945,21 @@ var author$project$Main$renderContent = function (model) {
 };
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$h3 = _VirtualDom_node('h3');
+var elm$html$Html$img = _VirtualDom_node('img');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
 		'href',
 		_VirtualDom_noJavaScriptUri(url));
 };
-var author$project$Main$renderSidebar = F2(
-	function (standards, status) {
+var elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var author$project$Main$renderSidebar = F3(
+	function (standards, status, prop) {
 		var sectionButton = F2(
 			function (i, s) {
 				return A2(
@@ -6962,6 +6975,20 @@ var author$project$Main$renderSidebar = F2(
 							elm$html$Html$text(s.name)
 						]));
 			});
+		var image = function () {
+			if (prop.$ === 'Just') {
+				var p = prop.a;
+				return A2(
+					elm$html$Html$img,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$src(p.imageUrl)
+						]),
+					_List_Nil);
+			} else {
+				return A2(elm$html$Html$img, _List_Nil, _List_Nil);
+			}
+		}();
 		var disclaimer = A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -7004,7 +7031,8 @@ var author$project$Main$renderSidebar = F2(
 						[
 							elm$html$Html$Attributes$class('standards')
 						]),
-					A2(elm$core$List$indexedMap, sectionButton, standards))
+					A2(elm$core$List$indexedMap, sectionButton, standards)),
+					image
 				]));
 	});
 var author$project$Main$view = function (model) {
@@ -7035,7 +7063,7 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$Attributes$class('errors')
 					]),
 				A2(elm$core$List$map, errorMessage, model.errors)),
-				A2(author$project$Main$renderSidebar, model.standards, model.status),
+				A3(author$project$Main$renderSidebar, model.standards, model.status, model.selectedProperty),
 				author$project$Main$renderContent(model)
 			]));
 };

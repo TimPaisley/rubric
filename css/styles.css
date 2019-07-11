@@ -31,6 +31,12 @@ body {
   height: 100%;
   width: 240px;
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+#sidebar img {
+  width: 100%;
 }
 
 #content {
@@ -61,6 +67,7 @@ h1 {
 .standards {
   margin-top: 1rem;
   font-size: 0.8rem;
+  flex: 1;
   display: flex;
   flex-direction: column;
 }

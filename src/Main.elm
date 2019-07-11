@@ -45,6 +45,7 @@ type alias Property =
     , zone : String
     , specialResidentialArea : String
     , hazardFaultLineArea : String
+    , imageUrl : String
     }
 
 
@@ -273,6 +274,7 @@ decodeProperty =
         |> required "zone" string
         |> optional "specialResidentialArea" string ""
         |> optional "hazardFaultLineArea" string ""
+        |> required "imageUrl" string
 
 
 decodeStandards : Decode.Decoder (List Standard)
@@ -371,13 +373,13 @@ view model =
     in
     div [ id "container" ]
         [ div [ class "errors" ] (List.map errorMessage model.errors)
-        , renderSidebar model.standards model.status
+        , renderSidebar model.standards model.status model.selectedProperty
         , renderContent model
         ]
 
 
-renderSidebar : List Standard -> Status -> Html msg
-renderSidebar standards status =
+renderSidebar : List Standard -> Status -> Maybe Property -> Html msg
+renderSidebar standards status prop =
     let
         sectionButton i s =
             a [ class "standard", href <| "#standard-" ++ String.fromInt i ]
@@ -386,6 +388,14 @@ renderSidebar standards status =
         disclaimer =
             div [ class "disclaimer" ]
                 [ text "This tool is only intended to give an indication of District Plan compliance." ]
+
+        image =
+            case prop of
+                Just p ->
+                    img [ src p.imageUrl ] []
+
+                Nothing ->
+                    img [] []
     in
     div [ id "sidebar" ]
         [ h1 [] [ text "RuBRIC" ]
@@ -393,6 +403,7 @@ renderSidebar standards status =
         , disclaimer
         , div [ class "standards" ] <|
             List.indexedMap sectionButton standards
+        , image
         ]
 
 

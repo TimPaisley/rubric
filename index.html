@@ -32,14 +32,32 @@
         "esri/Map",
         "esri/views/MapView",
         "esri/layers/FeatureLayer",
+        "esri/layers/ImageryLayer",
+        "esri/layers/WMSLayer",
         "esri/widgets/Search",
         "esri/tasks/support/Query",
         "esri/tasks/QueryTask"
-      ], function(Map, MapView, FeatureLayer, Search, Query, QueryTask) {
+      ], function(
+        Map,
+        MapView,
+        FeatureLayer,
+        ImageryLayer,
+        WMSLayer,
+        Search,
+        Query,
+        QueryTask
+      ) {
         const layer = new FeatureLayer({
           url:
             "https://gis.wcc.govt.nz/arcgis/rest/services/PropertyAndBoundaries/Property/MapServer"
         });
+
+        wms = new WMSLayer({
+          url:
+            "http://gis.wcc.govt.nz/arcgis/services/Imagery/Imagery2017/ImageServer/WMSServer"
+        });
+
+        wms.load();
 
         referenceLayers = [
           {
@@ -112,11 +130,22 @@
           suburb: "Wellington Central",
           title: "724107",
           valuationId: "17270-11800",
-          valuationWufi: 1921748
+          valuationWufi: 1921748,
+          imageUrl:
+            "http://gis.wcc.govt.nz/arcgis/services/Imagery/Imagery2017/ImageServer/WMSServer?width=300&height=300&bbox=19456000.33%2C-5055336.81%2C19456337.49%2C-5054883.31&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=true&version=1.3.0&crs=EPSG%3A3857&layers=0"
         });
 
         searchWidget.on("select-result", function(event) {
           var attributes = event.result.feature.attributes;
+
+          var prefix =
+            "http://gis.wcc.govt.nz/arcgis/services/Imagery/Imagery2017/ImageServer/WMSServer?width=300&height=300&bbox=";
+          var extent = event.result.feature.geometry.extent;
+          var bbox = [extent.xmin, extent.ymin, extent.xmax, extent.ymax].join(
+            "%2C"
+          );
+          var postfix =
+            "&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=true&version=1.3.0&crs=EPSG%3A3857&layers=0";
 
           var property = {
             fullAddress: attributes.FullAddress,
@@ -126,7 +155,8 @@
             postCode: attributes.PostCode,
             title: attributes.Title,
             valuationId: attributes.ValuationID,
-            valuationWufi: attributes.ValuationWUFI
+            valuationWufi: attributes.ValuationWUFI,
+            imageUrl: prefix + bbox + postfix
           };
 
           promises = [];
@@ -147,14 +177,15 @@
           });
 
           Promise.all(promises).then(res => {
-            console.log(res);
-
             referenceLayers.forEach(({ name, field }, i) => {
-              if (res[i].features[0]) {
+              if (res[i].src) {
+                property["image"] = res.src;
+              } else if (res[i].features[0]) {
                 property[name] = res[i].features[0].attributes[field];
               }
             });
 
+            console.log(property);
             app.ports.selectMapProperty.send(property);
           });
         });
