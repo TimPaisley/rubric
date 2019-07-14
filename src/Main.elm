@@ -369,120 +369,142 @@ view : Model -> Html Msg
 view model =
     let
         errorMessage e =
-            div [ class "error-message" ] [ text e ]
+            div [ class "alert alert-danger alert-dismissible", attribute "role" "alert" ]
+                [ strong [] [ text "An error occurred: " ]
+                , text e
+                , button [ type_ "button", class "close", attribute "data-dismiss" "alert", attribute "aria-label" "Close" ]
+                    [ span [ attribute "aria-hidden" "true" ] [ text "×" ] ]
+                ]
+
+        hero =
+            div [ class "py-5 text-center" ]
+                [ img [ class "d-block mx-auto mb-4", src "logo.png", width 72, height 72 ] []
+                , h2 [] [ text "Submit a Building Consent Application" ]
+                , p [ class "lead" ]
+                    [ text
+                        """
+                        This tool is only intended to give an indication of District Plan compliance.
+                        The results given by this tool are only an indication,
+                        and must be verified by a council officer.
+                        """
+                    ]
+                ]
     in
-    div [ id "container" ]
-        [ div [ class "errors" ] (List.map errorMessage model.errors)
-        , renderSidebar model.standards model.status model.selectedProperty
-        , renderContent model
+    div [ class "container" ]
+        [ hero
+        , div [ class "errors" ] (List.map errorMessage model.errors)
+        , div [ class "row mb-5" ]
+            [ renderSidebar model.standards model.status model.selectedProperty
+            , renderContent model
+            ]
         ]
 
 
 renderSidebar : List Standard -> Status -> Maybe Property -> Html msg
 renderSidebar standards status prop =
     let
-        sectionButton i s =
-            a [ class "standard", href <| "#standard-" ++ String.fromInt i ]
-                [ text s.name ]
+        listItem i s =
+            let
+                statusClass =
+                    "list-group-item-" ++ statusToClass s.status
+            in
+            a
+                [ class <| "list-group-item list-group-item-action d-flex justify-content-between lh-condensed " ++ statusClass
+                , href <| "#standard-" ++ String.fromInt i
+                ]
+                [ h6 [ class "my-0" ] [ text s.name ]
+                , small [ class "text-muted" ] [ text <| statusToString s.status ]
+                ]
 
-        disclaimer =
-            div [ class "disclaimer" ]
-                [ text "This tool is only intended to give an indication of District Plan compliance." ]
+        scenario =
+            a [ class "list-group-item list-group-item-action d-flex justify-content-between lh-condensed", href "#scenario" ]
+                [ h6 [ class "my-0" ] [ text "Scenario" ]
+                , small [ class "text-muted" ] [ text "Required" ]
+                ]
 
-        image =
-            case prop of
-                Just p ->
-                    img [ src p.imageUrl ] []
+        standardList =
+            scenario
+                :: List.indexedMap listItem standards
+                |> ul [ class "list-group mb-3" ]
 
-                Nothing ->
-                    img [] []
+        preapp =
+            div [ class "card" ]
+                [ div [ class "card-body" ]
+                    [ h5 [ class "card-title" ] [ text "Having trouble?" ]
+                    , p [ class "card-text" ]
+                        [ text "A council officer can help you through the process in a pre-application meeting." ]
+                    , a [ href "#", class "card-link" ] [ text "Apply for a Meeting" ]
+                    ]
+                ]
     in
-    div [ id "sidebar" ]
-        [ h1 [] [ text "RuBRIC" ]
-        , h3 [ class "subtitle" ] [ text "A Proof of Concept" ]
-        , disclaimer
-        , div [ class "standards" ] <|
-            List.indexedMap sectionButton standards
-        , image
+    div [ class "col-md-4 order-md-2" ]
+        [ div [ class "sticky-top py-3" ]
+            [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
+                [ span [ class "text-muted" ] [ text "Questions" ]
+                , span [ class "badge badge-secondary badge-pill" ]
+                    [ text <| String.fromInt <| List.length standards + 1 ]
+                ]
+            , standardList
+            , preapp
+            ]
         ]
 
 
 renderContent : Model -> Html Msg
 renderContent model =
     let
-        activitySelect =
-            div [ class "question" ]
-                [ label [ for "activity-select" ]
-                    [ text "What do you want to do?" ]
-                , select [ id "activity-select", onInput SelectActivity ] <|
-                    option [ hidden True, disabled True, selected True ] [ text "Select an activity..." ]
-                        :: List.map (\a -> option [ value a ] [ text a ]) model.activities
-                ]
-
-        propertySelect =
-            let
-                propertyTable =
-                    case model.selectedProperty of
-                        Just p ->
-                            input [ class "property-input", readonly True, value p.fullAddress ] []
-
-                        Nothing ->
-                            input [ class "property-input", readonly True, placeholder "Please use the map to select a property..." ] []
-            in
-            div [ class "question" ]
-                [ label [ for "property-select" ]
-                    [ text "What is the address of the property?" ]
-                , div [ id "map" ] []
-                , propertyTable
-                ]
-
         displayStandards i s =
-            details [ class "standards", id <| "standards-" ++ String.fromInt i, attribute "open" "true" ]
-                [ summary []
-                    [ text s.name
-                    , span
-                        [ class "status", attribute "data-status" (statusToString s.status) ]
-                        [ text <| statusToString s.status ]
-                    ]
+            div [ class "standards", id <| "standard-" ++ String.fromInt i, attribute "open" "true" ]
+                [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
+                    [ span [] [ text s.name ] ]
                 , div [ class "questions" ] <|
                     List.map (displayQuestion s) s.questions
+                , hr [ class "mb-4" ] []
                 ]
 
         displayQuestion s q =
             case q.input of
                 Text a p ->
-                    div [ class "question" ]
+                    div [ class "mb-3" ]
                         [ label [ for q.key ] [ text <| unescape p ]
                         , input
                             [ id q.key
+                            , class "form-control"
                             , type_ "text"
                             , value <| Maybe.withDefault "" a
                             , onInput (InputAnswer s q)
                             ]
                             []
+                        , div [ class "invalid-feedback" ] [ text "This field is required" ]
                         ]
 
                 Number a p ->
-                    div [ class "question" ]
+                    div [ class "mb-3" ]
                         [ label [ for q.key ] [ text <| unescape p ]
-                        , input
-                            [ id q.key
-                            , type_ "number"
-                            , value <| Maybe.map String.fromInt >> Maybe.withDefault "" <| a
-                            , onInput (InputAnswer s q)
+                        , div [ class "input-group" ]
+                            [ input
+                                [ id q.key
+                                , class "form-control"
+                                , type_ "number"
+                                , value <| Maybe.map String.fromInt >> Maybe.withDefault "" <| a
+                                , onInput (InputAnswer s q)
+                                ]
+                                []
+                            , div [ class "input-group-append" ]
+                                [ span [ class "input-group-text" ] [ text q.unit ] ]
                             ]
-                            []
                         ]
 
                 Multichoice a p ops ->
                     let
                         radioButton o =
-                            div [ class "radio-button" ]
+                            div [ class "mb-3" ]
                                 [ input
                                     [ name q.key
                                     , type_ "radio"
                                     , value o
                                     , id o
+                                    , class "form-control"
                                     , onInput (InputAnswer s q)
                                     , checked (a == Just o)
                                     ]
@@ -490,16 +512,17 @@ renderContent model =
                                 , label [ for o ] [ text o ]
                                 ]
                     in
-                    div [ class "question" ]
+                    div [ class "mb-3" ]
                         [ label [] [ text <| unescape p ]
                         , div [ class "radio-buttons" ] (List.map radioButton ops)
                         ]
 
                 File a p ->
-                    div [ class "question" ]
+                    div [ class "mb-3" ]
                         [ label [ for q.key ] [ text <| unescape p ]
                         , input
                             [ id q.key
+                            , class "form-control"
                             , type_ "file"
                             , value <| Maybe.withDefault "" a
                             , onInput (InputAnswer s q)
@@ -508,15 +531,51 @@ renderContent model =
                         ]
 
         submitButton =
-            div [ class "button", onClick AskRubric ]
+            button [ type_ "button", class "btn btn-primary btn-lg btn-block", onClick AskRubric ]
                 [ text "Ask Rubric" ]
     in
-    div [ id "content" ]
-        [ h1 [] [ text "Submit a Building & Structure Consent Application" ]
-        , Html.form [] <|
-            [ activitySelect, propertySelect ]
+    div [ class "col-md-8 order-md-1" ]
+        [ Html.form [ attribute "novalidate" "true" ] <|
+            [ renderScenario model.activities model.selectedProperty ]
                 ++ List.indexedMap displayStandards model.standards
                 ++ [ submitButton ]
+        ]
+
+
+renderScenario : List Activity -> Maybe Property -> Html Msg
+renderScenario activities selectedProperty =
+    let
+        activitySelect =
+            div [ class "mb-3" ]
+                [ label [ for "activity-select" ]
+                    [ text "What do you want to do?" ]
+                , select [ id "activity-select", class "form-control", onInput SelectActivity ] <|
+                    option [ hidden True, disabled True, selected True ] [ text "Select an activity..." ]
+                        :: List.map (\a -> option [ value a ] [ text a ]) activities
+                ]
+
+        propertySelect =
+            let
+                propertyTable =
+                    case selectedProperty of
+                        Just p ->
+                            input [ class "form-control", readonly True, value p.fullAddress ] []
+
+                        Nothing ->
+                            input [ class "form-control", readonly True, placeholder "Please use the map to select a property..." ] []
+            in
+            div [ class "mb-3" ]
+                [ label [ for "property-select" ]
+                    [ text "What is the address of the property?" ]
+                , div [ id "map" ] []
+                , propertyTable
+                ]
+    in
+    div [ id "scenario" ]
+        [ h4 [] [ text "Scenario" ]
+        , activitySelect
+        , propertySelect
+        , hr [ class "mb-4" ] []
         ]
 
 
@@ -566,7 +625,6 @@ statusToString status =
         Controlled ->
             "Controlled"
 
-        -- orange
         DiscretionaryRestricted ->
             "Discretionary Restricted"
 
@@ -581,3 +639,25 @@ statusToString status =
 
         Unknown ->
             "Status Unknown"
+
+
+statusToClass : Status -> String
+statusToClass status =
+    case status of
+        Controlled ->
+            "warning"
+
+        DiscretionaryRestricted ->
+            "info"
+
+        DiscretionaryUnrestricted ->
+            "info"
+
+        NonCompliant ->
+            "danger"
+
+        Permitted ->
+            "success"
+
+        Unknown ->
+            "light"

@@ -3,209 +3,67 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
 
     <title>RuBRIC</title>
+    <link rel="icon" href="logo.png" />
     <meta name="description" content="RuBRIC" />
     <meta name="author" content="Wellington City Council" />
 
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
     <link rel="stylesheet" href="css/styles.css?v=1.0" />
-
-    <script src="https://wcc-rubric.azurewebsites.net/rubric.min.js"></script>
-    <script src="app.js"></script>
 
     <link
       rel="stylesheet"
       href="https://js.arcgis.com/4.11/esri/css/main.css"
     />
-    <script src="https://js.arcgis.com/4.11/"></script>
   </head>
 
-  <body>
+  <body class="bg-light">
     <div id="elm"></div>
+
+    <!-- BOOTSTRAP -->
+
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- RUBRIC -->
+
+    <script src="https://wcc-rubric.azurewebsites.net/rubric.min.js"></script>
+    <script src="app.js"></script>
+
     <script>
       var app = Elm.Main.init({
         node: document.getElementById("elm"),
         flags: Object.values(Rubric.Types.activity)
       });
-
-      require([
-        "esri/Map",
-        "esri/views/MapView",
-        "esri/layers/FeatureLayer",
-        "esri/layers/ImageryLayer",
-        "esri/layers/WMSLayer",
-        "esri/widgets/Search",
-        "esri/tasks/support/Query",
-        "esri/tasks/QueryTask"
-      ], function(
-        Map,
-        MapView,
-        FeatureLayer,
-        ImageryLayer,
-        WMSLayer,
-        Search,
-        Query,
-        QueryTask
-      ) {
-        const layer = new FeatureLayer({
-          url:
-            "https://gis.wcc.govt.nz/arcgis/rest/services/PropertyAndBoundaries/Property/MapServer"
-        });
-
-        wms = new WMSLayer({
-          url:
-            "http://gis.wcc.govt.nz/arcgis/services/Imagery/Imagery2017/ImageServer/WMSServer"
-        });
-
-        // since this layer isn't added to the map, we need to "sideload" it
-        wms.load();
-
-        referenceLayers = [
-          {
-            name: "zone",
-            id: "59",
-            field: "dp_zone"
-          },
-          {
-            name: "specialResidentialArea",
-            id: "36",
-            field: "Area_Name"
-          },
-          {
-            name: "hazardFaultLineArea",
-            id: "49",
-            field: "status"
-          }
-        ];
-
-        var map = new Map({
-          basemap: "dark-gray-vector",
-          layers: [layer]
-        });
-
-        view = new MapView({
-          container: "map",
-          map: map,
-          center: [174.78060739454546, -41.29645326918087],
-          zoom: 10
-        });
-
-        var searchWidget = new Search({
-          view: view,
-          allPlaceholder: "Enter an Address",
-          includeDefaultSources: false,
-          sources: [
-            {
-              layer: layer,
-              searchFields: ["FullAddress"],
-              displayField: "FullAddress",
-              exactMatch: false,
-              outFields: [
-                "FullAddress",
-                "StreetNumber",
-                "StreetName",
-                "Suburb",
-                "PostCode",
-                "Title",
-                "ValuationID",
-                "ValuationWUFI"
-              ],
-              name: "District Plan Zones",
-              placeholder: "Enter an Address"
-            }
-          ]
-        });
-
-        view.ui.add(searchWidget, {
-          position: "top-right"
-        });
-
-        // default for development
-        app.ports.selectMapProperty.send({
-          zone: "Inner Residential",
-          fullAddress: "101 Wakefield Street, Wellington Central",
-          postCode: "6011",
-          specialResidentialArea: "IR 3 - Aro Valley",
-          streetName: "Wakefield Street",
-          streetNumber: "101",
-          suburb: "Wellington Central",
-          title: "724107",
-          valuationId: "17270-11800",
-          valuationWufi: 1921748,
-          imageUrl:
-            "http://gis.wcc.govt.nz/arcgis/services/Imagery/Imagery2017/ImageServer/WMSServer?width=300&height=300&bbox=19456000.33%2C-5055336.81%2C19456337.49%2C-5054883.31&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=true&version=1.3.0&crs=EPSG%3A3857&layers=0"
-        });
-
-        searchWidget.on("select-result", function(event) {
-          var attributes = event.result.feature.attributes;
-
-          var prefix =
-            "http://gis.wcc.govt.nz/arcgis/services/Imagery/Imagery2017/ImageServer/WMSServer?width=300&height=300&bbox=";
-          var extent = event.result.feature.geometry.extent;
-          var bbox = [extent.xmin, extent.ymin, extent.xmax, extent.ymax].join(
-            "%2C"
-          );
-          var postfix =
-            "&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=true&version=1.3.0&crs=EPSG%3A3857&layers=0";
-
-          var property = {
-            fullAddress: attributes.FullAddress,
-            streetNumber: attributes.StreetNumber,
-            streetName: attributes.StreetName,
-            suburb: attributes.Suburb,
-            postCode: attributes.PostCode,
-            title: attributes.Title,
-            valuationId: attributes.ValuationID,
-            valuationWufi: attributes.ValuationWUFI,
-            imageUrl: prefix + bbox + postfix
-          };
-
-          promises = [];
-          var urlBase =
-            "http://gis.wcc.govt.nz/arcgis/rest/services/DistrictPlan/DistrictPlan/MapServer/";
-
-          referenceLayers.forEach(({ name, id, field }) => {
-            var qt = new QueryTask(urlBase + id);
-            var q = new Query();
-
-            q.geometry = event.result.feature.geometry;
-            q.spatialRelationship = "intersects";
-            q.returnGeometry = false;
-            q.outFields = [field];
-
-            var p = qt.execute(q);
-            promises.push(p);
-          });
-
-          Promise.all(promises).then(res => {
-            referenceLayers.forEach(({ name, field }, i) => {
-              if (res[i].src) {
-                property["image"] = res.src;
-              } else if (res[i].features[0]) {
-                property[name] = res[i].features[0].attributes[field];
-              }
-            });
-
-            console.log(property);
-            app.ports.selectMapProperty.send(property);
-          });
-        });
-      });
-
-      var engine = null;
-      app.ports.askRubric.subscribe(function(data) {
-        console.log(data);
-
-        if (engine) {
-          engine.process(data.answers).then(() => {
-            console.log(engine.standards);
-            app.ports.receiveStandards.send(engine.standards);
-          });
-        } else {
-          engine = new Rubric({ fields: data.scenario });
-          app.ports.receiveStandards.send(engine.standards);
-        }
-      });
     </script>
+
+    <script src="https://js.arcgis.com/4.11/"></script>
+    <script src="js/map.js"></script>
+    <script src="js/engine.js"></script>
   </body>
 </html>
