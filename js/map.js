@@ -30,7 +30,7 @@ require([
   ];
 
   var map = new Map({
-    basemap: "dark-gray-vector",
+    basemap: "gray-vector",
     layers: [property]
   });
 

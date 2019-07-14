@@ -453,91 +453,14 @@ renderSidebar standards status prop =
 renderContent : Model -> Html Msg
 renderContent model =
     let
-        displayStandards i s =
-            div [ class "standards", id <| "standard-" ++ String.fromInt i, attribute "open" "true" ]
-                [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
-                    [ span [] [ text s.name ] ]
-                , div [ class "questions" ] <|
-                    List.map (displayQuestion s) s.questions
-                , hr [ class "mb-4" ] []
-                ]
-
-        displayQuestion s q =
-            case q.input of
-                Text a p ->
-                    div [ class "mb-3" ]
-                        [ label [ for q.key ] [ text <| unescape p ]
-                        , input
-                            [ id q.key
-                            , class "form-control"
-                            , type_ "text"
-                            , value <| Maybe.withDefault "" a
-                            , onInput (InputAnswer s q)
-                            ]
-                            []
-                        , div [ class "invalid-feedback" ] [ text "This field is required" ]
-                        ]
-
-                Number a p ->
-                    div [ class "mb-3" ]
-                        [ label [ for q.key ] [ text <| unescape p ]
-                        , div [ class "input-group" ]
-                            [ input
-                                [ id q.key
-                                , class "form-control"
-                                , type_ "number"
-                                , value <| Maybe.map String.fromInt >> Maybe.withDefault "" <| a
-                                , onInput (InputAnswer s q)
-                                ]
-                                []
-                            , div [ class "input-group-append" ]
-                                [ span [ class "input-group-text" ] [ text q.unit ] ]
-                            ]
-                        ]
-
-                Multichoice a p ops ->
-                    let
-                        radioButton o =
-                            div [ class "mb-3" ]
-                                [ input
-                                    [ name q.key
-                                    , type_ "radio"
-                                    , value o
-                                    , id o
-                                    , class "form-control"
-                                    , onInput (InputAnswer s q)
-                                    , checked (a == Just o)
-                                    ]
-                                    []
-                                , label [ for o ] [ text o ]
-                                ]
-                    in
-                    div [ class "mb-3" ]
-                        [ label [] [ text <| unescape p ]
-                        , div [ class "radio-buttons" ] (List.map radioButton ops)
-                        ]
-
-                File a p ->
-                    div [ class "mb-3" ]
-                        [ label [ for q.key ] [ text <| unescape p ]
-                        , input
-                            [ id q.key
-                            , class "form-control"
-                            , type_ "file"
-                            , value <| Maybe.withDefault "" a
-                            , onInput (InputAnswer s q)
-                            ]
-                            []
-                        ]
-
         submitButton =
             button [ type_ "button", class "btn btn-primary btn-lg btn-block", onClick AskRubric ]
                 [ text "Ask Rubric" ]
     in
     div [ class "col-md-8 order-md-1" ]
         [ Html.form [ attribute "novalidate" "true" ] <|
-            [ renderScenario model.activities model.selectedProperty ]
-                ++ List.indexedMap displayStandards model.standards
+            renderScenario model.activities model.selectedProperty
+                :: List.indexedMap renderStandard model.standards
                 ++ [ submitButton ]
         ]
 
@@ -577,6 +500,139 @@ renderScenario activities selectedProperty =
         , propertySelect
         , hr [ class "mb-4" ] []
         ]
+
+
+renderStandard : Int -> Standard -> Html Msg
+renderStandard index standard =
+    let
+        unique =
+            "standard-" ++ String.fromInt index
+
+        ( modalBtn, modalDialog ) =
+            renderModal (unique ++ "-modal") "Read Standard" standard.name (text placeholder)
+
+        placeholder =
+            List.repeat 500 "placeholder"
+                |> String.join " "
+    in
+    div [ class "standards", id unique, attribute "open" "true" ]
+        [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
+            [ span [] [ text standard.name ]
+            , modalBtn
+            ]
+        , div [ class "questions" ] <|
+            List.map (renderQuestion standard) standard.questions
+        , hr [ class "mb-4" ] []
+        , modalDialog
+        ]
+
+
+renderQuestion : Standard -> Question -> Html Msg
+renderQuestion standard question =
+    case question.input of
+        Text a p ->
+            div [ class "mb-3" ]
+                [ label [ for question.key ] [ text <| unescape p ]
+                , input
+                    [ id question.key
+                    , class "form-control"
+                    , type_ "text"
+                    , value <| Maybe.withDefault "" a
+                    , onInput (InputAnswer standard question)
+                    ]
+                    []
+                , div [ class "invalid-feedback" ] [ text "This field is required" ]
+                ]
+
+        Number a p ->
+            div [ class "mb-3" ]
+                [ label [ for question.key ] [ text <| unescape p ]
+                , div [ class "input-group" ]
+                    [ input
+                        [ id question.key
+                        , class "form-control"
+                        , type_ "number"
+                        , value <| Maybe.map String.fromInt >> Maybe.withDefault "" <| a
+                        , onInput (InputAnswer standard question)
+                        ]
+                        []
+                    , div [ class "input-group-append" ]
+                        [ span [ class "input-group-text" ] [ text question.unit ] ]
+                    ]
+                ]
+
+        Multichoice a p ops ->
+            let
+                radioButton o =
+                    div [ class "mb-3" ]
+                        [ input
+                            [ name question.key
+                            , type_ "radio"
+                            , value o
+                            , id o
+                            , class "form-control"
+                            , onInput (InputAnswer standard question)
+                            , checked (a == Just o)
+                            ]
+                            []
+                        , label [ for o ] [ text o ]
+                        ]
+            in
+            div [ class "mb-3" ]
+                [ label [] [ text <| unescape p ]
+                , div [ class "radio-buttons" ] (List.map radioButton ops)
+                ]
+
+        File a p ->
+            div [ class "mb-3" ]
+                [ label [ for question.key ] [ text <| unescape p ]
+                , input
+                    [ id question.key
+                    , class "form-control"
+                    , type_ "file"
+                    , value <| Maybe.withDefault "" a
+                    , onInput (InputAnswer standard question)
+                    ]
+                    []
+                ]
+
+
+renderModal : String -> String -> String -> Html Msg -> ( Html Msg, Html Msg )
+renderModal name btnContent modalHeader modalContent =
+    let
+        title =
+            name ++ "-title"
+
+        modalBtn =
+            button
+                [ type_ "button"
+                , class "btn btn-primary"
+                , attribute "data-toggle" "modal"
+                , attribute "data-target" ("#" ++ name)
+                ]
+                [ text btnContent ]
+
+        header =
+            div [ class "modal-header" ]
+                [ h5 [ class "modal-title", id title ] [ text modalHeader ]
+                , button [ type_ "button", class "close", attribute "data-dismiss" "modal", attribute "aria-label" "Close" ]
+                    [ span [ attribute "aria-hidden" "true" ] [ text "×" ] ]
+                ]
+
+        body =
+            div [ class "modal-body" ] [ modalContent ]
+
+        footer =
+            div [ class "modal-footer" ]
+                [ button [ type_ "button", class "btn btn-secondary", attribute "data-dismiss" "modal" ] [ text "Close" ] ]
+
+        modalDialog =
+            div [ class "modal fade", id name, tabindex -1, attribute "role" "dialog", attribute "aria-labelledby" title ]
+                [ div [ class "modal-dialog modal-lg modal-dialog-scrollable", attribute "role" "document" ]
+                    [ div [ class "modal-content" ] [ header, body, footer ] ]
+                ]
+    in
+    ( modalBtn, modalDialog )
 
 
 
