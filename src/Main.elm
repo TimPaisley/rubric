@@ -400,7 +400,7 @@ view model =
         ]
 
 
-renderSidebar : List Standard -> Status -> Maybe Property -> Html msg
+renderSidebar : List Standard -> Status -> Maybe Property -> Html Msg
 renderSidebar standards status prop =
     let
         listItem i s =
@@ -427,13 +427,16 @@ renderSidebar standards status prop =
                 :: List.indexedMap listItem standards
                 |> ul [ class "list-group mb-3" ]
 
+        ( buttonAttrs, modalDialog ) =
+            renderModal "preapp" "Pre-Application Meeting Request" preAppForm
+
         preapp =
             div [ class "card" ]
                 [ div [ class "card-body" ]
                     [ h5 [ class "card-title" ] [ text "Having trouble?" ]
                     , p [ class "card-text" ]
                         [ text "A council officer can help you through the process in a pre-application meeting." ]
-                    , a [ href "#", class "card-link" ] [ text "Apply for a Meeting" ]
+                    , a ([ href "", class "card-link" ] ++ buttonAttrs) [ text "Apply for a Meeting" ]
                     ]
                 ]
     in
@@ -441,12 +444,13 @@ renderSidebar standards status prop =
         [ div [ class "sticky-top py-3" ]
             [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
                 [ span [ class "text-muted" ] [ text "Questions" ]
-                , span [ class "badge badge-secondary badge-pill" ]
+                , span [ class "text-muted badge" ]
                     [ text <| String.fromInt <| List.length standards + 1 ]
                 ]
             , standardList
             , preapp
             ]
+        , modalDialog
         ]
 
 
@@ -508,17 +512,17 @@ renderStandard index standard =
         unique =
             "standard-" ++ String.fromInt index
 
-        ( modalBtn, modalDialog ) =
-            renderModal (unique ++ "-modal") "Read Standard" standard.name (text placeholder)
+        ( buttonAttrs, modalDialog ) =
+            renderModal (unique ++ "-modal") standard.name (text placeholder)
 
         placeholder =
             List.repeat 500 "placeholder"
                 |> String.join " "
     in
-    div [ class "standards", id unique, attribute "open" "true" ]
-        [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
+    div [ class "standards", id unique ]
+        [ h4 [ class "d-flex justify-content-start align-items-center mb-3" ]
             [ span [] [ text standard.name ]
-            , modalBtn
+            , button ([ type_ "button", class "btn mx-2" ] ++ buttonAttrs) [ text "ⓘ" ]
             ]
         , div [ class "questions" ] <|
             List.map (renderQuestion standard) standard.questions
@@ -597,20 +601,16 @@ renderQuestion standard question =
                 ]
 
 
-renderModal : String -> String -> String -> Html Msg -> ( Html Msg, Html Msg )
-renderModal name btnContent modalHeader modalContent =
+renderModal : String -> String -> Html Msg -> ( List (Html.Attribute Msg), Html Msg )
+renderModal name modalHeader modalContent =
     let
         title =
             name ++ "-title"
 
-        modalBtn =
-            button
-                [ type_ "button"
-                , class "btn btn-primary"
-                , attribute "data-toggle" "modal"
-                , attribute "data-target" ("#" ++ name)
-                ]
-                [ text btnContent ]
+        buttonAttrs =
+            [ attribute "data-toggle" "modal"
+            , attribute "data-target" ("#" ++ name)
+            ]
 
         header =
             div [ class "modal-header" ]
@@ -632,7 +632,44 @@ renderModal name btnContent modalHeader modalContent =
                     [ div [ class "modal-content" ] [ header, body, footer ] ]
                 ]
     in
-    ( modalBtn, modalDialog )
+    ( buttonAttrs, modalDialog )
+
+
+preAppForm : Html Msg
+preAppForm =
+    let
+        textInput key question =
+            div [ class "mb-3" ]
+                [ label [ for key ] [ text question ]
+                , input [ id key, class "form-control", type_ "text" ] []
+                ]
+
+        section title questions =
+            div [ class "standards" ]
+                [ h4 [ class "d-flex justify-content-start align-items-center mb-3" ]
+                    [ span [] [ text title ] ]
+                , div [ class "questions" ] questions
+                , hr [ class "mb-4" ] []
+                ]
+    in
+    Html.form []
+        [ section "Contact Person"
+            [ textInput "name" "Name"
+            , textInput "postalAddress" "Postal Address"
+            , textInput "phone" "Phone (day)"
+            , textInput "mobile" "Mobile"
+            , textInput "email" "E-mail"
+            , textInput "fax" "Fax"
+            ]
+        , section "Other Advisor(s) If Attending"
+            [ textInput "advisor1name" "Advisor 1 Name"
+            , textInput "advisor1expertise" "Advisor 1 Expertise"
+            , textInput "advisor2name" "Advisor 2 Name"
+            , textInput "advisor2expertise" "Advisor 2 Expertise"
+            , textInput "advisor3name" "Advisor 3 Name"
+            , textInput "advisor3expertise" "Advisor 3 Expertise"
+            ]
+        ]
 
 
 

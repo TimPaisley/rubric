@@ -5838,22 +5838,9 @@ var elm$html$Html$Attributes$tabindex = function (n) {
 		elm$core$String$fromInt(n));
 };
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
-var author$project$Main$renderModal = F4(
-	function (name, btnContent, modalHeader, modalContent) {
+var author$project$Main$renderModal = F3(
+	function (name, modalHeader, modalContent) {
 		var title = name + '-title';
-		var modalBtn = A2(
-			elm$html$Html$button,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$type_('button'),
-					elm$html$Html$Attributes$class('btn btn-primary'),
-					A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
-					A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + name)
-				]),
-			_List_fromArray(
-				[
-					elm$html$Html$text(btnContent)
-				]));
 		var header = A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -5917,6 +5904,11 @@ var author$project$Main$renderModal = F4(
 							elm$html$Html$text('Close')
 						]))
 				]));
+		var buttonAttrs = _List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
+				A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + name)
+			]);
 		var body = A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -5956,7 +5948,7 @@ var author$project$Main$renderModal = F4(
 								[header, body, footer]))
 						]))
 				]));
-		return _Utils_Tuple2(modalBtn, modalDialog);
+		return _Utils_Tuple2(buttonAttrs, modalDialog);
 	});
 var author$project$Main$InputAnswer = F3(
 	function (a, b, c) {
@@ -7052,21 +7044,19 @@ var author$project$Main$renderStandard = F2(
 			elm$core$String$join,
 			' ',
 			A2(elm$core$List$repeat, 500, 'placeholder'));
-		var _n0 = A4(
+		var _n0 = A3(
 			author$project$Main$renderModal,
 			unique + '-modal',
-			'Read Standard',
 			standard.name,
 			elm$html$Html$text(placeholder));
-		var modalBtn = _n0.a;
+		var buttonAttrs = _n0.a;
 		var modalDialog = _n0.b;
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
 				[
 					elm$html$Html$Attributes$class('standards'),
-					elm$html$Html$Attributes$id(unique),
-					A2(elm$html$Html$Attributes$attribute, 'open', 'true')
+					elm$html$Html$Attributes$id(unique)
 				]),
 			_List_fromArray(
 				[
@@ -7074,7 +7064,7 @@ var author$project$Main$renderStandard = F2(
 					elm$html$Html$h4,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center mb-3')
+							elm$html$Html$Attributes$class('d-flex justify-content-start align-items-center mb-3')
 						]),
 					_List_fromArray(
 						[
@@ -7085,7 +7075,19 @@ var author$project$Main$renderStandard = F2(
 								[
 									elm$html$Html$text(standard.name)
 								])),
-							modalBtn
+							A2(
+							elm$html$Html$button,
+							_Utils_ap(
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$type_('button'),
+										elm$html$Html$Attributes$class('btn mx-2')
+									]),
+								buttonAttrs),
+							_List_fromArray(
+								[
+									elm$html$Html$text('ⓘ')
+								]))
 						])),
 					A2(
 					elm$html$Html$div,
@@ -7160,6 +7162,111 @@ var author$project$Main$renderContent = function (model) {
 							[submitButton]))))
 			]));
 };
+var author$project$Main$preAppForm = function () {
+	var textInput = F2(
+		function (key, question) {
+			return A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('mb-3')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$label,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$for(key)
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(question)
+							])),
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$id(key),
+								elm$html$Html$Attributes$class('form-control'),
+								elm$html$Html$Attributes$type_('text')
+							]),
+						_List_Nil)
+					]));
+		});
+	var section = F2(
+		function (title, questions) {
+			return A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('standards')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$h4,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('d-flex justify-content-start align-items-center mb-3')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$span,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text(title)
+									]))
+							])),
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('questions')
+							]),
+						questions),
+						A2(
+						elm$html$Html$hr,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('mb-4')
+							]),
+						_List_Nil)
+					]));
+		});
+	return A2(
+		elm$html$Html$form,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				section,
+				'Contact Person',
+				_List_fromArray(
+					[
+						A2(textInput, 'name', 'Name'),
+						A2(textInput, 'postalAddress', 'Postal Address'),
+						A2(textInput, 'phone', 'Phone (day)'),
+						A2(textInput, 'mobile', 'Mobile'),
+						A2(textInput, 'email', 'E-mail'),
+						A2(textInput, 'fax', 'Fax')
+					])),
+				A2(
+				section,
+				'Other Advisor(s) If Attending',
+				_List_fromArray(
+					[
+						A2(textInput, 'advisor1name', 'Advisor 1 Name'),
+						A2(textInput, 'advisor1expertise', 'Advisor 1 Expertise'),
+						A2(textInput, 'advisor2name', 'Advisor 2 Name'),
+						A2(textInput, 'advisor2expertise', 'Advisor 2 Expertise'),
+						A2(textInput, 'advisor3name', 'Advisor 3 Name'),
+						A2(textInput, 'advisor3expertise', 'Advisor 3 Expertise')
+					]))
+			]));
+}();
 var author$project$Main$statusToClass = function (status) {
 	switch (status.$) {
 		case 'Controlled':
@@ -7235,55 +7342,6 @@ var author$project$Main$renderSidebar = F3(
 							elm$html$Html$text('Required')
 						]))
 				]));
-		var preapp = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('card')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('card-body')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$h5,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('card-title')
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text('Having trouble?')
-								])),
-							A2(
-							elm$html$Html$p,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('card-text')
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text('A council officer can help you through the process in a pre-application meeting.')
-								])),
-							A2(
-							elm$html$Html$a,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$href('#'),
-									elm$html$Html$Attributes$class('card-link')
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text('Apply for a Meeting')
-								]))
-						]))
-				]));
 		var listItem = F2(
 			function (i, s) {
 				var statusClass = 'list-group-item-' + author$project$Main$statusToClass(s.status);
@@ -7330,6 +7388,60 @@ var author$project$Main$renderSidebar = F3(
 				elm$core$List$cons,
 				scenario,
 				A2(elm$core$List$indexedMap, listItem, standards)));
+		var _n0 = A3(author$project$Main$renderModal, 'preapp', 'Pre-Application Meeting Request', author$project$Main$preAppForm);
+		var buttonAttrs = _n0.a;
+		var modalDialog = _n0.b;
+		var preapp = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('card')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('card-body')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$h5,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('card-title')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text('Having trouble?')
+								])),
+							A2(
+							elm$html$Html$p,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('card-text')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text('A council officer can help you through the process in a pre-application meeting.')
+								])),
+							A2(
+							elm$html$Html$a,
+							_Utils_ap(
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$href(''),
+										elm$html$Html$Attributes$class('card-link')
+									]),
+								buttonAttrs),
+							_List_fromArray(
+								[
+									elm$html$Html$text('Apply for a Meeting')
+								]))
+						]))
+				]));
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -7368,7 +7480,7 @@ var author$project$Main$renderSidebar = F3(
 									elm$html$Html$span,
 									_List_fromArray(
 										[
-											elm$html$Html$Attributes$class('badge badge-secondary badge-pill')
+											elm$html$Html$Attributes$class('text-muted badge')
 										]),
 									_List_fromArray(
 										[
@@ -7379,7 +7491,8 @@ var author$project$Main$renderSidebar = F3(
 								])),
 							standardList,
 							preapp
-						]))
+						])),
+					modalDialog
 				]));
 	});
 var elm$html$Html$h2 = _VirtualDom_node('h2');
