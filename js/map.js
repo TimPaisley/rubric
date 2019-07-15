@@ -43,6 +43,7 @@ require([
 
   var searchWidget = new Search({
     view: view,
+    container: "search-widget",
     allPlaceholder: "Enter an Address",
     includeDefaultSources: false,
     sources: [
@@ -65,10 +66,6 @@ require([
         placeholder: "Enter an Address"
       }
     ]
-  });
-
-  view.ui.add(searchWidget, {
-    position: "top-right"
   });
 
   generateImageServerURL = bbox => {

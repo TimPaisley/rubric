@@ -5617,7 +5617,9 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 };
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h4 = _VirtualDom_node('h4');
+var elm$html$Html$h5 = _VirtualDom_node('h5');
 var elm$html$Html$hr = _VirtualDom_node('hr');
+var elm$html$Html$img = _VirtualDom_node('img');
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
 var elm$html$Html$option = _VirtualDom_node('option');
@@ -5647,6 +5649,14 @@ var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
 var elm$html$Html$Attributes$readonly = elm$html$Html$Attributes$boolProperty('readOnly');
 var elm$html$Html$Attributes$selected = elm$html$Html$Attributes$boolProperty('selected');
+var elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -5682,6 +5692,221 @@ var elm$html$Html$Events$onInput = function (tagger) {
 };
 var author$project$Main$renderScenario = F2(
 	function (activities, selectedProperty) {
+		var propertyCard = function () {
+			if (selectedProperty.$ === 'Just') {
+				var p = selectedProperty.a;
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('card my-3')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('row no-gutters')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('col-md-4')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$img,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$src(p.imageUrl),
+													A2(elm$html$Html$Attributes$style, 'width', '100%')
+												]),
+											_List_Nil)
+										])),
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('col-md-8')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$div,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('card-body')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$h5,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('card-title mb-3')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(p.fullAddress)
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('row')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text('Suburb')
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-8')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(p.suburb)
+																]))
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('row')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text('PostCode')
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-8')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(p.postCode)
+																]))
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('row')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text('Title')
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-8')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(p.title)
+																]))
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('row')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text('Valuation ID')
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-8')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(p.valuationId)
+																]))
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('row')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text('Zone')
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('col-md-8')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(p.zone)
+																]))
+														]))
+												]))
+										]))
+								]))
+						]));
+			} else {
+				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+			}
+		}();
 		var propertySelect = function () {
 			var propertyTable = function () {
 				if (selectedProperty.$ === 'Just') {
@@ -5729,10 +5954,17 @@ var author$project$Main$renderScenario = F2(
 						elm$html$Html$div,
 						_List_fromArray(
 							[
+								elm$html$Html$Attributes$id('search-widget')
+							]),
+						_List_Nil),
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
 								elm$html$Html$Attributes$id('map')
 							]),
 						_List_Nil),
-						propertyTable
+						propertyCard
 					]));
 		}();
 		var activitySelect = A2(
@@ -5821,7 +6053,6 @@ var elm$core$Basics$negate = function (n) {
 	return -n;
 };
 var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$h5 = _VirtualDom_node('h5');
 var elm$html$Html$span = _VirtualDom_node('span');
 var elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
@@ -7496,19 +7727,12 @@ var author$project$Main$renderSidebar = F3(
 				]));
 	});
 var elm$html$Html$h2 = _VirtualDom_node('h2');
-var elm$html$Html$img = _VirtualDom_node('img');
 var elm$html$Html$strong = _VirtualDom_node('strong');
 var elm$html$Html$Attributes$height = function (n) {
 	return A2(
 		_VirtualDom_attribute,
 		'height',
 		elm$core$String$fromInt(n));
-};
-var elm$html$Html$Attributes$src = function (url) {
-	return A2(
-		elm$html$Html$Attributes$stringProperty,
-		'src',
-		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
 var elm$html$Html$Attributes$width = function (n) {
 	return A2(

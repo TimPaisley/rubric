@@ -494,9 +494,48 @@ renderScenario activities selectedProperty =
             div [ class "mb-3" ]
                 [ label [ for "property-select" ]
                     [ text "What is the address of the property?" ]
+                , div [ id "search-widget" ] []
                 , div [ id "map" ] []
-                , propertyTable
+                , propertyCard
                 ]
+
+        propertyCard =
+            case selectedProperty of
+                Just p ->
+                    div [ class "card my-3" ]
+                        [ div [ class "row no-gutters" ]
+                            [ div [ class "col-md-4" ]
+                                [ img [ src p.imageUrl, style "width" "100%" ] [] ]
+                            , div [ class "col-md-8" ]
+                                [ div [ class "card-body" ]
+                                    [ h5 [ class "card-title mb-3" ] [ text p.fullAddress ]
+                                    , div [ class "row" ]
+                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "Suburb" ]
+                                        , div [ class "col-md-8" ] [ text p.suburb ]
+                                        ]
+                                    , div [ class "row" ]
+                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "PostCode" ]
+                                        , div [ class "col-md-8" ] [ text p.postCode ]
+                                        ]
+                                    , div [ class "row" ]
+                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "Title" ]
+                                        , div [ class "col-md-8" ] [ text p.title ]
+                                        ]
+                                    , div [ class "row" ]
+                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "Valuation ID" ]
+                                        , div [ class "col-md-8" ] [ text p.valuationId ]
+                                        ]
+                                    , div [ class "row" ]
+                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "Zone" ]
+                                        , div [ class "col-md-8" ] [ text p.zone ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+
+                Nothing ->
+                    div [] []
     in
     div [ id "scenario" ]
         [ h4 [] [ text "Scenario" ]
