@@ -4789,7 +4789,7 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (flags) {
-	var model = {activities: flags, errors: _List_Nil, selectedActivity: elm$core$Maybe$Nothing, selectedProperty: elm$core$Maybe$Nothing, standards: _List_Nil, status: author$project$Main$Unknown};
+	var model = {activities: flags, selectedActivity: elm$core$Maybe$Nothing, selectedProperty: elm$core$Maybe$Nothing, standards: _List_Nil, status: author$project$Main$Unknown};
 	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 };
 var author$project$Main$ReceiveStandards = function (a) {
@@ -4810,7 +4810,6 @@ var author$project$Main$subscriptions = function (_n0) {
 				author$project$Main$receiveStandards(author$project$Main$ReceiveStandards)
 			]));
 };
-var author$project$Main$ExpireError = {$: 'ExpireError'};
 var author$project$Main$File = F2(
 	function (a, b) {
 		return {$: 'File', a: a, b: b};
@@ -4827,166 +4826,8 @@ var author$project$Main$Text = F2(
 	function (a, b) {
 		return {$: 'Text', a: a, b: b};
 	});
-var author$project$Main$AddError = function (a) {
-	return {$: 'AddError', a: a};
-};
 var elm$core$Basics$identity = function (x) {
 	return x;
-};
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
-var elm$core$Task$succeed = _Scheduler_succeed;
-var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
-var elm$core$Task$andThen = _Scheduler_andThen;
-var elm$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return elm$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
-var elm$core$Task$map2 = F3(
-	function (func, taskA, taskB) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return A2(
-					elm$core$Task$andThen,
-					function (b) {
-						return elm$core$Task$succeed(
-							A2(func, a, b));
-					},
-					taskB);
-			},
-			taskA);
-	});
-var elm$core$Task$sequence = function (tasks) {
-	return A3(
-		elm$core$List$foldr,
-		elm$core$Task$map2(elm$core$List$cons),
-		elm$core$Task$succeed(_List_Nil),
-		tasks);
-};
-var elm$core$Platform$sendToApp = _Platform_sendToApp;
-var elm$core$Task$spawnCmd = F2(
-	function (router, _n0) {
-		var task = _n0.a;
-		return _Scheduler_spawn(
-			A2(
-				elm$core$Task$andThen,
-				elm$core$Platform$sendToApp(router),
-				task));
-	});
-var elm$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			elm$core$Task$map,
-			function (_n0) {
-				return _Utils_Tuple0;
-			},
-			elm$core$Task$sequence(
-				A2(
-					elm$core$List$map,
-					elm$core$Task$spawnCmd(router),
-					commands)));
-	});
-var elm$core$Task$onSelfMsg = F3(
-	function (_n0, _n1, _n2) {
-		return elm$core$Task$succeed(_Utils_Tuple0);
-	});
-var elm$core$Task$cmdMap = F2(
-	function (tagger, _n0) {
-		var task = _n0.a;
-		return elm$core$Task$Perform(
-			A2(elm$core$Task$map, tagger, task));
-	});
-_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
-var elm$core$Task$command = _Platform_leaf('Task');
-var elm$core$Task$perform = F2(
-	function (toMessage, task) {
-		return elm$core$Task$command(
-			elm$core$Task$Perform(
-				A2(elm$core$Task$map, toMessage, task)));
-	});
-var author$project$Main$addError = function (s) {
-	return A2(
-		elm$core$Task$perform,
-		elm$core$Basics$identity,
-		elm$core$Task$succeed(
-			author$project$Main$AddError(s)));
 };
 var author$project$Main$askRubric = _Platform_outgoingPort('askRubric', elm$core$Basics$identity);
 var elm$json$Json$Decode$map2 = _Json_map2;
@@ -5264,20 +5105,79 @@ var author$project$Main$decodeStandard = A4(
 						elm$json$Json$Decode$string,
 						elm$json$Json$Decode$succeed(author$project$Main$Standard)))))));
 var author$project$Main$decodeStandards = elm$json$Json$Decode$list(author$project$Main$decodeStandard);
-var elm$core$Process$sleep = _Process_sleep;
-var author$project$Main$delay = F2(
-	function (time, msg) {
-		return A2(
-			elm$core$Task$perform,
-			function (_n0) {
-				return msg;
-			},
-			elm$core$Process$sleep(time));
-	});
 var elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
 			f(x));
+	});
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
 	});
 var elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -5384,27 +5284,6 @@ var author$project$Main$encodePayload = F3(
 				]));
 	});
 var elm$core$Debug$log = _Debug_log;
-var elm$core$List$drop = F2(
-	function (n, list) {
-		drop:
-		while (true) {
-			if (n <= 0) {
-				return list;
-			} else {
-				if (!list.b) {
-					return list;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs;
-					n = $temp$n;
-					list = $temp$list;
-					continue drop;
-				}
-			}
-		}
-	});
 var elm$core$String$toInt = _String_toInt;
 var elm_community$list_extra$List$Extra$updateIf = F3(
 	function (predicate, update, list) {
@@ -5420,26 +5299,6 @@ var author$project$Main$update = F2(
 		switch (msg.$) {
 			case 'NoOp':
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-			case 'AddError':
-				var e = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							errors: _Utils_ap(
-								model.errors,
-								_List_fromArray(
-									[e]))
-						}),
-					A2(author$project$Main$delay, 5000, author$project$Main$ExpireError));
-			case 'ExpireError':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							errors: A2(elm$core$List$drop, 1, model.errors)
-						}),
-					elm$core$Platform$Cmd$none);
 			case 'SelectActivity':
 				var activity = msg.a;
 				return _Utils_Tuple2(
@@ -5467,9 +5326,7 @@ var author$project$Main$update = F2(
 						elm$core$Debug$log,
 						'Error decoding section: ',
 						elm$json$Json$Decode$errorToString(err));
-					return _Utils_Tuple2(
-						model,
-						author$project$Main$addError('Oops! An error has occurred. Check the console for more details.'));
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			case 'ReceiveStandards':
 				var val = msg.a;
@@ -5487,9 +5344,7 @@ var author$project$Main$update = F2(
 						elm$core$Debug$log,
 						'Error decoding section: ',
 						elm$json$Json$Decode$errorToString(err));
-					return _Utils_Tuple2(
-						model,
-						author$project$Main$addError('Oops! An error has occurred. Check the console for more details.'));
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			case 'InputAnswer':
 				var standard = msg.a;
@@ -5559,43 +5414,23 @@ var author$project$Main$update = F2(
 					elm$core$Platform$Cmd$none);
 			default:
 				var _n4 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
-				if (_n4.a.$ === 'Just') {
-					if (_n4.b.$ === 'Just') {
-						var a = _n4.a.a;
-						var p = _n4.b.a;
-						var allQuestions = A3(
-							elm$core$List$foldl,
-							F2(
-								function (s, l) {
-									return _Utils_ap(s.questions, l);
-								}),
-							_List_Nil,
-							model.standards);
-						return _Utils_Tuple2(
-							model,
-							author$project$Main$askRubric(
-								A3(author$project$Main$encodePayload, a, p, allQuestions)));
-					} else {
-						var a = _n4.a.a;
-						var _n6 = _n4.b;
-						return _Utils_Tuple2(
-							model,
-							author$project$Main$addError('You need to select a property first!'));
-					}
+				if ((_n4.a.$ === 'Just') && (_n4.b.$ === 'Just')) {
+					var a = _n4.a.a;
+					var p = _n4.b.a;
+					var allQuestions = A3(
+						elm$core$List$foldl,
+						F2(
+							function (s, l) {
+								return _Utils_ap(s.questions, l);
+							}),
+						_List_Nil,
+						model.standards);
+					return _Utils_Tuple2(
+						model,
+						author$project$Main$askRubric(
+							A3(author$project$Main$encodePayload, a, p, allQuestions)));
 				} else {
-					if (_n4.b.$ === 'Just') {
-						var _n5 = _n4.a;
-						var p = _n4.b.a;
-						return _Utils_Tuple2(
-							model,
-							author$project$Main$addError('You need to select an activity first!'));
-					} else {
-						var _n7 = _n4.a;
-						var _n8 = _n4.b;
-						return _Utils_Tuple2(
-							model,
-							author$project$Main$addError('You need to select a property and an activity first!'));
-					}
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 		}
 	});
@@ -5695,6 +5530,38 @@ var author$project$Main$renderScenario = F2(
 		var propertyCard = function () {
 			if (selectedProperty.$ === 'Just') {
 				var p = selectedProperty.a;
+				var row = F2(
+					function (k, v) {
+						return A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('row')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(k)
+										])),
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('col-md-8')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(v)
+										]))
+								]));
+					});
 				return A2(
 					elm$html$Html$div,
 					_List_fromArray(
@@ -5754,151 +5621,11 @@ var author$project$Main$renderScenario = F2(
 														[
 															elm$html$Html$text(p.fullAddress)
 														])),
-													A2(
-													elm$html$Html$div,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('row')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text('Suburb')
-																])),
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-8')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text(p.suburb)
-																]))
-														])),
-													A2(
-													elm$html$Html$div,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('row')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text('PostCode')
-																])),
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-8')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text(p.postCode)
-																]))
-														])),
-													A2(
-													elm$html$Html$div,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('row')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text('Title')
-																])),
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-8')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text(p.title)
-																]))
-														])),
-													A2(
-													elm$html$Html$div,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('row')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text('Valuation ID')
-																])),
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-8')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text(p.valuationId)
-																]))
-														])),
-													A2(
-													elm$html$Html$div,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('row')
-														]),
-													_List_fromArray(
-														[
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-4 font-weight-bold')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text('Zone')
-																])),
-															A2(
-															elm$html$Html$div,
-															_List_fromArray(
-																[
-																	elm$html$Html$Attributes$class('col-md-8')
-																]),
-															_List_fromArray(
-																[
-																	elm$html$Html$text(p.zone)
-																]))
-														]))
+													A2(row, 'Suburb', p.suburb),
+													A2(row, 'PostCode', p.postCode),
+													A2(row, 'Title', p.title),
+													A2(row, 'Valuation ID', p.valuationId),
+													A2(row, 'Zone', p.zone)
 												]))
 										]))
 								]))
@@ -7358,18 +7085,83 @@ var elm$html$Html$Events$onClick = function (msg) {
 		elm$json$Json$Decode$succeed(msg));
 };
 var author$project$Main$renderContent = function (model) {
-	var submitButton = A2(
-		elm$html$Html$button,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$type_('button'),
-				elm$html$Html$Attributes$class('btn btn-primary btn-lg btn-block'),
-				elm$html$Html$Events$onClick(author$project$Main$AskRubric)
-			]),
-		_List_fromArray(
-			[
-				elm$html$Html$text('Ask Rubric')
-			]));
+	var btn = function (off) {
+		return A2(
+			elm$html$Html$button,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$type_('button'),
+					elm$html$Html$Attributes$class('btn btn-primary btn-lg btn-block'),
+					elm$html$Html$Events$onClick(author$project$Main$AskRubric),
+					elm$html$Html$Attributes$disabled(off)
+				]),
+			_List_fromArray(
+				[
+					elm$html$Html$text('Continue')
+				]));
+	};
+	var continueButton = function () {
+		var _n0 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
+		if (_n0.a.$ === 'Just') {
+			if (_n0.b.$ === 'Just') {
+				return _List_fromArray(
+					[
+						btn(false)
+					]);
+			} else {
+				var _n1 = _n0.b;
+				return _List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('text-muted text-center')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('You need to select a property before continuing.')
+							])),
+						btn(true)
+					]);
+			}
+		} else {
+			if (_n0.b.$ === 'Just') {
+				var _n2 = _n0.a;
+				return _List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('text-muted text-center')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('You need to select an activity before continuing.')
+							])),
+						btn(true)
+					]);
+			} else {
+				var _n3 = _n0.a;
+				var _n4 = _n0.b;
+				return _List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('text-muted text-center')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('You need to select a property and an activity before continuing.')
+							])),
+						btn(true)
+					]);
+			}
+		}
+	}();
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -7389,8 +7181,7 @@ var author$project$Main$renderContent = function (model) {
 					A2(author$project$Main$renderScenario, model.activities, model.selectedProperty),
 					_Utils_ap(
 						A2(elm$core$List$indexedMap, author$project$Main$renderStandard, model.standards),
-						_List_fromArray(
-							[submitButton]))))
+						continueButton)))
 			]));
 };
 var author$project$Main$preAppForm = function () {
@@ -7727,7 +7518,6 @@ var author$project$Main$renderSidebar = F3(
 				]));
 	});
 var elm$html$Html$h2 = _VirtualDom_node('h2');
-var elm$html$Html$strong = _VirtualDom_node('strong');
 var elm$html$Html$Attributes$height = function (n) {
 	return A2(
 		_VirtualDom_attribute,
@@ -7777,48 +7567,6 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$text('\n                        This tool is only intended to give an indication of District Plan compliance.\n                        The results given by this tool are only an indication,\n                        and must be verified by a council officer.\n                        ')
 					]))
 			]));
-	var errorMessage = function (e) {
-		return A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('alert alert-danger alert-dismissible'),
-					A2(elm$html$Html$Attributes$attribute, 'role', 'alert')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$strong,
-					_List_Nil,
-					_List_fromArray(
-						[
-							elm$html$Html$text('An error occurred: ')
-						])),
-					elm$html$Html$text(e),
-					A2(
-					elm$html$Html$button,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$type_('button'),
-							elm$html$Html$Attributes$class('close'),
-							A2(elm$html$Html$Attributes$attribute, 'data-dismiss', 'alert'),
-							A2(elm$html$Html$Attributes$attribute, 'aria-label', 'Close')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$span,
-							_List_fromArray(
-								[
-									A2(elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text('×')
-								]))
-						]))
-				]));
-	};
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -7828,13 +7576,6 @@ var author$project$Main$view = function (model) {
 		_List_fromArray(
 			[
 				hero,
-				A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('errors')
-					]),
-				A2(elm$core$List$map, errorMessage, model.errors)),
 				A2(
 				elm$html$Html$div,
 				_List_fromArray(
@@ -7866,6 +7607,85 @@ var elm$core$Basics$never = function (_n0) {
 		continue never;
 	}
 };
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var elm$core$Task$succeed = _Scheduler_succeed;
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
+var elm$core$Task$andThen = _Scheduler_andThen;
+var elm$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return elm$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var elm$core$Task$map2 = F3(
+	function (func, taskA, taskB) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return A2(
+					elm$core$Task$andThen,
+					function (b) {
+						return elm$core$Task$succeed(
+							A2(func, a, b));
+					},
+					taskB);
+			},
+			taskA);
+	});
+var elm$core$Task$sequence = function (tasks) {
+	return A3(
+		elm$core$List$foldr,
+		elm$core$Task$map2(elm$core$List$cons),
+		elm$core$Task$succeed(_List_Nil),
+		tasks);
+};
+var elm$core$Platform$sendToApp = _Platform_sendToApp;
+var elm$core$Task$spawnCmd = F2(
+	function (router, _n0) {
+		var task = _n0.a;
+		return _Scheduler_spawn(
+			A2(
+				elm$core$Task$andThen,
+				elm$core$Platform$sendToApp(router),
+				task));
+	});
+var elm$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			elm$core$Task$map,
+			function (_n0) {
+				return _Utils_Tuple0;
+			},
+			elm$core$Task$sequence(
+				A2(
+					elm$core$List$map,
+					elm$core$Task$spawnCmd(router),
+					commands)));
+	});
+var elm$core$Task$onSelfMsg = F3(
+	function (_n0, _n1, _n2) {
+		return elm$core$Task$succeed(_Utils_Tuple0);
+	});
+var elm$core$Task$cmdMap = F2(
+	function (tagger, _n0) {
+		var task = _n0.a;
+		return elm$core$Task$Perform(
+			A2(elm$core$Task$map, tagger, task));
+	});
+_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
+var elm$core$Task$command = _Platform_leaf('Task');
+var elm$core$Task$perform = F2(
+	function (toMessage, task) {
+		return elm$core$Task$command(
+			elm$core$Task$Perform(
+				A2(elm$core$Task$map, toMessage, task)));
+	});
 var elm$core$String$length = _String_length;
 var elm$core$String$slice = _String_slice;
 var elm$core$String$dropLeft = F2(

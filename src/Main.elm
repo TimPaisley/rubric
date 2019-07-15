@@ -25,7 +25,6 @@ type alias Model =
     , selectedProperty : Maybe Property
     , standards : List Standard
     , status : Status
-    , errors : List String
     }
 
 
@@ -84,8 +83,6 @@ type Status
 
 type Msg
     = NoOp
-    | AddError String
-    | ExpireError
     | SelectActivity Activity
     | SelectMapProperty Decode.Value
     | ReceiveStandards Decode.Value
@@ -101,7 +98,6 @@ init flags =
             , selectedActivity = Nothing
             , selectedProperty = Nothing
             , standards = []
-            , errors = []
             , status = Unknown
             }
     in
@@ -118,12 +114,6 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        AddError e ->
-            ( { model | errors = model.errors ++ [ e ] }, delay 5000 ExpireError )
-
-        ExpireError ->
-            ( { model | errors = List.drop 1 model.errors }, Cmd.none )
-
         SelectActivity activity ->
             ( { model | selectedActivity = Just activity }, Cmd.none )
 
@@ -138,7 +128,7 @@ update msg model =
                             Debug.log "Error decoding section: " <|
                                 Decode.errorToString err
                     in
-                    ( model, addError "Oops! An error has occurred. Check the console for more details." )
+                    ( model, Cmd.none )
 
         ReceiveStandards val ->
             case Decode.decodeValue decodeStandards val of
@@ -151,7 +141,7 @@ update msg model =
                             Debug.log "Error decoding section: " <|
                                 Decode.errorToString err
                     in
-                    ( model, addError "Oops! An error has occurred. Check the console for more details." )
+                    ( model, Cmd.none )
 
         InputAnswer standard question answer ->
             let
@@ -190,14 +180,8 @@ update msg model =
                     in
                     ( model, askRubric <| encodePayload a p allQuestions )
 
-                ( Nothing, Just p ) ->
-                    ( model, addError "You need to select an activity first!" )
-
-                ( Just a, Nothing ) ->
-                    ( model, addError "You need to select a property first!" )
-
-                ( Nothing, Nothing ) ->
-                    ( model, addError "You need to select a property and an activity first!" )
+                _ ->
+                    ( model, Cmd.none )
 
 
 
@@ -368,14 +352,6 @@ decodeStatus =
 view : Model -> Html Msg
 view model =
     let
-        errorMessage e =
-            div [ class "alert alert-danger alert-dismissible", attribute "role" "alert" ]
-                [ strong [] [ text "An error occurred: " ]
-                , text e
-                , button [ type_ "button", class "close", attribute "data-dismiss" "alert", attribute "aria-label" "Close" ]
-                    [ span [ attribute "aria-hidden" "true" ] [ text "×" ] ]
-                ]
-
         hero =
             div [ class "py-5 text-center" ]
                 [ img [ class "d-block mx-auto mb-4", src "logo.png", width 72, height 72 ] []
@@ -392,7 +368,6 @@ view model =
     in
     div [ class "container" ]
         [ hero
-        , div [ class "errors" ] (List.map errorMessage model.errors)
         , div [ class "row mb-5" ]
             [ renderSidebar model.standards model.status model.selectedProperty
             , renderContent model
@@ -457,15 +432,35 @@ renderSidebar standards status prop =
 renderContent : Model -> Html Msg
 renderContent model =
     let
-        submitButton =
-            button [ type_ "button", class "btn btn-primary btn-lg btn-block", onClick AskRubric ]
-                [ text "Ask Rubric" ]
+        continueButton =
+            case ( model.selectedActivity, model.selectedProperty ) of
+                ( Just _, Just _ ) ->
+                    [ btn False ]
+
+                ( Just _, Nothing ) ->
+                    [ div [ class "text-muted text-center" ] [ text "You need to select a property before continuing." ]
+                    , btn True
+                    ]
+
+                ( Nothing, Just _ ) ->
+                    [ div [ class "text-muted text-center" ] [ text "You need to select an activity before continuing." ]
+                    , btn True
+                    ]
+
+                ( Nothing, Nothing ) ->
+                    [ div [ class "text-muted text-center" ] [ text "You need to select a property and an activity before continuing." ]
+                    , btn True
+                    ]
+
+        btn off =
+            button [ type_ "button", class "btn btn-primary btn-lg btn-block", onClick AskRubric, disabled off ]
+                [ text "Continue" ]
     in
     div [ class "col-md-8 order-md-1" ]
         [ Html.form [ attribute "novalidate" "true" ] <|
             renderScenario model.activities model.selectedProperty
                 :: List.indexedMap renderStandard model.standards
-                ++ [ submitButton ]
+                ++ continueButton
         ]
 
 
@@ -502,6 +497,13 @@ renderScenario activities selectedProperty =
         propertyCard =
             case selectedProperty of
                 Just p ->
+                    let
+                        row k v =
+                            div [ class "row" ]
+                                [ div [ class "col-md-4 font-weight-bold" ] [ text k ]
+                                , div [ class "col-md-8" ] [ text v ]
+                                ]
+                    in
                     div [ class "card my-3" ]
                         [ div [ class "row no-gutters" ]
                             [ div [ class "col-md-4" ]
@@ -509,26 +511,11 @@ renderScenario activities selectedProperty =
                             , div [ class "col-md-8" ]
                                 [ div [ class "card-body" ]
                                     [ h5 [ class "card-title mb-3" ] [ text p.fullAddress ]
-                                    , div [ class "row" ]
-                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "Suburb" ]
-                                        , div [ class "col-md-8" ] [ text p.suburb ]
-                                        ]
-                                    , div [ class "row" ]
-                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "PostCode" ]
-                                        , div [ class "col-md-8" ] [ text p.postCode ]
-                                        ]
-                                    , div [ class "row" ]
-                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "Title" ]
-                                        , div [ class "col-md-8" ] [ text p.title ]
-                                        ]
-                                    , div [ class "row" ]
-                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "Valuation ID" ]
-                                        , div [ class "col-md-8" ] [ text p.valuationId ]
-                                        ]
-                                    , div [ class "row" ]
-                                        [ div [ class "col-md-4 font-weight-bold" ] [ text "Zone" ]
-                                        , div [ class "col-md-8" ] [ text p.zone ]
-                                        ]
+                                    , row "Suburb" p.suburb
+                                    , row "PostCode" p.postCode
+                                    , row "Title" p.title
+                                    , row "Valuation ID" p.valuationId
+                                    , row "Zone" p.zone
                                     ]
                                 ]
                             ]
@@ -736,19 +723,6 @@ main =
 
 
 -- HELPERS
-
-
-addError : String -> Cmd Msg
-addError s =
-    AddError s
-        |> Task.succeed
-        |> Task.perform identity
-
-
-delay : Float -> msg -> Cmd msg
-delay time msg =
-    Process.sleep time
-        |> Task.perform (\_ -> msg)
 
 
 statusToString : Status -> String
