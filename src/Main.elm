@@ -42,8 +42,8 @@ type alias Property =
     , valuationId : String
     , valuationWufi : Int
     , zone : String
-    , specialResidentialArea : String
-    , hazardFaultLineArea : String
+    , specialResidentialArea : Maybe String
+    , hazardFaultLineArea : Maybe String
     , imageUrl : String
     }
 
@@ -212,8 +212,8 @@ encodeScenario a p =
         , ( "address", Encode.string p.fullAddress )
         , ( "valuation_wufi", Encode.int p.valuationWufi )
         , ( "zone", Encode.string p.zone )
-        , ( "area_specific_layers", Encode.string p.specialResidentialArea )
-        , ( "hazard_fault_line_area", Encode.string p.hazardFaultLineArea )
+        , ( "area_specific_layers", Encode.string (Maybe.withDefault "" p.specialResidentialArea) )
+        , ( "hazard_fault_line_area", Encode.string (Maybe.withDefault "" p.hazardFaultLineArea) )
         ]
 
 
@@ -256,8 +256,8 @@ decodeProperty =
         |> required "valuationId" string
         |> required "valuationWufi" int
         |> required "zone" string
-        |> optional "specialResidentialArea" string ""
-        |> optional "hazardFaultLineArea" string ""
+        |> required "specialResidentialArea" (nullable string)
+        |> required "hazardFaultLineArea" (nullable string)
         |> required "imageUrl" string
 
 
@@ -355,13 +355,12 @@ view model =
         hero =
             div [ class "py-5 text-center" ]
                 [ img [ class "d-block mx-auto mb-4", src "logo.png", width 72, height 72 ] []
-                , h2 [] [ text "Submit a Building Consent Application" ]
+                , h2 [] [ text "Submit a Resource Consent Application" ]
                 , p [ class "lead" ]
                     [ text
                         """
-                        This tool is only intended to give an indication of District Plan compliance.
-                        The results given by this tool are only an indication,
-                        and must be verified by a council officer.
+                        This tool is only intended to give an indication of District Plan compliance,
+                        and results must be confirmed by a council officer.
                         """
                     ]
                 ]
@@ -387,8 +386,13 @@ renderSidebar standards status prop =
                 [ class <| "list-group-item list-group-item-action d-flex justify-content-between lh-condensed " ++ statusClass
                 , href <| "#standard-" ++ String.fromInt i
                 ]
-                [ h6 [ class "my-0" ] [ text s.name ]
-                , small [ class "text-muted" ] [ text <| statusToString s.status ]
+                [ div []
+                    [ small [] [ text <| formatKey s.key ]
+                    , h6 [ class "my-0" ] [ text s.name ]
+                    ]
+                , div []
+                    [ small [] [ text <| statusToString s.status ]
+                    ]
                 ]
 
         scenario =
@@ -402,30 +406,31 @@ renderSidebar standards status prop =
                 :: List.indexedMap listItem standards
                 |> ul [ class "list-group mb-3" ]
 
-        ( buttonAttrs, modalDialog ) =
-            renderModal "preapp" "Pre-Application Meeting Request" preAppForm
-
         preapp =
             div [ class "card" ]
                 [ div [ class "card-body" ]
                     [ h5 [ class "card-title" ] [ text "Having trouble?" ]
                     , p [ class "card-text" ]
-                        [ text "A council officer can help you through the process in a pre-application meeting." ]
-                    , a ([ href "", class "card-link" ] ++ buttonAttrs) [ text "Apply for a Meeting" ]
+                        [ text "A council officer can help you through the process in a meeting." ]
+                    , a
+                        [ href "https://www.surveygizmo.com/s3/1550552/Resource-Consent-Pre-application-Meeting-Registration"
+                        , target "_blank"
+                        , class "card-link"
+                        ]
+                        [ text "Apply for a Pre-Application Meeting" ]
                     ]
                 ]
     in
     div [ class "col-md-4 order-md-2" ]
         [ div [ class "sticky-top py-3" ]
             [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
-                [ span [ class "text-muted" ] [ text "Questions" ]
+                [ span [ class "text-muted" ] [ text "Standards" ]
                 , span [ class "text-muted badge" ]
-                    [ text <| String.fromInt <| List.length standards + 1 ]
+                    [ text <| String.fromInt (List.length standards) ]
                 ]
             , standardList
             , preapp
             ]
-        , modalDialog
         ]
 
 
@@ -503,6 +508,17 @@ renderScenario activities selectedProperty =
                                 [ div [ class "col-md-4 font-weight-bold" ] [ text k ]
                                 , div [ class "col-md-8" ] [ text v ]
                                 ]
+
+                        maybeRow k maybev =
+                            case maybev of
+                                Just v ->
+                                    div [ class "row" ]
+                                        [ div [ class "col-md-4 font-weight-bold" ] [ text k ]
+                                        , div [ class "col-md-8" ] [ text v ]
+                                        ]
+
+                                Nothing ->
+                                    div [] []
                     in
                     div [ class "card my-3" ]
                         [ div [ class "row no-gutters" ]
@@ -516,6 +532,8 @@ renderScenario activities selectedProperty =
                                     , row "Title" p.title
                                     , row "Valuation ID" p.valuationId
                                     , row "Zone" p.zone
+                                    , maybeRow "Special Residential Area" p.specialResidentialArea
+                                    , maybeRow "Hazard (Fault Line) Area" p.hazardFaultLineArea
                                     ]
                                 ]
                             ]
@@ -560,71 +578,35 @@ renderStandard index standard =
 renderQuestion : Standard -> Question -> Html Msg
 renderQuestion standard question =
     case question.input of
-        Text a p ->
-            div [ class "mb-3" ]
-                [ label [ for question.key ] [ text <| unescape p ]
-                , input
-                    [ id question.key
-                    , class "form-control"
-                    , type_ "text"
-                    , value <| Maybe.withDefault "" a
-                    , onInput (InputAnswer standard question)
-                    ]
-                    []
-                , div [ class "invalid-feedback" ] [ text "This field is required" ]
-                ]
+        Text answer prompt ->
+            textInput
+                (InputAnswer standard question)
+                (Maybe.withDefault "" answer)
+                question.key
+                (unescape prompt)
 
-        Number a p ->
-            div [ class "mb-3" ]
-                [ label [ for question.key ] [ text <| unescape p ]
-                , div [ class "input-group" ]
-                    [ input
-                        [ id question.key
-                        , class "form-control"
-                        , type_ "number"
-                        , value <| Maybe.map String.fromInt >> Maybe.withDefault "" <| a
-                        , onInput (InputAnswer standard question)
-                        ]
-                        []
-                    , div [ class "input-group-append" ]
-                        [ span [ class "input-group-text" ] [ text question.unit ] ]
-                    ]
-                ]
+        Number answer prompt ->
+            numberInput
+                (InputAnswer standard question)
+                (answer |> Maybe.map String.fromInt >> Maybe.withDefault "")
+                question.key
+                (unescape prompt)
+                question.unit
 
-        Multichoice a p ops ->
-            let
-                radioButton o =
-                    div [ class "mb-3" ]
-                        [ input
-                            [ name question.key
-                            , type_ "radio"
-                            , value o
-                            , id o
-                            , class "form-control"
-                            , onInput (InputAnswer standard question)
-                            , checked (a == Just o)
-                            ]
-                            []
-                        , label [ for o ] [ text o ]
-                        ]
-            in
-            div [ class "mb-3" ]
-                [ label [] [ text <| unescape p ]
-                , div [ class "radio-buttons" ] (List.map radioButton ops)
-                ]
+        Multichoice answer prompt options ->
+            multichoiceInput
+                (InputAnswer standard question)
+                answer
+                question.key
+                (unescape prompt)
+                options
 
-        File a p ->
-            div [ class "mb-3" ]
-                [ label [ for question.key ] [ text <| unescape p ]
-                , input
-                    [ id question.key
-                    , class "form-control"
-                    , type_ "file"
-                    , value <| Maybe.withDefault "" a
-                    , onInput (InputAnswer standard question)
-                    ]
-                    []
-                ]
+        File answer prompt ->
+            textInput
+                (InputAnswer standard question)
+                (Maybe.withDefault "" answer)
+                question.key
+                (unescape prompt)
 
 
 renderModal : String -> String -> Html Msg -> ( List (Html.Attribute Msg), Html Msg )
@@ -664,11 +646,8 @@ renderModal name modalHeader modalContent =
 preAppForm : Html Msg
 preAppForm =
     let
-        textInput key question =
-            div [ class "mb-3" ]
-                [ label [ for key ] [ text question ]
-                , input [ id key, class "form-control", type_ "text" ] []
-                ]
+        input =
+            textInput (\_ -> NoOp) ""
 
         section title questions =
             div [ class "standards" ]
@@ -680,20 +659,20 @@ preAppForm =
     in
     Html.form []
         [ section "Contact Person"
-            [ textInput "name" "Name"
-            , textInput "postalAddress" "Postal Address"
-            , textInput "phone" "Phone (day)"
-            , textInput "mobile" "Mobile"
-            , textInput "email" "E-mail"
-            , textInput "fax" "Fax"
+            [ input "name" "Name"
+            , input "postalAddress" "Postal Address"
+            , input "phone" "Phone (day)"
+            , input "mobile" "Mobile"
+            , input "email" "E-mail"
+            , input "fax" "Fax"
             ]
         , section "Other Advisor(s) If Attending"
-            [ textInput "advisor1name" "Advisor 1 Name"
-            , textInput "advisor1expertise" "Advisor 1 Expertise"
-            , textInput "advisor2name" "Advisor 2 Name"
-            , textInput "advisor2expertise" "Advisor 2 Expertise"
-            , textInput "advisor3name" "Advisor 3 Name"
-            , textInput "advisor3expertise" "Advisor 3 Expertise"
+            [ input "advisor1name" "Advisor 1 Name"
+            , input "advisor1expertise" "Advisor 1 Expertise"
+            , input "advisor2name" "Advisor 2 Name"
+            , input "advisor2expertise" "Advisor 2 Expertise"
+            , input "advisor3name" "Advisor 3 Name"
+            , input "advisor3expertise" "Advisor 3 Expertise"
             ]
         ]
 
@@ -723,6 +702,79 @@ main =
 
 
 -- HELPERS
+
+
+textInput : (String -> Msg) -> String -> String -> String -> Html Msg
+textInput message answer key prompt =
+    div [ class "mb-3" ]
+        [ label [ for key ] [ text prompt ]
+        , input
+            [ id key
+            , class "form-control"
+            , type_ "text"
+            , value answer
+            , onInput message
+            ]
+            []
+        ]
+
+
+numberInput : (String -> Msg) -> String -> String -> String -> String -> Html Msg
+numberInput message answer key prompt unit =
+    div [ class "mb-3" ]
+        [ label [ for key ] [ text prompt ]
+        , div [ class "input-group" ]
+            [ input
+                [ id key
+                , class "form-control"
+                , type_ "number"
+                , value answer
+                , onInput message
+                ]
+                []
+            , div [ class "input-group-append" ]
+                [ span [ class "input-group-text" ] [ text unit ] ]
+            ]
+        ]
+
+
+multichoiceInput : (String -> Msg) -> Maybe String -> String -> String -> List String -> Html Msg
+multichoiceInput message answer key prompt options =
+    let
+        radioButton o =
+            div [ class "mb-3" ]
+                [ input
+                    [ name key
+                    , type_ "radio"
+                    , value o
+                    , id o
+                    , class "form-control"
+                    , onInput message
+                    , checked (answer == Just o)
+                    ]
+                    []
+                , label [ for o ] [ text o ]
+                ]
+    in
+    div [ class "mb-3" ]
+        [ label [] [ text prompt ]
+        , div [ class "radio-buttons" ] (List.map radioButton options)
+        ]
+
+
+checkboxInput : Msg -> Bool -> String -> String -> Html Msg
+checkboxInput message switch key prompt =
+    div [ class "mb-3" ]
+        [ label [ for key ] [ text prompt ]
+        , input
+            [ id key
+            , class "form-control"
+            , type_ "checkbox"
+            , checked switch
+            , onClick message
+            ]
+            []
+        ]
 
 
 statusToString : Status -> String
@@ -767,3 +819,8 @@ statusToClass status =
 
         Unknown ->
             "light"
+
+
+formatKey : String -> String
+formatKey key =
+    String.replace "_" "." key
