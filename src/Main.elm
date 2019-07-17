@@ -25,6 +25,7 @@ type alias Model =
     , selectedProperty : Maybe Property
     , standards : List Standard
     , status : Status
+    , answeredQuestions : Int
     }
 
 
@@ -99,6 +100,7 @@ init flags =
             , selectedProperty = Nothing
             , standards = []
             , status = Unknown
+            , answeredQuestions = -1
             }
     in
     ( model, Cmd.none )
@@ -178,7 +180,9 @@ update msg model =
                         allQuestions =
                             List.foldl (\s l -> s.questions ++ l) [] model.standards
                     in
-                    ( model, askRubric <| encodePayload a p allQuestions )
+                    ( { model | answeredQuestions = List.length model.standards }
+                    , askRubric <| encodePayload a p allQuestions
+                    )
 
                 _ ->
                     ( model, Cmd.none )
@@ -200,13 +204,13 @@ port receiveStandards : (Decode.Value -> msg) -> Sub msg
 encodePayload : Activity -> Property -> List Question -> Encode.Value
 encodePayload a p qs =
     Encode.object
-        [ ( "scenario", encodeScenario a p )
+        [ ( "scenario", encodeProposal a p )
         , ( "answers", encodeAnswers qs )
         ]
 
 
-encodeScenario : Activity -> Property -> Encode.Value
-encodeScenario a p =
+encodeProposal : Activity -> Property -> Encode.Value
+encodeProposal a p =
     Encode.object
         [ ( "activity", Encode.string a )
         , ( "address", Encode.string p.fullAddress )
@@ -256,8 +260,8 @@ decodeProperty =
         |> required "valuationId" string
         |> required "valuationWufi" int
         |> required "zone" string
-        |> required "specialResidentialArea" (nullable string)
-        |> required "hazardFaultLineArea" (nullable string)
+        |> optional "specialResidentialArea" (Decode.maybe string) Nothing
+        |> optional "hazardFaultLineArea" (Decode.maybe string) Nothing
         |> required "imageUrl" string
 
 
@@ -355,17 +359,18 @@ view model =
         hero =
             div [ class "py-5 text-center" ]
                 [ img [ class "d-block mx-auto mb-4", src "logo.png", width 72, height 72 ] []
-                , h2 [] [ text "Submit a Resource Consent Application" ]
+                , h2 [] [ text "Apply for a Resource Consent" ]
                 , p [ class "lead" ]
                     [ text
                         """
-                        This tool is only intended to give an indication of District Plan compliance,
-                        and results must be confirmed by a council officer.
+                        This Proof of Concept tool provides an indication of your proposal's compliance
+                        with the District Plan. Results must be verified by a Council Planner. Council
+                        accepts no responsibility of liability for the public's use or misuse of this tool.
                         """
                     ]
                 ]
     in
-    div [ class "container" ]
+    div [ id "home", class "container" ]
         [ hero
         , div [ class "row mb-5" ]
             [ renderSidebar model.standards model.status model.selectedProperty
@@ -402,8 +407,7 @@ renderSidebar standards status prop =
                 ]
 
         standardList =
-            scenario
-                :: List.indexedMap listItem standards
+            List.indexedMap listItem standards
                 |> ul [ class "list-group mb-3" ]
 
         preapp =
@@ -411,20 +415,20 @@ renderSidebar standards status prop =
                 [ div [ class "card-body" ]
                     [ h5 [ class "card-title" ] [ text "Having trouble?" ]
                     , p [ class "card-text" ]
-                        [ text "A council officer can help you through the process in a meeting." ]
+                        [ text "A Council Planner can help you through the process in a meeting." ]
                     , a
                         [ href "https://www.surveygizmo.com/s3/1550552/Resource-Consent-Pre-application-Meeting-Registration"
                         , target "_blank"
                         , class "card-link"
                         ]
-                        [ text "Apply for a Pre-Application Meeting" ]
+                        [ text "Request a Pre-Application Meeting" ]
                     ]
                 ]
     in
     div [ class "col-md-4 order-md-2" ]
         [ div [ class "sticky-top py-3" ]
             [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
-                [ span [ class "text-muted" ] [ text "Standards" ]
+                [ span [ class "text-muted" ] [ text "District Plan Standards" ]
                 , span [ class "text-muted badge" ]
                     [ text <| String.fromInt (List.length standards) ]
                 ]
@@ -438,6 +442,11 @@ renderContent : Model -> Html Msg
 renderContent model =
     let
         continueButton =
+            let
+                btn switch =
+                    button [ type_ "button", class "btn btn-primary btn-lg btn-block", onClick AskRubric, disabled switch ]
+                        [ text "Continue" ]
+            in
             case ( model.selectedActivity, model.selectedProperty ) of
                 ( Just _, Just _ ) ->
                     [ btn False ]
@@ -457,20 +466,37 @@ renderContent model =
                     , btn True
                     ]
 
-        btn off =
-            button [ type_ "button", class "btn btn-primary btn-lg btn-block", onClick AskRubric, disabled off ]
-                [ text "Continue" ]
+        submitButton =
+            button [ type_ "button", class "btn btn-success btn-lg btn-block" ]
+                [ text "Submit" ]
+
+        compliance =
+            Html.form [] <|
+                renderProposal model.activities model.selectedProperty
+                    :: List.indexedMap renderStandard model.standards
+                    ++ continueButton
+
+        details =
+            Html.form []
+                [ renderDetails
+                , submitButton
+                ]
+
+        content =
+            -- List.length model.standards == model.answeredQuestions
+            if False then
+                -- we didn't get any more questions back from the engine
+                details
+
+            else
+                -- we have more questions to answer
+                compliance
     in
-    div [ class "col-md-8 order-md-1" ]
-        [ Html.form [ attribute "novalidate" "true" ] <|
-            renderScenario model.activities model.selectedProperty
-                :: List.indexedMap renderStandard model.standards
-                ++ continueButton
-        ]
+    div [ class "col-md-8 order-md-1" ] [ content ]
 
 
-renderScenario : List Activity -> Maybe Property -> Html Msg
-renderScenario activities selectedProperty =
+renderProposal : List Activity -> Maybe Property -> Html Msg
+renderProposal activities selectedProperty =
     let
         activitySelect =
             div [ class "mb-3" ]
@@ -504,17 +530,17 @@ renderScenario activities selectedProperty =
                 Just p ->
                     let
                         row k v =
-                            div [ class "row" ]
-                                [ div [ class "col-md-4 font-weight-bold" ] [ text k ]
-                                , div [ class "col-md-8" ] [ text v ]
+                            div [ class "row align-items-end" ]
+                                [ div [ class "col-md-6 font-weight-bold" ] [ text k ]
+                                , div [ class "col-md-6" ] [ text v ]
                                 ]
 
                         maybeRow k maybev =
                             case maybev of
                                 Just v ->
-                                    div [ class "row" ]
-                                        [ div [ class "col-md-4 font-weight-bold" ] [ text k ]
-                                        , div [ class "col-md-8" ] [ text v ]
+                                    div [ class "row align-items-end" ]
+                                        [ div [ class "col-md-6 font-weight-bold" ] [ text k ]
+                                        , div [ class "col-md-6" ] [ text v ]
                                         ]
 
                                 Nothing ->
@@ -523,7 +549,7 @@ renderScenario activities selectedProperty =
                     div [ class "card my-3" ]
                         [ div [ class "row no-gutters" ]
                             [ div [ class "col-md-4" ]
-                                [ img [ src p.imageUrl, style "width" "100%" ] [] ]
+                                [ img [ src p.imageUrl, class "cover" ] [] ]
                             , div [ class "col-md-8" ]
                                 [ div [ class "card-body" ]
                                     [ h5 [ class "card-title mb-3" ] [ text p.fullAddress ]
@@ -542,8 +568,8 @@ renderScenario activities selectedProperty =
                 Nothing ->
                     div [] []
     in
-    div [ id "scenario" ]
-        [ h4 [] [ text "Scenario" ]
+    div [ id "proposal" ]
+        [ h4 [] [ text "Proposal" ]
         , activitySelect
         , propertySelect
         , hr [ class "mb-4" ] []
@@ -564,9 +590,9 @@ renderStandard index standard =
                 |> String.join " "
     in
     div [ class "standards", id unique ]
-        [ h4 [ class "d-flex justify-content-start align-items-center mb-3" ]
+        [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
             [ span [] [ text standard.name ]
-            , button ([ type_ "button", class "btn mx-2" ] ++ buttonAttrs) [ text "ⓘ" ]
+            , button ([ type_ "button", class "btn btn-link" ] ++ buttonAttrs) [ text "Read the Standard" ]
             ]
         , div [ class "questions" ] <|
             List.map (renderQuestion standard) standard.questions
@@ -643,8 +669,8 @@ renderModal name modalHeader modalContent =
     ( buttonAttrs, modalDialog )
 
 
-preAppForm : Html Msg
-preAppForm =
+renderDetails : Html Msg
+renderDetails =
     let
         input =
             textInput (\_ -> NoOp) ""
@@ -658,22 +684,8 @@ preAppForm =
                 ]
     in
     Html.form []
-        [ section "Contact Person"
-            [ input "name" "Name"
-            , input "postalAddress" "Postal Address"
-            , input "phone" "Phone (day)"
-            , input "mobile" "Mobile"
-            , input "email" "E-mail"
-            , input "fax" "Fax"
-            ]
-        , section "Other Advisor(s) If Attending"
-            [ input "advisor1name" "Advisor 1 Name"
-            , input "advisor1expertise" "Advisor 1 Expertise"
-            , input "advisor2name" "Advisor 2 Name"
-            , input "advisor2expertise" "Advisor 2 Expertise"
-            , input "advisor3name" "Advisor 3 Name"
-            , input "advisor3expertise" "Advisor 3 Expertise"
-            ]
+        [ section "Contact Person" (personalDetails "contact")
+        , section "Other Advisor(s) If Attending" (personalDetails "advisor")
         ]
 
 
@@ -775,6 +787,33 @@ checkboxInput message switch key prompt =
             ]
             []
         ]
+
+
+personalDetails : String -> List (Html Msg)
+personalDetails key =
+    [ div [ class "row" ]
+        [ div [ class "col-md-6" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-fname") "First Name" ]
+        , div [ class "col-md-6" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-lname") "Last Name" ]
+        ]
+    , div [ class "row" ]
+        [ div [ class "col-md-12" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-address") "Postal Address" ]
+        ]
+    , div [ class "row" ]
+        [ div [ class "col-md-6" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-phone") "Phone (day)" ]
+        , div [ class "col-md-6" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-mobile") "Mobile" ]
+        ]
+    , div [ class "row" ]
+        [ div [ class "col-md-6" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-email") "E-mail" ]
+        , div [ class "col-md-6" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-fax") "Fax" ]
+        ]
+    ]
 
 
 statusToString : Status -> String
