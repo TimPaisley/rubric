@@ -2,6 +2,7 @@ port module Main exposing (Model)
 
 import Browser
 import Browser.Navigation as Nav
+import Dict exposing (Dict)
 import ElmEscapeHtml exposing (escape, unescape)
 import FeatherIcons
 import Html exposing (..)
@@ -23,7 +24,7 @@ type alias Model =
     { activities : List Activity
     , selectedActivity : Maybe Activity
     , selectedProperty : Maybe Property
-    , standards : List Standard
+    , sections : List Section
     , status : Status
     , answeredQuestions : Int
     }
@@ -49,12 +50,13 @@ type alias Property =
     }
 
 
-type alias Standard =
+type alias Section =
     { key : String
     , description : String
     , name : String
-    , questions : List Question
     , section : String
+    , questions : List Question
+    , results : Results
     , status : Status
     }
 
@@ -62,7 +64,27 @@ type alias Standard =
 type alias Question =
     { key : String
     , input : Input
-    , unit : String
+    , unit : Maybe String
+    , prerequisites : List Prerequisite
+    }
+
+
+type alias Results =
+    { status : Status
+    , appliedRules : List Rule
+    , metStandards : List Standard
+    }
+
+
+type alias Rule =
+    { rule : String
+    , status : Status
+    }
+
+
+type alias Standard =
+    { standard : String
+    , engineRule : String
     }
 
 
@@ -71,6 +93,13 @@ type Input
     | Number (Maybe Int) String
     | Multichoice (Maybe String) String (List String)
     | File (Maybe String) String
+
+
+type alias Prerequisite =
+    { field : String
+    , operator : String
+    , value : String
+    }
 
 
 type Status
@@ -86,8 +115,8 @@ type Msg
     = NoOp
     | SelectActivity Activity
     | SelectMapProperty Decode.Value
-    | ReceiveStandards Decode.Value
-    | InputAnswer Standard Question String
+    | ReceiveSections Decode.Value
+    | InputAnswer Section Question String
     | AskRubric
 
 
@@ -98,7 +127,7 @@ init flags =
             { activities = flags
             , selectedActivity = Nothing
             , selectedProperty = Nothing
-            , standards = []
+            , sections = []
             , status = Unknown
             , answeredQuestions = -1
             }
@@ -132,10 +161,10 @@ update msg model =
                     in
                     ( model, Cmd.none )
 
-        ReceiveStandards val ->
-            case Decode.decodeValue decodeStandards val of
+        ReceiveSections val ->
+            case Decode.decodeValue decodeSections val of
                 Ok s ->
-                    ( { model | standards = s }, Cmd.none )
+                    ( { model | sections = s }, Cmd.none )
 
                 Err err ->
                     let
@@ -145,7 +174,7 @@ update msg model =
                     in
                     ( model, Cmd.none )
 
-        InputAnswer standard question answer ->
+        InputAnswer section question answer ->
             let
                 -- oof ouch elm
                 updateInput i =
@@ -165,23 +194,19 @@ update msg model =
                 updateQuestion q =
                     { q | input = updateInput q.input }
 
-                updateStandard s =
+                updateSection s =
                     { s | questions = ListX.updateIf (\q -> q.key == question.key) updateQuestion s.questions }
 
-                newStandards =
-                    ListX.updateIf (\s -> s.key == standard.key) updateStandard model.standards
+                newSections =
+                    ListX.updateIf (\s -> s.key == section.key) updateSection model.sections
             in
-            ( { model | standards = newStandards }, Cmd.none )
+            ( { model | sections = newSections }, Cmd.none )
 
         AskRubric ->
             case ( model.selectedActivity, model.selectedProperty ) of
                 ( Just a, Just p ) ->
-                    let
-                        allQuestions =
-                            List.foldl (\s l -> s.questions ++ l) [] model.standards
-                    in
-                    ( { model | answeredQuestions = List.length model.standards }
-                    , askRubric <| encodePayload a p allQuestions
+                    ( { model | answeredQuestions = List.length model.sections }
+                    , askRubric <| encodePayload a p (answerDictionary model.sections)
                     )
 
                 _ ->
@@ -198,14 +223,14 @@ port selectMapProperty : (Decode.Value -> msg) -> Sub msg
 port askRubric : Encode.Value -> Cmd msg
 
 
-port receiveStandards : (Decode.Value -> msg) -> Sub msg
+port receiveSections : (Decode.Value -> msg) -> Sub msg
 
 
-encodePayload : Activity -> Property -> List Question -> Encode.Value
-encodePayload a p qs =
+encodePayload : Activity -> Property -> Dict String Input -> Encode.Value
+encodePayload activity property answers =
     Encode.object
-        [ ( "scenario", encodeProposal a p )
-        , ( "answers", encodeAnswers qs )
+        [ ( "scenario", encodeProposal activity property )
+        , ( "answers", encodeAnswers answers )
         ]
 
 
@@ -221,11 +246,11 @@ encodeProposal a p =
         ]
 
 
-encodeAnswers : List Question -> Encode.Value
-encodeAnswers questions =
+encodeAnswers : Dict String Input -> Encode.Value
+encodeAnswers answers =
     let
-        formatAnswer q =
-            ( q.key, getInputAnswer q.input )
+        encodeAnswer _ input =
+            getInputAnswer input
 
         encodeMaybe encoder =
             Maybe.map encoder >> Maybe.withDefault Encode.null
@@ -244,7 +269,9 @@ encodeAnswers questions =
                 File a _ ->
                     encodeMaybe Encode.string a
     in
-    List.map formatAnswer questions
+    answers
+        |> Dict.map encodeAnswer
+        |> Dict.toList
         |> Encode.object
 
 
@@ -265,19 +292,20 @@ decodeProperty =
         |> required "imageUrl" string
 
 
-decodeStandards : Decode.Decoder (List Standard)
-decodeStandards =
-    Decode.list decodeStandard
+decodeSections : Decode.Decoder (List Section)
+decodeSections =
+    Decode.list decodeSection
 
 
-decodeStandard : Decode.Decoder Standard
-decodeStandard =
-    Decode.succeed Standard
+decodeSection : Decode.Decoder Section
+decodeSection =
+    Decode.succeed Section
         |> required "key" string
         |> required "description" string
         |> required "name" string
-        |> required "questions" (Decode.list decodeQuestion)
         |> required "section" string
+        |> required "questions" (Decode.list decodeQuestion)
+        |> required "results" decodeResults
         |> optional "activityStatus" decodeStatus Unknown
 
 
@@ -286,7 +314,30 @@ decodeQuestion =
     Decode.succeed Question
         |> required "key" string
         |> required "input" decodeInput
-        |> required "unit" string
+        |> required "unit" (nullable string)
+        |> required "prerequisites" (Decode.list decodePrerequisite)
+
+
+decodeResults : Decode.Decoder Results
+decodeResults =
+    Decode.succeed Results
+        |> required "activityStatus" decodeStatus
+        |> required "appliedRules" (Decode.list decodeRule)
+        |> required "metStandards" (Decode.list decodeStandard)
+
+
+decodeRule : Decode.Decoder Rule
+decodeRule =
+    Decode.succeed Rule
+        |> required "rule" string
+        |> required "activityStatus" decodeStatus
+
+
+decodeStandard : Decode.Decoder Standard
+decodeStandard =
+    Decode.succeed Standard
+        |> required "standard" string
+        |> required "engine_rule" string
 
 
 decodeInput : Decode.Decoder Input
@@ -323,29 +374,37 @@ matchInput format =
             Decode.fail ("Invalid format: " ++ format)
 
 
+decodePrerequisite : Decode.Decoder Prerequisite
+decodePrerequisite =
+    Decode.succeed Prerequisite
+        |> required "field" string
+        |> required "operator" string
+        |> required "value" string
+
+
 decodeStatus : Decode.Decoder Status
 decodeStatus =
-    Decode.string
+    nullable string
         |> Decode.andThen
             (\status ->
                 case status of
-                    "Controlled" ->
+                    Just "Controlled" ->
                         Decode.succeed Controlled
 
-                    "Discretionary Restricted" ->
+                    Just "Discretionary Restricted" ->
                         Decode.succeed DiscretionaryRestricted
 
-                    "Discretionary Unrestricted" ->
+                    Just "Discretionary Unrestricted" ->
                         Decode.succeed DiscretionaryUnrestricted
 
-                    "Non-complying" ->
+                    Just "Non-complying" ->
                         Decode.succeed NonCompliant
 
-                    "Permitted" ->
+                    Just "Permitted" ->
                         Decode.succeed Permitted
 
-                    unknown ->
-                        Decode.fail <| "Unknown status: " ++ unknown
+                    _ ->
+                        Decode.succeed Unknown
             )
 
 
@@ -373,42 +432,41 @@ view model =
     div [ id "home", class "container" ]
         [ hero
         , div [ class "row mb-5" ]
-            [ renderSidebar model.standards model.status model.selectedProperty
+            [ renderSidebar model.sections model.selectedProperty
             , renderContent model
             ]
         ]
 
 
-renderSidebar : List Standard -> Status -> Maybe Property -> Html Msg
-renderSidebar standards status prop =
+renderSidebar : List Section -> Maybe Property -> Html Msg
+renderSidebar sections prop =
     let
-        listItem i s =
+        sectionGroup index section =
             let
-                statusClass =
-                    "list-group-item-" ++ statusToClass s.status
+                statusClass s =
+                    "list-group-item-" ++ statusToClass s
+
+                sectionItem =
+                    a
+                        [ class <| "list-group-item list-group-item-action d-flex justify-content-between align-items-center " ++ statusClass section.results.status
+                        , href <| "#section-" ++ String.fromInt index
+                        ]
+                        [ div [] [ h6 [ class "my-0" ] [ text section.name ] ]
+                        , div [] [ small [] [ text <| statusToString section.results.status ] ]
+                        ]
+
+                ruleItem r =
+                    a [ class "list-group-item list-group-item-action" ]
+                        [ text <| formatKey r.rule ]
+
+                standardItem s =
+                    a [ class "list-group-item list-group-item-action" ]
+                        [ text <| formatKey s.standard ]
             in
-            a
-                [ class <| "list-group-item list-group-item-action d-flex justify-content-between lh-condensed " ++ statusClass
-                , href <| "#standard-" ++ String.fromInt i
-                ]
-                [ div []
-                    [ small [] [ text <| formatKey s.key ]
-                    , h6 [ class "my-0" ] [ text s.name ]
-                    ]
-                , div []
-                    [ small [] [ text <| statusToString s.status ]
-                    ]
-                ]
-
-        scenario =
-            a [ class "list-group-item list-group-item-action d-flex justify-content-between lh-condensed", href "#scenario" ]
-                [ h6 [ class "my-0" ] [ text "Scenario" ]
-                , small [ class "text-muted" ] [ text "Required" ]
-                ]
-
-        standardList =
-            List.indexedMap listItem standards
-                |> ul [ class "list-group mb-3" ]
+            div [ class "list-group mb-3" ] <|
+                sectionItem
+                    :: List.map ruleItem section.results.appliedRules
+                    ++ List.map standardItem section.results.metStandards
 
         preapp =
             div [ class "card" ]
@@ -428,11 +486,12 @@ renderSidebar standards status prop =
     div [ class "col-md-4 order-md-2" ]
         [ div [ class "sticky-top py-3" ]
             [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
-                [ span [ class "text-muted" ] [ text "District Plan Standards" ]
+                [ span [ class "text-muted" ] [ text "Sections" ]
                 , span [ class "text-muted badge" ]
-                    [ text <| String.fromInt (List.length standards) ]
+                    [ text <| String.fromInt (List.length sections) ]
                 ]
-            , standardList
+            , List.indexedMap sectionGroup sections
+                |> ul [ class "list-group mb-3" ]
             , preapp
             ]
         ]
@@ -469,16 +528,16 @@ renderContent model =
         compliance =
             Html.form [] <|
                 renderProposal model.activities model.selectedProperty
-                    :: List.indexedMap renderStandard model.standards
+                    :: List.indexedMap (renderSection <| answerDictionary model.sections) model.sections
                     ++ continueButton
 
         content =
-            -- List.length model.standards == model.answeredQuestions
-            if List.length model.standards == model.answeredQuestions then
+            -- List.length model.sections == model.answeredQuestions
+            if False then
                 -- we didn't get any more questions back from the engine
                 case ( model.selectedActivity, model.selectedProperty ) of
                     ( Just a, Just p ) ->
-                        renderApplicationForm a p model.standards
+                        renderApplicationForm a p model.sections
 
                     _ ->
                         compliance
@@ -571,63 +630,77 @@ renderProposal activities selectedProperty =
         ]
 
 
-renderStandard : Int -> Standard -> Html Msg
-renderStandard index standard =
+renderSection : Dict String Input -> Int -> Section -> Html Msg
+renderSection answers index section =
     let
         unique =
-            "standard-" ++ String.fromInt index
+            "section-" ++ String.fromInt index
 
         ( buttonAttrs, modalDialog ) =
-            renderModal (unique ++ "-modal") standard.name (text placeholder)
+            renderModal (unique ++ "-modal") section.name (text placeholder)
 
         placeholder =
             List.repeat 500 "placeholder"
                 |> String.join " "
     in
-    div [ class "standards", id unique ]
+    div [ class "sections", id unique ]
         [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
-            [ span [] [ text standard.name ]
-            , button ([ type_ "button", class "btn btn-link" ] ++ buttonAttrs) [ text "Read the Standard" ]
-            ]
+            [ span [] [ text section.name ] ]
         , div [ class "questions" ] <|
-            List.map (renderQuestion standard) standard.questions
+            List.map (renderQuestion answers section) section.questions
         , hr [ class "mb-4" ] []
         , modalDialog
         ]
 
 
-renderQuestion : Standard -> Question -> Html Msg
-renderQuestion standard question =
-    case question.input of
-        Text answer prompt ->
-            textInput
-                (InputAnswer standard question)
-                (Maybe.withDefault "" answer)
-                question.key
-                (unescape prompt)
+renderQuestion : Dict String Input -> Section -> Question -> Html Msg
+renderQuestion answers section question =
+    let
+        met { field, operator, value } =
+            case ( Dict.get field answers, operator ) of
+                ( Just (Multichoice a _ _), "equal" ) ->
+                    a == Just value
 
-        Number answer prompt ->
-            numberInput
-                (InputAnswer standard question)
-                (answer |> Maybe.map String.fromInt >> Maybe.withDefault "")
-                question.key
-                (unescape prompt)
-                question.unit
+                _ ->
+                    False
 
-        Multichoice answer prompt options ->
-            multichoiceInput
-                (InputAnswer standard question)
-                answer
-                question.key
-                (unescape prompt)
-                options
+        input =
+            case question.input of
+                Text answer prompt ->
+                    textInput
+                        (InputAnswer section question)
+                        (Maybe.withDefault "" answer)
+                        question.key
+                        (unescape prompt)
 
-        File answer prompt ->
-            textInput
-                (InputAnswer standard question)
-                (Maybe.withDefault "" answer)
-                question.key
-                (unescape prompt)
+                Number answer prompt ->
+                    numberInput
+                        (InputAnswer section question)
+                        (answer |> Maybe.map String.fromInt >> Maybe.withDefault "")
+                        question.key
+                        (unescape prompt)
+                        question.unit
+
+                Multichoice answer prompt options ->
+                    multichoiceInput
+                        (InputAnswer section question)
+                        answer
+                        question.key
+                        (unescape prompt)
+                        options
+
+                File answer prompt ->
+                    textInput
+                        (InputAnswer section question)
+                        (Maybe.withDefault "" answer)
+                        question.key
+                        (unescape prompt)
+    in
+    if List.map met question.prerequisites |> List.member False then
+        div [] []
+
+    else
+        input
 
 
 renderModal : String -> String -> Html Msg -> ( List (Html.Attribute Msg), Html Msg )
@@ -664,8 +737,8 @@ renderModal name modalHeader modalContent =
     ( buttonAttrs, modalDialog )
 
 
-renderApplicationForm : Activity -> Property -> List Standard -> Html Msg
-renderApplicationForm activity property standards =
+renderApplicationForm : Activity -> Property -> List Section -> Html Msg
+renderApplicationForm activity property sections =
     let
         input =
             textInput (\_ -> NoOp) ""
@@ -682,7 +755,7 @@ renderApplicationForm activity property standards =
                 ]
 
         section title questions =
-            div [ class "standards" ]
+            div [ class "sections" ]
                 [ h4 [ class "d-flex justify-content-start align-items-center mb-3" ]
                     [ span [] [ text title ] ]
                 , div [ class "questions" ] questions
@@ -991,7 +1064,7 @@ renderApplicationForm activity property standards =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch [ selectMapProperty SelectMapProperty, receiveStandards ReceiveStandards ]
+    Sub.batch [ selectMapProperty SelectMapProperty, receiveSections ReceiveSections ]
 
 
 
@@ -1043,8 +1116,18 @@ textInputWithHelp message answer key prompt help =
         ]
 
 
-numberInput : (String -> Msg) -> String -> String -> String -> String -> Html Msg
+numberInput : (String -> Msg) -> String -> String -> String -> Maybe String -> Html Msg
 numberInput message answer key prompt unit =
+    let
+        appendUnit =
+            case unit of
+                Just u ->
+                    div [ class "input-group-append" ]
+                        [ span [ class "input-group-text" ] [ text u ] ]
+
+                Nothing ->
+                    div [] []
+    in
     div [ class "mb-3" ]
         [ label [ for key ] [ text prompt ]
         , div [ class "input-group" ]
@@ -1056,8 +1139,7 @@ numberInput message answer key prompt unit =
                 , onInput message
                 ]
                 []
-            , div [ class "input-group-append" ]
-                [ span [ class "input-group-text" ] [ text unit ] ]
+            , appendUnit
             ]
         ]
 
@@ -1066,23 +1148,14 @@ multichoiceInput : (String -> Msg) -> Maybe String -> String -> String -> List S
 multichoiceInput message answer key prompt options =
     let
         radioButton o =
-            div [ class "mb-3" ]
-                [ input
-                    [ name key
-                    , type_ "radio"
-                    , value o
-                    , id o
-                    , class "form-control"
-                    , onInput message
-                    , checked (answer == Just o)
-                    ]
-                    []
-                , label [ for o ] [ text o ]
+            div [ class "form-check form-check-inline" ]
+                [ input [ type_ "radio", value o, id o, class "form-check-input", onInput message, checked (answer == Just o) ] []
+                , label [ for o, class "form-check-label" ] [ text o ]
                 ]
     in
     div [ class "mb-3" ]
         [ label [] [ text prompt ]
-        , div [ class "radio-buttons" ] (List.map radioButton options)
+        , div [] (List.map radioButton options)
         ]
 
 
@@ -1172,3 +1245,10 @@ statusToClass status =
 formatKey : String -> String
 formatKey key =
     String.replace "_" "." key
+
+
+answerDictionary : List Section -> Dict String Input
+answerDictionary sections =
+    List.foldl (\s l -> s.questions ++ l) [] sections
+        |> List.map (\q -> ( q.key, q.input ))
+        |> Dict.fromList
