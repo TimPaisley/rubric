@@ -484,14 +484,14 @@ renderSidebar sections prop =
                 ]
     in
     div [ class "col-md-4 order-md-2" ]
-        [ div [ class "sticky-top py-3" ]
+        [ div [ class "sticky-top py-3 vh-100 d-flex flex-column" ]
             [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
-                [ span [ class "text-muted" ] [ text "Sections" ]
+                [ span [ class "text-muted" ] [ text "Summary of Compliance" ]
                 , span [ class "text-muted badge" ]
                     [ text <| String.fromInt (List.length sections) ]
                 ]
             , List.indexedMap sectionGroup sections
-                |> ul [ class "list-group mb-3" ]
+                |> ul [ class "list-group overflow-auto mb-3" ]
             , preapp
             ]
         ]
@@ -658,6 +658,12 @@ renderQuestion answers section question =
     let
         met { field, operator, value } =
             case ( Dict.get field answers, operator ) of
+                ( Just (Text a _), "equal" ) ->
+                    a == Just value
+
+                ( Just (Number a _), "equal" ) ->
+                    Maybe.map String.fromInt a == Just value
+
                 ( Just (Multichoice a _ _), "equal" ) ->
                     a == Just value
 
@@ -1211,7 +1217,7 @@ statusToString status =
             "Discretionary Unrestricted"
 
         NonCompliant ->
-            "Non-compliant"
+            "Non-complying"
 
         Permitted ->
             "Permitted"

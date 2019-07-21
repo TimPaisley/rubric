@@ -8152,22 +8152,43 @@ var marcosh$elm_html_to_unicode$ElmEscapeHtml$unescapeChars = function (list) {
 var marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape = marcosh$elm_html_to_unicode$ElmEscapeHtml$convert(marcosh$elm_html_to_unicode$ElmEscapeHtml$unescapeChars);
 var author$project$Main$renderQuestion = F3(
 	function (answers, section, question) {
-		var met = function (_n3) {
-			var field = _n3.field;
-			var operator = _n3.operator;
-			var value = _n3.value;
+		var met = function (_n5) {
+			var field = _n5.field;
+			var operator = _n5.operator;
+			var value = _n5.value;
 			var _n1 = _Utils_Tuple2(
 				A2(elm$core$Dict$get, field, answers),
 				operator);
-			if (((_n1.a.$ === 'Just') && (_n1.a.a.$ === 'Multichoice')) && (_n1.b === 'equal')) {
-				var _n2 = _n1.a.a;
-				var a = _n2.a;
-				return _Utils_eq(
-					a,
-					elm$core$Maybe$Just(value));
-			} else {
-				return false;
+			_n1$3:
+			while (true) {
+				if ((_n1.a.$ === 'Just') && (_n1.b === 'equal')) {
+					switch (_n1.a.a.$) {
+						case 'Text':
+							var _n2 = _n1.a.a;
+							var a = _n2.a;
+							return _Utils_eq(
+								a,
+								elm$core$Maybe$Just(value));
+						case 'Number':
+							var _n3 = _n1.a.a;
+							var a = _n3.a;
+							return _Utils_eq(
+								A2(elm$core$Maybe$map, elm$core$String$fromInt, a),
+								elm$core$Maybe$Just(value));
+						case 'Multichoice':
+							var _n4 = _n1.a.a;
+							var a = _n4.a;
+							return _Utils_eq(
+								a,
+								elm$core$Maybe$Just(value));
+						default:
+							break _n1$3;
+					}
+				} else {
+					break _n1$3;
+				}
 			}
+			return false;
 		};
 		var input = function () {
 			var _n0 = question.input;
@@ -8467,7 +8488,7 @@ var author$project$Main$statusToString = function (status) {
 		case 'DiscretionaryUnrestricted':
 			return 'Discretionary Unrestricted';
 		case 'NonCompliant':
-			return 'Non-compliant';
+			return 'Non-complying';
 		case 'Permitted':
 			return 'Permitted';
 		default:
@@ -8635,7 +8656,7 @@ var author$project$Main$renderSidebar = F2(
 					elm$html$Html$div,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$class('sticky-top py-3')
+							elm$html$Html$Attributes$class('sticky-top py-3 vh-100 d-flex flex-column')
 						]),
 					_List_fromArray(
 						[
@@ -8655,7 +8676,7 @@ var author$project$Main$renderSidebar = F2(
 										]),
 									_List_fromArray(
 										[
-											elm$html$Html$text('Sections')
+											elm$html$Html$text('Summary of Compliance')
 										])),
 									A2(
 									elm$html$Html$span,
@@ -8674,7 +8695,7 @@ var author$project$Main$renderSidebar = F2(
 							elm$html$Html$ul,
 							_List_fromArray(
 								[
-									elm$html$Html$Attributes$class('list-group mb-3')
+									elm$html$Html$Attributes$class('list-group overflow-auto mb-3')
 								]),
 							A2(elm$core$List$indexedMap, sectionGroup, sections)),
 							preapp
