@@ -5567,13 +5567,23 @@ var author$project$Main$answerDictionary = function (sections) {
 				sections)));
 };
 var author$project$Main$askRubric = _Platform_outgoingPort('askRubric', elm$core$Basics$identity);
-var author$project$Main$ApplicationQuestion = F4(
-	function (key, input, question, help) {
-		return {help: help, input: input, key: key, question: question};
+var author$project$Main$ApplicationQuestion = F3(
+	function (key, input, help) {
+		return {help: help, input: input, key: key};
 	});
 var author$project$Main$ApplicationSection = F3(
 	function (name, info, questions) {
 		return {info: info, name: name, questions: questions};
+	});
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
 	});
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');
@@ -5601,25 +5611,22 @@ var author$project$Main$createApplication = function (model) {
 			elm$html$Html$text('\n                    To satisfy the requirement of Section 88(2) of the Resource Management Act 1991\n                    and rule 3.2.2 in the District Plan. If all of the required information is not\n                    provided we may be unable to accept your application and it will be returned to you.\n                    ')),
 		_List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-consideration',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Matters for consideration for the Assessment of Environmental Effects',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Matters for consideration for the Assessment of Environmental Effects'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        As determined by your answers to questions about the proposed activity in\n                        relation to the standards in the District Plan, below are the matters for\n                        consideration for the Assessment of Environmental Effects:\n\n                        [insert from RuBRIC the matters for consideration] \n                        '))),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-ingo-aee',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Assessment of Environmental Effects',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Assessment of Environmental Effects'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        The Assessment of Environmental Effects (AEE) is an assessment of any actual\n                        or potential effects that the activity may have on the environment, and the ways\n                        in which any adverse effects may be mitigated, as per Section 88(6) of the\n                        Resource Management Act 1991.\n                        '))),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-rma',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Assessment against Part 2 of the RMA Matters',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Assessment against Part 2 of the RMA Matters'),
 				elm$core$Maybe$Just(
 					A2(
 						elm$html$Html$div,
@@ -5639,55 +5646,47 @@ var author$project$Main$createApplication = function (model) {
 									])),
 								elm$html$Html$text('.')
 							])))),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-planning-docs',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        Assess the consistency of the effects of your proposal against objectives and policies from\n                        the District Plan AND against any relevant planning documents in section 104(1)(b) of the\n                        Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]\n                        '))),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-title-records',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Current copies of all Records of Title for the Subject Site',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Current copies of all Records of Title for the Subject Site'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        A \'current\' record of title is one that has been issued by Land Information New Zealand within the last 3 months,\n                        including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered\n                        instruments, such as right of way documents, esplanade instruments, etc.\n                        '))),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-plan-scale',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Site Plan Scale',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Site Plan Scale'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-plan-existing-detail',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Site Plan Existing Detail',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Site Plan Existing Detail'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-plan-proposed-detail',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Site Plan Proposed Detail',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Site Plan Proposed Detail'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-elevation-drawings',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Elevation Drawings',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Elevation Drawings'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-other-info',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Other Information which may be required by the District Plan',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Other Information which may be required by the District Plan'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-party-approval',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Written Approvals from Affected Parties',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Written Approvals from Affected Parties'),
 				elm$core$Maybe$Nothing)
 			]));
 	var siteVisit = A3(
@@ -5697,119 +5696,131 @@ var author$project$Main$createApplication = function (model) {
 			elm$html$Html$text('\n                In order to assess your application it will generally be necessary for the Council Planner to visit your site.\n                This typically involves an outdoor inspection only, and there is no need for you to be home for this purpose.\n                ')),
 		_List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'site-visit-security',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Are there any locked gates, security systems or anything else restricting access by Council?',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Are there any locked gates, security systems or anything else restricting access by Council?'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'site-visit-dogs',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Are there any dogs on the property?',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Are there any dogs on the property?'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'site-visit-notice',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Do you require notice prior to the site visit?',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Do you require notice prior to the site visit?'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'site-visit-safety',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Are there any other Health and Safety requirements Council staff should be aware of before visiting the site. If so, please describe.',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Are there any other Health and Safety requirements Council staff should be aware of before visiting the site. If so, please describe.'),
 				elm$core$Maybe$Nothing)
 			]));
-	var propertyInformation = A3(
-		author$project$Main$ApplicationSection,
-		'Property Information',
-		elm$core$Maybe$Nothing,
-		_List_fromArray(
-			[
-				A4(
-				author$project$Main$ApplicationQuestion,
-				'property-image',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Image',
-				elm$core$Maybe$Nothing),
-				A4(
-				author$project$Main$ApplicationQuestion,
-				'property-address',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Address',
-				elm$core$Maybe$Nothing),
-				A4(
-				author$project$Main$ApplicationQuestion,
-				'property-wufi',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'WUFI',
-				elm$core$Maybe$Nothing),
-				A4(
-				author$project$Main$ApplicationQuestion,
-				'property-zone',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Zone',
-				elm$core$Maybe$Nothing),
-				A4(
-				author$project$Main$ApplicationQuestion,
-				'property-legal-description',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Legal Description of the Site for this Application',
-				elm$core$Maybe$Nothing),
-				A4(
-				author$project$Main$ApplicationQuestion,
-				'property-aka',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Any Other Commonly Known Names of the Site',
-				elm$core$Maybe$Nothing),
-				A4(
-				author$project$Main$ApplicationQuestion,
-				'property-description',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Site Description',
-				elm$core$Maybe$Just(
-					elm$html$Html$text('\n                        Describe the site including its natural and physical characteristics and any adjacent\n                        uses that may be relevant to the consideration of the application.\n                        ')))
-			]));
+	var propertyInformation = function () {
+		var zone = A2(
+			elm$core$Maybe$map,
+			function ($) {
+				return $.zone;
+			},
+			model.selectedProperty);
+		var wufi = A2(
+			elm$core$Maybe$map,
+			elm$core$String$fromInt,
+			A2(
+				elm$core$Maybe$map,
+				function ($) {
+					return $.valuationWufi;
+				},
+				model.selectedProperty));
+		var image = A2(
+			elm$core$Maybe$map,
+			function ($) {
+				return $.imageUrl;
+			},
+			model.selectedProperty);
+		var address = A2(
+			elm$core$Maybe$map,
+			function ($) {
+				return $.fullAddress;
+			},
+			model.selectedProperty);
+		return A3(
+			author$project$Main$ApplicationSection,
+			'Property Information',
+			elm$core$Maybe$Nothing,
+			_List_fromArray(
+				[
+					A3(
+					author$project$Main$ApplicationQuestion,
+					'property-image',
+					A2(author$project$Main$Text, image, 'Image'),
+					elm$core$Maybe$Nothing),
+					A3(
+					author$project$Main$ApplicationQuestion,
+					'property-address',
+					A2(author$project$Main$Text, address, 'Address'),
+					elm$core$Maybe$Nothing),
+					A3(
+					author$project$Main$ApplicationQuestion,
+					'property-wufi',
+					A2(author$project$Main$Text, wufi, 'WUFI'),
+					elm$core$Maybe$Nothing),
+					A3(
+					author$project$Main$ApplicationQuestion,
+					'property-zone',
+					A2(author$project$Main$Text, zone, 'Zone'),
+					elm$core$Maybe$Nothing),
+					A3(
+					author$project$Main$ApplicationQuestion,
+					'property-legal-description',
+					A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Legal Description of the Site for this Application'),
+					elm$core$Maybe$Nothing),
+					A3(
+					author$project$Main$ApplicationQuestion,
+					'property-aka',
+					A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Any Other Commonly Known Names of the Site'),
+					elm$core$Maybe$Nothing),
+					A3(
+					author$project$Main$ApplicationQuestion,
+					'property-description',
+					A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Site Description'),
+					elm$core$Maybe$Just(
+						elm$html$Html$text('\n                        Describe the site including its natural and physical characteristics and any adjacent\n                        uses that may be relevant to the consideration of the application.\n                        ')))
+				]));
+	}();
 	var personalDetailQuestions = function (key) {
 		return _List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				key + '-fname',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'First Name',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'First Name'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				key + '-lname',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Last Name',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Last Name'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				key + '-address',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Postal Address',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Postal Address'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				key + '-phone',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Phone (day)',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Phone (day)'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				key + '-mobile',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Mobile',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Mobile'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				key + '-email',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'E-mail',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'E-mail'),
 				elm$core$Maybe$Nothing)
 			]);
 	};
@@ -5824,18 +5835,16 @@ var author$project$Main$createApplication = function (model) {
 		elm$core$Maybe$Nothing,
 		_List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'other-consents',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Are there any other resource consents required/granted from any consent authority for this activity?',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Are there any other resource consents required/granted from any consent authority for this activity?'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        Applicant to check with Greater Wellington Regional Council to confirm this.\n                        '))),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'other-consents-details',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Detail of other resource consents required',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Detail of other resource consents required'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        A statement specifying all other resource consents that the applicant may require\n                        from any consent authority in respect of the activity to which the application relates,\n                        and whether or not the applicant has applied for such consents.\n                        ')))
 			]));
@@ -5868,18 +5877,16 @@ var author$project$Main$createApplication = function (model) {
 					]))),
 		_List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'nes-hail',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        If \'Yes\', and your application involves subdividing or changing the use of the land, sampling\n                        or disturbing soil, or removing or replacing a fuel storage system, then the NES may apply and\n                        you may need to seek consent for this concurrently in your application.\n                        '))),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'nes-assessment',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Assessment against the NES',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Assessment against the NES'),
 				elm$core$Maybe$Nothing)
 			]));
 	var fees = A3(
@@ -5889,17 +5896,15 @@ var author$project$Main$createApplication = function (model) {
 			elm$html$Html$text('\n                An initial fee must be paid before we can process your application.\n                The initial fee due for this non-notified land use consent is: $1650\n                ')),
 		_List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'fees-method',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Payment Method',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Payment Method'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'fees-declaration',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Declaration for Initial Fee',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Declaration for Initial Fee'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        I confirm that I have read and understood the fee payment terms, conditions and\n                        declaration for the service of applying for a resource consent [link to guidance\n                        on text \'fee payment terms, conditions and declaration\']\n                        ')))
 			]));
@@ -5909,11 +5914,10 @@ var author$project$Main$createApplication = function (model) {
 		elm$core$Maybe$Nothing,
 		_List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'activity-description',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Description of Activity',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Description of Activity'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        Clearly describe the proposal to which this application relates.\n                        ')))
 			]));
@@ -5923,17 +5927,15 @@ var author$project$Main$createApplication = function (model) {
 		elm$core$Maybe$Nothing,
 		_List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'authorised-declaration-name',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Full Name of Agent',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Full Name of Agent'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'authorised-declaration-declaration',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Declaration for Agent',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Declaration for Agent'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        As authorised agent for the applicant, I confirm that I have read and understood\n                        the notes for the applicant [link to the guidance pop up on the text \'notes for\n                        the applicant\'] and confirm that I have fully informed the applicant of their/its\n                        liability under this application, including for fees and other charges, and that\n                        I have the applicant\'s authority to submit this application on their/its behalf.\n                        ')))
 			]));
@@ -5943,17 +5945,15 @@ var author$project$Main$createApplication = function (model) {
 		elm$core$Maybe$Nothing,
 		_List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'application-name',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Name of the Person Submitting this Form',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Name of the Person Submitting this Form'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'declaration-declaration',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Declaration',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Declaration'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        I confirm that I have read and understood the notes for the applicant.\n                        [link to the guidance pop up on the text \'notes for the applicant\']\n                        ')))
 			]));
@@ -5963,30 +5963,26 @@ var author$project$Main$createApplication = function (model) {
 		elm$core$Maybe$Nothing,
 		_List_fromArray(
 			[
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'consent-type',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Consent Type',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Consent Type'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'consent-type-activity',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Proposed Activity',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Proposed Activity'),
 				elm$core$Maybe$Nothing),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'consent-type-activity-status',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Prefilled'),
-				'Overall Activity Status',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Overall Activity Status'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        This status is indicative only, and must be verified by a Council Planner.\n                        '))),
-				A4(
+				A3(
 				author$project$Main$ApplicationQuestion,
 				'consent-type-fast-track',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-				'Fast-track Consent',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Fast-track Consent'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        I opt out / do not opt out of the fast track consent process\n                        ')))
 			]));
@@ -6007,11 +6003,10 @@ var author$project$Main$createApplication = function (model) {
 		_Utils_ap(
 			_List_fromArray(
 				[
-					A4(
+					A3(
 					author$project$Main$ApplicationQuestion,
 					'additional-invoices-send',
-					A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
-					'Payment Method',
+					A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Payment Method'),
 					elm$core$Maybe$Nothing)
 				]),
 			personalDetailQuestions('additional-invoices')));
@@ -6431,16 +6426,6 @@ var elm$core$Dict$map = F2(
 				A2(elm$core$Dict$map, func, right));
 		}
 	});
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
 var elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -6695,6 +6680,15 @@ var author$project$Main$update = F2(
 var author$project$Main$ToggleApplication = {$: 'ToggleApplication'};
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
+var elm$json$Json$Encode$bool = _Json_wrap;
+var elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$bool(bool));
+	});
+var elm$html$Html$Attributes$checked = elm$html$Html$Attributes$boolProperty('checked');
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
@@ -6732,636 +6726,6 @@ var elm$html$Html$Events$onInput = function (tagger) {
 			elm$html$Html$Events$alwaysStop,
 			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
 };
-var author$project$Main$textInput = F5(
-	function (message, answer, key, prompt, help) {
-		var helpDiv = function () {
-			if (help.$ === 'Just') {
-				var h = help.a;
-				return A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('small text-muted mb-2')
-						]),
-					_List_fromArray(
-						[h]));
-			} else {
-				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-			}
-		}();
-		return A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('mb-3')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$label,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$for(key),
-							elm$html$Html$Attributes$class('mb-0')
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text(prompt)
-						])),
-					helpDiv,
-					A2(
-					elm$html$Html$input,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$id(key),
-							elm$html$Html$Attributes$class('form-control'),
-							elm$html$Html$Attributes$type_('text'),
-							elm$html$Html$Attributes$value(answer),
-							elm$html$Html$Events$onInput(message)
-						]),
-					_List_Nil)
-				]));
-	});
-var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$h4 = _VirtualDom_node('h4');
-var elm$html$Html$hr = _VirtualDom_node('hr');
-var elm$html$Html$p = _VirtualDom_node('p');
-var elm$html$Html$span = _VirtualDom_node('span');
-var author$project$Main$renderApplicationForm = function (sections) {
-	var submitButton = A2(
-		elm$html$Html$button,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$type_('button'),
-				elm$html$Html$Attributes$class('btn btn-success btn-lg btn-block')
-			]),
-		_List_fromArray(
-			[
-				elm$html$Html$text('Submit')
-			]));
-	var renderAppQuestion = function (_n3) {
-		var key = _n3.key;
-		var input = _n3.input;
-		var question = _n3.question;
-		var help = _n3.help;
-		return A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('row')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('col-md-12')
-						]),
-					_List_fromArray(
-						[
-							A5(
-							author$project$Main$textInput,
-							function (_n2) {
-								return author$project$Main$NoOp;
-							},
-							'',
-							key,
-							question,
-							help)
-						]))
-				]));
-	};
-	var renderAppSection = function (_n1) {
-		var name = _n1.name;
-		var info = _n1.info;
-		var questions = _n1.questions;
-		var infoCard = function () {
-			if (info.$ === 'Just') {
-				var i = info.a;
-				return A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('card mb-3')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('card-body')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									elm$html$Html$p,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('card-text')
-										]),
-									_List_fromArray(
-										[i]))
-								]))
-						]));
-			} else {
-				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-			}
-		}();
-		return A2(
-			elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$h4,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center mb-3')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$span,
-							_List_Nil,
-							_List_fromArray(
-								[
-									elm$html$Html$text(name)
-								]))
-						])),
-					infoCard,
-					A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('questions')
-						]),
-					A2(elm$core$List$map, renderAppQuestion, questions)),
-					A2(
-					elm$html$Html$hr,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('mb-4')
-						]),
-					_List_Nil)
-				]));
-	};
-	return A2(
-		elm$html$Html$div,
-		_List_Nil,
-		A2(elm$core$List$map, renderAppSection, sections));
-};
-var author$project$Main$SelectActivity = function (a) {
-	return {$: 'SelectActivity', a: a};
-};
-var elm$html$Html$h5 = _VirtualDom_node('h5');
-var elm$html$Html$img = _VirtualDom_node('img');
-var elm$html$Html$option = _VirtualDom_node('option');
-var elm$html$Html$select = _VirtualDom_node('select');
-var elm$json$Json$Encode$bool = _Json_wrap;
-var elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$bool(bool));
-	});
-var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
-var elm$html$Html$Attributes$hidden = elm$html$Html$Attributes$boolProperty('hidden');
-var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
-var elm$html$Html$Attributes$readonly = elm$html$Html$Attributes$boolProperty('readOnly');
-var elm$html$Html$Attributes$selected = elm$html$Html$Attributes$boolProperty('selected');
-var elm$html$Html$Attributes$src = function (url) {
-	return A2(
-		elm$html$Html$Attributes$stringProperty,
-		'src',
-		_VirtualDom_noJavaScriptOrHtmlUri(url));
-};
-var author$project$Main$renderProposal = F2(
-	function (activities, selectedProperty) {
-		var propertyCard = function () {
-			if (selectedProperty.$ === 'Just') {
-				var p = selectedProperty.a;
-				var row = F2(
-					function (k, v) {
-						return A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('row align-items-end')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									elm$html$Html$div,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('col-md-6 font-weight-bold')
-										]),
-									_List_fromArray(
-										[
-											elm$html$Html$text(k)
-										])),
-									A2(
-									elm$html$Html$div,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('col-md-6')
-										]),
-									_List_fromArray(
-										[
-											elm$html$Html$text(v)
-										]))
-								]));
-					});
-				var maybeRow = F2(
-					function (k, maybev) {
-						if (maybev.$ === 'Just') {
-							var v = maybev.a;
-							return A2(
-								elm$html$Html$div,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('row align-items-end')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$div,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('col-md-6 font-weight-bold')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text(k)
-											])),
-										A2(
-										elm$html$Html$div,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('col-md-6')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text(v)
-											]))
-									]));
-						} else {
-							return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-						}
-					});
-				return A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('card my-3')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('row no-gutters')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									elm$html$Html$div,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('col-md-4')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											elm$html$Html$img,
-											_List_fromArray(
-												[
-													elm$html$Html$Attributes$src(p.imageUrl),
-													elm$html$Html$Attributes$class('cover')
-												]),
-											_List_Nil)
-										])),
-									A2(
-									elm$html$Html$div,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('col-md-8')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											elm$html$Html$div,
-											_List_fromArray(
-												[
-													elm$html$Html$Attributes$class('card-body')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													elm$html$Html$h5,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('card-title mb-3')
-														]),
-													_List_fromArray(
-														[
-															elm$html$Html$text(p.fullAddress)
-														])),
-													A2(row, 'Suburb', p.suburb),
-													A2(row, 'PostCode', p.postCode),
-													A2(row, 'Title', p.title),
-													A2(row, 'Valuation ID', p.valuationId),
-													A2(row, 'Zone', p.zone),
-													A2(maybeRow, 'Special Residential Area', p.specialResidentialArea),
-													A2(maybeRow, 'Hazard (Fault Line) Area', p.hazardFaultLineArea)
-												]))
-										]))
-								]))
-						]));
-			} else {
-				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-			}
-		}();
-		var propertySelect = function () {
-			var propertyTable = function () {
-				if (selectedProperty.$ === 'Just') {
-					var p = selectedProperty.a;
-					return A2(
-						elm$html$Html$input,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('form-control'),
-								elm$html$Html$Attributes$readonly(true),
-								elm$html$Html$Attributes$value(p.fullAddress)
-							]),
-						_List_Nil);
-				} else {
-					return A2(
-						elm$html$Html$input,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('form-control'),
-								elm$html$Html$Attributes$readonly(true),
-								elm$html$Html$Attributes$placeholder('Please use the map to select a property...')
-							]),
-						_List_Nil);
-				}
-			}();
-			return A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('mb-3')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$label,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$for('property-select')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('What is the address of the property?')
-							])),
-						A2(
-						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$id('search-widget')
-							]),
-						_List_Nil),
-						A2(
-						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$id('map')
-							]),
-						_List_Nil),
-						propertyCard
-					]));
-		}();
-		var activitySelect = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('mb-3')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$label,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$for('activity-select')
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('What do you want to do?')
-						])),
-					A2(
-					elm$html$Html$select,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$id('activity-select'),
-							elm$html$Html$Attributes$class('form-control'),
-							elm$html$Html$Events$onInput(author$project$Main$SelectActivity)
-						]),
-					A2(
-						elm$core$List$cons,
-						A2(
-							elm$html$Html$option,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$hidden(true),
-									elm$html$Html$Attributes$disabled(true),
-									elm$html$Html$Attributes$selected(true)
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text('Select an activity...')
-								])),
-						A2(
-							elm$core$List$map,
-							function (a) {
-								return A2(
-									elm$html$Html$option,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$value(a)
-										]),
-									_List_fromArray(
-										[
-											elm$html$Html$text(a)
-										]));
-							},
-							activities)))
-				]));
-		return A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$id('proposal')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$h4,
-					_List_Nil,
-					_List_fromArray(
-						[
-							elm$html$Html$text('Proposal')
-						])),
-					activitySelect,
-					propertySelect,
-					A2(
-					elm$html$Html$hr,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('mb-4')
-						]),
-					_List_Nil)
-				]));
-	});
-var elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var elm$html$Html$Attributes$attribute = elm$virtual_dom$VirtualDom$attribute;
-var elm$html$Html$Attributes$tabindex = function (n) {
-	return A2(
-		_VirtualDom_attribute,
-		'tabIndex',
-		elm$core$String$fromInt(n));
-};
-var author$project$Main$renderModal = F3(
-	function (name, modalHeader, modalContent) {
-		var title = name + '-title';
-		var header = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('modal-header')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$h5,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('modal-title'),
-							elm$html$Html$Attributes$id(title)
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text(modalHeader)
-						])),
-					A2(
-					elm$html$Html$button,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$type_('button'),
-							elm$html$Html$Attributes$class('close'),
-							A2(elm$html$Html$Attributes$attribute, 'data-dismiss', 'modal'),
-							A2(elm$html$Html$Attributes$attribute, 'aria-label', 'Close')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$span,
-							_List_fromArray(
-								[
-									A2(elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text('×')
-								]))
-						]))
-				]));
-		var footer = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('modal-footer')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$button,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$type_('button'),
-							elm$html$Html$Attributes$class('btn btn-secondary'),
-							A2(elm$html$Html$Attributes$attribute, 'data-dismiss', 'modal')
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('Close')
-						]))
-				]));
-		var buttonAttrs = _List_fromArray(
-			[
-				A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
-				A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + name)
-			]);
-		var body = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('modal-body')
-				]),
-			_List_fromArray(
-				[modalContent]));
-		var modalDialog = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('modal fade'),
-					elm$html$Html$Attributes$id(name),
-					elm$html$Html$Attributes$tabindex(-1),
-					A2(elm$html$Html$Attributes$attribute, 'role', 'dialog'),
-					A2(elm$html$Html$Attributes$attribute, 'aria-labelledby', title)
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('modal-dialog modal-lg modal-dialog-scrollable'),
-							A2(elm$html$Html$Attributes$attribute, 'role', 'document')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('modal-content')
-								]),
-							_List_fromArray(
-								[header, body, footer]))
-						]))
-				]));
-		return _Utils_Tuple2(buttonAttrs, modalDialog);
-	});
-var author$project$Main$InputAnswer = F3(
-	function (a, b, c) {
-		return {$: 'InputAnswer', a: a, b: b, c: c};
-	});
-var elm$html$Html$Attributes$checked = elm$html$Html$Attributes$boolProperty('checked');
 var author$project$Main$multichoiceInput = F5(
 	function (message, answer, key, prompt, options) {
 		var radioButton = function (o) {
@@ -7424,6 +6788,7 @@ var author$project$Main$multichoiceInput = F5(
 					A2(elm$core$List$map, radioButton, options))
 				]));
 	});
+var elm$html$Html$span = _VirtualDom_node('span');
 var author$project$Main$numberInput = F5(
 	function (message, answer, key, prompt, unit) {
 		var appendUnit = function () {
@@ -7493,66 +6858,55 @@ var author$project$Main$numberInput = F5(
 						]))
 				]));
 	});
-var elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return elm$core$Maybe$Nothing;
+var author$project$Main$textInput = F5(
+	function (message, answer, key, prompt, help) {
+		var helpDiv = function () {
+			if (help.$ === 'Just') {
+				var h = help.a;
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('small text-muted mb-2')
+						]),
+					_List_fromArray(
+						[h]));
 			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
-				switch (_n1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
+				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
 			}
-		}
-	});
-var elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var elm$core$List$member = F2(
-	function (x, xs) {
+		}();
 		return A2(
-			elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('mb-3')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$label,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$for(key),
+							elm$html$Html$Attributes$class('mb-0')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(prompt)
+						])),
+					helpDiv,
+					A2(
+					elm$html$Html$input,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$id(key),
+							elm$html$Html$Attributes$class('form-control'),
+							elm$html$Html$Attributes$type_('text'),
+							elm$html$Html$Attributes$value(answer),
+							elm$html$Html$Events$onInput(message)
+						]),
+					_List_Nil)
+				]));
 	});
 var elm$core$String$concat = function (strings) {
 	return A2(elm$core$String$join, '', strings);
@@ -7604,6 +6958,37 @@ var marcosh$elm_html_to_unicode$ElmEscapeHtml$convertCode = F5(
 		} else {
 			var something = maybe.a;
 			return lister(something);
+		}
+	});
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
 		}
 	});
 var elm$core$Char$fromCode = _Char_fromCode;
@@ -8237,96 +7622,702 @@ var marcosh$elm_html_to_unicode$ElmEscapeHtml$unescapeChars = function (list) {
 	return A3(marcosh$elm_html_to_unicode$ElmEscapeHtml$parser, list, _List_Nil, _List_Nil);
 };
 var marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape = marcosh$elm_html_to_unicode$ElmEscapeHtml$convert(marcosh$elm_html_to_unicode$ElmEscapeHtml$unescapeChars);
+var author$project$Main$inputToHtml = F5(
+	function (input, key, unit, msg, help) {
+		switch (input.$) {
+			case 'Text':
+				var answer = input.a;
+				var prompt = input.b;
+				return A5(
+					author$project$Main$textInput,
+					msg,
+					A2(elm$core$Maybe$withDefault, '', answer),
+					key,
+					marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
+					help);
+			case 'Number':
+				var answer = input.a;
+				var prompt = input.b;
+				return A5(
+					author$project$Main$numberInput,
+					msg,
+					A3(
+						elm$core$Basics$composeR,
+						elm$core$Maybe$map(elm$core$String$fromInt),
+						elm$core$Maybe$withDefault(''),
+						answer),
+					key,
+					marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
+					unit);
+			case 'Multichoice':
+				var answer = input.a;
+				var prompt = input.b;
+				var options = input.c;
+				return A5(
+					author$project$Main$multichoiceInput,
+					msg,
+					answer,
+					key,
+					marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
+					options);
+			default:
+				var answer = input.a;
+				var prompt = input.b;
+				return A5(
+					author$project$Main$textInput,
+					msg,
+					A2(elm$core$Maybe$withDefault, '', answer),
+					key,
+					marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
+					help);
+		}
+	});
+var elm$html$Html$button = _VirtualDom_node('button');
+var elm$html$Html$h4 = _VirtualDom_node('h4');
+var elm$html$Html$hr = _VirtualDom_node('hr');
+var elm$html$Html$p = _VirtualDom_node('p');
+var author$project$Main$renderApplicationForm = function (sections) {
+	var submitButton = A2(
+		elm$html$Html$button,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$type_('button'),
+				elm$html$Html$Attributes$class('btn btn-success btn-lg btn-block')
+			]),
+		_List_fromArray(
+			[
+				elm$html$Html$text('Submit')
+			]));
+	var renderAppQuestion = function (_n3) {
+		var key = _n3.key;
+		var input = _n3.input;
+		var help = _n3.help;
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('row')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('col-md-12')
+						]),
+					_List_fromArray(
+						[
+							A5(
+							author$project$Main$inputToHtml,
+							input,
+							key,
+							elm$core$Maybe$Nothing,
+							function (_n2) {
+								return author$project$Main$NoOp;
+							},
+							help)
+						]))
+				]));
+	};
+	var renderAppSection = function (_n1) {
+		var name = _n1.name;
+		var info = _n1.info;
+		var questions = _n1.questions;
+		var infoCard = function () {
+			if (info.$ === 'Just') {
+				var i = info.a;
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('card mb-3')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('card-body')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('card-text')
+										]),
+									_List_fromArray(
+										[i]))
+								]))
+						]));
+			} else {
+				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+			}
+		}();
+		return A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h4,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center mb-3')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$span,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text(name)
+								]))
+						])),
+					infoCard,
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('questions')
+						]),
+					A2(elm$core$List$map, renderAppQuestion, questions)),
+					A2(
+					elm$html$Html$hr,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('mb-4')
+						]),
+					_List_Nil)
+				]));
+	};
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		A2(elm$core$List$map, renderAppSection, sections));
+};
+var author$project$Main$SelectActivity = function (a) {
+	return {$: 'SelectActivity', a: a};
+};
+var elm$html$Html$h5 = _VirtualDom_node('h5');
+var elm$html$Html$img = _VirtualDom_node('img');
+var elm$html$Html$option = _VirtualDom_node('option');
+var elm$html$Html$select = _VirtualDom_node('select');
+var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
+var elm$html$Html$Attributes$hidden = elm$html$Html$Attributes$boolProperty('hidden');
+var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
+var elm$html$Html$Attributes$readonly = elm$html$Html$Attributes$boolProperty('readOnly');
+var elm$html$Html$Attributes$selected = elm$html$Html$Attributes$boolProperty('selected');
+var elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var author$project$Main$renderProposal = F2(
+	function (activities, selectedProperty) {
+		var propertyCard = function () {
+			if (selectedProperty.$ === 'Just') {
+				var p = selectedProperty.a;
+				var row = F2(
+					function (k, v) {
+						return A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('row align-items-end')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('col-md-6 font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(k)
+										])),
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('col-md-6')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(v)
+										]))
+								]));
+					});
+				var maybeRow = F2(
+					function (k, maybev) {
+						if (maybev.$ === 'Just') {
+							var v = maybev.a;
+							return A2(
+								elm$html$Html$div,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('row align-items-end')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$div,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('col-md-6 font-weight-bold')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(k)
+											])),
+										A2(
+										elm$html$Html$div,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('col-md-6')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(v)
+											]))
+									]));
+						} else {
+							return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+						}
+					});
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('card my-3')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('row no-gutters')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('col-md-4')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$img,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$src(p.imageUrl),
+													elm$html$Html$Attributes$class('cover')
+												]),
+											_List_Nil)
+										])),
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('col-md-8')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$div,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('card-body')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$h5,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('card-title mb-3')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(p.fullAddress)
+														])),
+													A2(row, 'Suburb', p.suburb),
+													A2(row, 'PostCode', p.postCode),
+													A2(row, 'Title', p.title),
+													A2(row, 'Valuation ID', p.valuationId),
+													A2(row, 'Zone', p.zone),
+													A2(maybeRow, 'Special Residential Area', p.specialResidentialArea),
+													A2(maybeRow, 'Hazard (Fault Line) Area', p.hazardFaultLineArea)
+												]))
+										]))
+								]))
+						]));
+			} else {
+				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+			}
+		}();
+		var propertySelect = function () {
+			var propertyTable = function () {
+				if (selectedProperty.$ === 'Just') {
+					var p = selectedProperty.a;
+					return A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('form-control'),
+								elm$html$Html$Attributes$readonly(true),
+								elm$html$Html$Attributes$value(p.fullAddress)
+							]),
+						_List_Nil);
+				} else {
+					return A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('form-control'),
+								elm$html$Html$Attributes$readonly(true),
+								elm$html$Html$Attributes$placeholder('Please use the map to select a property...')
+							]),
+						_List_Nil);
+				}
+			}();
+			return A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('mb-3')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$label,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$for('property-select')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('What is the address of the property?')
+							])),
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$id('search-widget')
+							]),
+						_List_Nil),
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$id('map')
+							]),
+						_List_Nil),
+						propertyCard
+					]));
+		}();
+		var activitySelect = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('mb-3')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$label,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$for('activity-select')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('What do you want to do?')
+						])),
+					A2(
+					elm$html$Html$select,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$id('activity-select'),
+							elm$html$Html$Attributes$class('form-control'),
+							elm$html$Html$Events$onInput(author$project$Main$SelectActivity)
+						]),
+					A2(
+						elm$core$List$cons,
+						A2(
+							elm$html$Html$option,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$hidden(true),
+									elm$html$Html$Attributes$disabled(true),
+									elm$html$Html$Attributes$selected(true)
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text('Select an activity...')
+								])),
+						A2(
+							elm$core$List$map,
+							function (a) {
+								return A2(
+									elm$html$Html$option,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$value(a)
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(a)
+										]));
+							},
+							activities)))
+				]));
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$id('proposal')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h4,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('Proposal')
+						])),
+					activitySelect,
+					propertySelect,
+					A2(
+					elm$html$Html$hr,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('mb-4')
+						]),
+					_List_Nil)
+				]));
+	});
+var elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var elm$html$Html$Attributes$attribute = elm$virtual_dom$VirtualDom$attribute;
+var elm$html$Html$Attributes$tabindex = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'tabIndex',
+		elm$core$String$fromInt(n));
+};
+var author$project$Main$renderModal = F3(
+	function (name, modalHeader, modalContent) {
+		var title = name + '-title';
+		var header = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('modal-header')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h5,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('modal-title'),
+							elm$html$Html$Attributes$id(title)
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(modalHeader)
+						])),
+					A2(
+					elm$html$Html$button,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$type_('button'),
+							elm$html$Html$Attributes$class('close'),
+							A2(elm$html$Html$Attributes$attribute, 'data-dismiss', 'modal'),
+							A2(elm$html$Html$Attributes$attribute, 'aria-label', 'Close')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$span,
+							_List_fromArray(
+								[
+									A2(elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text('×')
+								]))
+						]))
+				]));
+		var footer = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('modal-footer')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$button,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$type_('button'),
+							elm$html$Html$Attributes$class('btn btn-secondary'),
+							A2(elm$html$Html$Attributes$attribute, 'data-dismiss', 'modal')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('Close')
+						]))
+				]));
+		var buttonAttrs = _List_fromArray(
+			[
+				A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
+				A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + name)
+			]);
+		var body = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('modal-body')
+				]),
+			_List_fromArray(
+				[modalContent]));
+		var modalDialog = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('modal fade'),
+					elm$html$Html$Attributes$id(name),
+					elm$html$Html$Attributes$tabindex(-1),
+					A2(elm$html$Html$Attributes$attribute, 'role', 'dialog'),
+					A2(elm$html$Html$Attributes$attribute, 'aria-labelledby', title)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('modal-dialog modal-lg modal-dialog-scrollable'),
+							A2(elm$html$Html$Attributes$attribute, 'role', 'document')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('modal-content')
+								]),
+							_List_fromArray(
+								[header, body, footer]))
+						]))
+				]));
+		return _Utils_Tuple2(buttonAttrs, modalDialog);
+	});
+var author$project$Main$InputAnswer = F3(
+	function (a, b, c) {
+		return {$: 'InputAnswer', a: a, b: b, c: c};
+	});
+var elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
 var author$project$Main$renderQuestion = F3(
 	function (answers, section, question) {
-		var met = function (_n5) {
-			var field = _n5.field;
-			var operator = _n5.operator;
-			var value = _n5.value;
-			var _n1 = _Utils_Tuple2(
+		var met = function (_n4) {
+			var field = _n4.field;
+			var operator = _n4.operator;
+			var value = _n4.value;
+			var _n0 = _Utils_Tuple2(
 				A2(elm$core$Dict$get, field, answers),
 				operator);
-			_n1$3:
+			_n0$3:
 			while (true) {
-				if ((_n1.a.$ === 'Just') && (_n1.b === 'equal')) {
-					switch (_n1.a.a.$) {
+				if ((_n0.a.$ === 'Just') && (_n0.b === 'equal')) {
+					switch (_n0.a.a.$) {
 						case 'Text':
-							var _n2 = _n1.a.a;
-							var a = _n2.a;
+							var _n1 = _n0.a.a;
+							var a = _n1.a;
 							return _Utils_eq(
 								a,
 								elm$core$Maybe$Just(value));
 						case 'Number':
-							var _n3 = _n1.a.a;
-							var a = _n3.a;
+							var _n2 = _n0.a.a;
+							var a = _n2.a;
 							return _Utils_eq(
 								A2(elm$core$Maybe$map, elm$core$String$fromInt, a),
 								elm$core$Maybe$Just(value));
 						case 'Multichoice':
-							var _n4 = _n1.a.a;
-							var a = _n4.a;
+							var _n3 = _n0.a.a;
+							var a = _n3.a;
 							return _Utils_eq(
 								a,
 								elm$core$Maybe$Just(value));
 						default:
-							break _n1$3;
+							break _n0$3;
 					}
 				} else {
-					break _n1$3;
+					break _n0$3;
 				}
 			}
 			return false;
 		};
-		var input = function () {
-			var _n0 = question.input;
-			switch (_n0.$) {
-				case 'Text':
-					var answer = _n0.a;
-					var prompt = _n0.b;
-					return A5(
-						author$project$Main$textInput,
-						A2(author$project$Main$InputAnswer, section, question),
-						A2(elm$core$Maybe$withDefault, '', answer),
-						question.key,
-						marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
-						elm$core$Maybe$Nothing);
-				case 'Number':
-					var answer = _n0.a;
-					var prompt = _n0.b;
-					return A5(
-						author$project$Main$numberInput,
-						A2(author$project$Main$InputAnswer, section, question),
-						A3(
-							elm$core$Basics$composeR,
-							elm$core$Maybe$map(elm$core$String$fromInt),
-							elm$core$Maybe$withDefault(''),
-							answer),
-						question.key,
-						marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
-						question.unit);
-				case 'Multichoice':
-					var answer = _n0.a;
-					var prompt = _n0.b;
-					var options = _n0.c;
-					return A5(
-						author$project$Main$multichoiceInput,
-						A2(author$project$Main$InputAnswer, section, question),
-						answer,
-						question.key,
-						marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
-						options);
-				default:
-					var answer = _n0.a;
-					var prompt = _n0.b;
-					return A5(
-						author$project$Main$textInput,
-						A2(author$project$Main$InputAnswer, section, question),
-						A2(elm$core$Maybe$withDefault, '', answer),
-						question.key,
-						marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
-						elm$core$Maybe$Nothing);
-			}
-		}();
+		var input = A5(
+			author$project$Main$inputToHtml,
+			question.input,
+			question.key,
+			question.unit,
+			A2(author$project$Main$InputAnswer, section, question),
+			elm$core$Maybe$Nothing);
 		return A2(
 			elm$core$List$member,
 			false,
