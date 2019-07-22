@@ -514,29 +514,51 @@ renderSidebar sections prop =
                         ]
 
                 ruleItem r =
+                    let
+                        mfd =
+                            case r.mattersOfDiscretion of
+                                [] ->
+                                    div [] []
+
+                                _ ->
+                                    div []
+                                        [ div [ class "small mb-0 mt-2 font-weight-bold" ] [ text "Matters for Discretion" ]
+                                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) r.mattersOfDiscretion)
+                                        ]
+                    in
                     a [ class "list-group-item list-group-item-action py-1" ]
                         [ div [ class "d-flex justify-content-between align-items-center" ]
                             [ div []
                                 [ small [] [ text <| formatKey r.key ]
                                 , h6 [ class "my-0" ] [ text <| r.title ]
                                 ]
-
-                            -- , small [ class "text-muted" ] [ text "Click to Read Rule" ]
+                            , small [ class "text-muted" ] [ text r.status ]
                             ]
-                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) r.mattersOfDiscretion)
+                        , mfd
                         ]
 
                 conditionItem c =
+                    let
+                        mfd =
+                            case c.mattersOfDiscretion of
+                                [] ->
+                                    div [] []
+
+                                _ ->
+                                    div []
+                                        [ div [ class "small mb-0 mt-2 font-weight-bold" ] [ text "Matters for Discretion" ]
+                                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) c.mattersOfDiscretion)
+                                        ]
+                    in
                     a [ class "list-group-item list-group-item-action py-1" ]
                         [ div [ class "d-flex justify-content-between align-items-center" ]
                             [ div []
                                 [ small [] [ text <| formatKey c.key ]
                                 , h6 [ class "my-0" ] [ text <| c.title ]
                                 ]
-
-                            -- , small [ class "text-muted" ] [ text "Click to Read Condition" ]
+                            , small [ class "text-muted" ] [ text c.status ]
                             ]
-                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) c.mattersOfDiscretion)
+                        , mfd
                         ]
 
                 standardItem s =
@@ -545,8 +567,7 @@ renderSidebar sections prop =
                             [ small [] [ text <| formatKey s.key ]
                             , h6 [ class "my-0" ] [ text <| s.title ]
                             ]
-
-                        -- , small [ class "text-muted" ] [ text "Click to Read Standard" ]
+                        , small [ class "text-muted" ] [ text s.status ]
                         ]
             in
             div [ class "list-group mb-3" ] <|

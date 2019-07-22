@@ -8694,6 +8694,16 @@ var author$project$Main$renderSidebar = F2(
 											[
 												elm$html$Html$text(s.title)
 											]))
+									])),
+								A2(
+								elm$html$Html$small,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('text-muted')
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(s.status)
 									]))
 							]));
 				};
@@ -8740,6 +8750,50 @@ var author$project$Main$renderSidebar = F2(
 								]))
 						]));
 				var ruleItem = function (r) {
+					var mfd = function () {
+						var _n1 = r.mattersOfDiscretion;
+						if (!_n1.b) {
+							return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+						} else {
+							return A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$div,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('small mb-0 mt-2 font-weight-bold')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('Matters for Discretion')
+											])),
+										A2(
+										elm$html$Html$ul,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('small')
+											]),
+										A2(
+											elm$core$List$map,
+											function (m) {
+												return A2(
+													elm$html$Html$li,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('mb-2')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(m)
+														]));
+											},
+											r.mattersOfDiscretion))
+									]));
+						}
+					}();
 					return A2(
 						elm$html$Html$a,
 						_List_fromArray(
@@ -8779,32 +8833,66 @@ var author$project$Main$renderSidebar = F2(
 													[
 														elm$html$Html$text(r.title)
 													]))
+											])),
+										A2(
+										elm$html$Html$small,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('text-muted')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(r.status)
 											]))
 									])),
-								A2(
-								elm$html$Html$ul,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('small')
-									]),
-								A2(
-									elm$core$List$map,
-									function (m) {
-										return A2(
-											elm$html$Html$li,
-											_List_fromArray(
-												[
-													elm$html$Html$Attributes$class('mb-2')
-												]),
-											_List_fromArray(
-												[
-													elm$html$Html$text(m)
-												]));
-									},
-									r.mattersOfDiscretion))
+								mfd
 							]));
 				};
 				var conditionItem = function (c) {
+					var mfd = function () {
+						var _n0 = c.mattersOfDiscretion;
+						if (!_n0.b) {
+							return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+						} else {
+							return A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$div,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('small mb-0 mt-2 font-weight-bold')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('Matters for Discretion')
+											])),
+										A2(
+										elm$html$Html$ul,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('small')
+											]),
+										A2(
+											elm$core$List$map,
+											function (m) {
+												return A2(
+													elm$html$Html$li,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('mb-2')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(m)
+														]));
+											},
+											c.mattersOfDiscretion))
+									]));
+						}
+					}();
 					return A2(
 						elm$html$Html$a,
 						_List_fromArray(
@@ -8844,29 +8932,19 @@ var author$project$Main$renderSidebar = F2(
 													[
 														elm$html$Html$text(c.title)
 													]))
+											])),
+										A2(
+										elm$html$Html$small,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('text-muted')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(c.status)
 											]))
 									])),
-								A2(
-								elm$html$Html$ul,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('small')
-									]),
-								A2(
-									elm$core$List$map,
-									function (m) {
-										return A2(
-											elm$html$Html$li,
-											_List_fromArray(
-												[
-													elm$html$Html$Attributes$class('mb-2')
-												]),
-											_List_fromArray(
-												[
-													elm$html$Html$text(m)
-												]));
-									},
-									c.mattersOfDiscretion))
+								mfd
 							]));
 				};
 				return A2(
