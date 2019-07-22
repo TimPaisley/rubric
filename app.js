@@ -5575,11 +5575,30 @@ var author$project$Main$ApplicationSection = F3(
 	function (name, info, questions) {
 		return {info: info, name: name, questions: questions};
 	});
+var elm$html$Html$a = _VirtualDom_node('a');
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$json$Json$Encode$string = _Json_wrap;
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
 var author$project$Main$createApplication = function (model) {
 	var supportingInformation = A3(
 		author$project$Main$ApplicationSection,
 		'Supporting Information',
-		elm$core$Maybe$Just('\n                To satisfy the requirement of Section 88(2) of the Resource Management Act 1991\n                and rule 3.2.2 in the District Plan. If all of the required information is not\n                provided we may be unable to accept your application and it will be returned to you.\n                '),
+		elm$core$Maybe$Just(
+			elm$html$Html$text('\n                    To satisfy the requirement of Section 88(2) of the Resource Management Act 1991\n                    and rule 3.2.2 in the District Plan. If all of the required information is not\n                    provided we may be unable to accept your application and it will be returned to you.\n                    ')),
 		_List_fromArray(
 			[
 				A4(
@@ -5587,31 +5606,53 @@ var author$project$Main$createApplication = function (model) {
 				'supporting-info-consideration',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Matters for consideration for the Assessment of Environmental Effects',
-				elm$core$Maybe$Just('\n                        As determined by your answers to questions about the proposed activity in\n                        relation to the standards in the District Plan, below are the matters for\n                        consideration for the Assessment of Environmental Effects:\n\n                        [insert from RuBRIC the matters for consideration] \n                        ')),
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        As determined by your answers to questions about the proposed activity in\n                        relation to the standards in the District Plan, below are the matters for\n                        consideration for the Assessment of Environmental Effects:\n\n                        [insert from RuBRIC the matters for consideration] \n                        '))),
 				A4(
 				author$project$Main$ApplicationQuestion,
 				'supporting-ingo-aee',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Assessment of Environmental Effects',
-				elm$core$Maybe$Just('\n                        The Assessment of Environmental Effects (AEE) is an assessment of any actual\n                        or potential effects that the activity may have on the environment, and the ways\n                        in which any adverse effects may be mitigated, as per Section 88(6) of the\n                        Resource Management Act 1991.\n                        ')),
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        The Assessment of Environmental Effects (AEE) is an assessment of any actual\n                        or potential effects that the activity may have on the environment, and the ways\n                        in which any adverse effects may be mitigated, as per Section 88(6) of the\n                        Resource Management Act 1991.\n                        '))),
 				A4(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-rma',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Assessment against Part 2 of the RMA Matters',
-				elm$core$Maybe$Just('\n                        Assess the consistency of the effects of your proposal against Part 2 of the Resource Management Act 1991\n                        [link on the text \'Resource Management Act 1991\'\n                        http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1]\n                        ')),
+				elm$core$Maybe$Just(
+					A2(
+						elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Assess the consistency of the effects of your proposal against Part 2 of the '),
+								A2(
+								elm$html$Html$a,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$href('http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1')
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text('Resource Management Act 1991')
+									])),
+								elm$html$Html$text('.')
+							])))),
 				A4(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-planning-docs',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents',
-				elm$core$Maybe$Just('\n                        Assess the consistency of the effects of your proposal against objectives and policies from\n                        the District Plan AND against any relevant planning documents in section 104(1)(b) of the\n                        Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]\n                        ')),
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        Assess the consistency of the effects of your proposal against objectives and policies from\n                        the District Plan AND against any relevant planning documents in section 104(1)(b) of the\n                        Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]\n                        '))),
 				A4(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-title-records',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Current copies of all Records of Title for the Subject Site',
-				elm$core$Maybe$Just('\n                        A \'current\' record of title is one that has been issued by Land Information New Zealand within the last 3 months,\n                        including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered\n                        instruments, such as right of way documents, esplanade instruments, etc.\n                        ')),
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        A \'current\' record of title is one that has been issued by Land Information New Zealand within the last 3 months,\n                        including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered\n                        instruments, such as right of way documents, esplanade instruments, etc.\n                        '))),
 				A4(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-plan-scale',
@@ -5652,7 +5693,8 @@ var author$project$Main$createApplication = function (model) {
 	var siteVisit = A3(
 		author$project$Main$ApplicationSection,
 		'Site Visit',
-		elm$core$Maybe$Just('\n                In order to assess your application it will generally be necessary for the Council Planner to visit your site.\n                This typically involves an outdoor inspection only, and there is no need for you to be home for this purpose.\n                '),
+		elm$core$Maybe$Just(
+			elm$html$Html$text('\n                In order to assess your application it will generally be necessary for the Council Planner to visit your site.\n                This typically involves an outdoor inspection only, and there is no need for you to be home for this purpose.\n                ')),
 		_List_fromArray(
 			[
 				A4(
@@ -5700,6 +5742,18 @@ var author$project$Main$createApplication = function (model) {
 				elm$core$Maybe$Nothing),
 				A4(
 				author$project$Main$ApplicationQuestion,
+				'property-wufi',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
+				'WUFI',
+				elm$core$Maybe$Nothing),
+				A4(
+				author$project$Main$ApplicationQuestion,
+				'property-zone',
+				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
+				'Zone',
+				elm$core$Maybe$Nothing),
+				A4(
+				author$project$Main$ApplicationQuestion,
 				'property-legal-description',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Legal Description of the Site for this Application',
@@ -5715,7 +5769,8 @@ var author$project$Main$createApplication = function (model) {
 				'property-description',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Site Description',
-				elm$core$Maybe$Just('\n                        Describe the site including its natural and physical characteristics and any adjacent\n                        uses that may be relevant to the consideration of the application.\n                        '))
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        Describe the site including its natural and physical characteristics and any adjacent\n                        uses that may be relevant to the consideration of the application.\n                        ')))
 			]));
 	var personalDetailQuestions = function (key) {
 		return _List_fromArray(
@@ -5774,13 +5829,15 @@ var author$project$Main$createApplication = function (model) {
 				'other-consents',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Are there any other resource consents required/granted from any consent authority for this activity?',
-				elm$core$Maybe$Just('\n                        Applicant to check with Greater Wellington Regional Council to confirm this.\n                        ')),
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        Applicant to check with Greater Wellington Regional Council to confirm this.\n                        '))),
 				A4(
 				author$project$Main$ApplicationQuestion,
 				'other-consents-details',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Detail of other resource consents required',
-				elm$core$Maybe$Just('\n                        A statement specifying all other resource consents that the applicant may require\n                        from any consent authority in respect of the activity to which the application relates,\n                        and whether or not the applicant has applied for such consents.\n                        '))
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        A statement specifying all other resource consents that the applicant may require\n                        from any consent authority in respect of the activity to which the application relates,\n                        and whether or not the applicant has applied for such consents.\n                        ')))
 			]));
 	var occupierDetails = A3(
 		author$project$Main$ApplicationSection,
@@ -5790,7 +5847,25 @@ var author$project$Main$createApplication = function (model) {
 	var nationalEnvironmentalStandard = A3(
 		author$project$Main$ApplicationSection,
 		'National Environmental Standard',
-		elm$core$Maybe$Just('\n                This site may be subject to or covered by the the NES for Assessing and Managing Contaminants\n                in Soil to Protect Human Health Regulations 2011. This is determined by reference to the Hazardous\n                Activities and Industries List (HAIL) which identifies those activities and industries which are\n                more likely to use or store hazardous substances and therefore have a greater probability of site\n                contamination. A full list can be found on the Ministry for the Environment\'s website [link for text \'Ministry\n                for the Environment\'s website\' https://www.mfe.govt.nz/land/hazardous-activities-and-industries-list-hail]\n                '),
+		elm$core$Maybe$Just(
+			A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('\n                            This site may be subject to or covered by the the NES for Assessing and Managing Contaminants\n                            in Soil to Protect Human Health Regulations 2011. This is determined by reference to the Hazardous\n                            Activities and Industries List (HAIL) which identifies those activities and industries which are\n                            more likely to use or store hazardous substances and therefore have a greater probability of site\n                            contamination. A full list can be found on the \n                            '),
+						A2(
+						elm$html$Html$a,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$href('https://www.mfe.govt.nz/land/hazardous-activities-and-industries-list-hail')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Ministry for the Environment\'s website')
+							])),
+						elm$html$Html$text('.')
+					]))),
 		_List_fromArray(
 			[
 				A4(
@@ -5798,7 +5873,8 @@ var author$project$Main$createApplication = function (model) {
 				'nes-hail',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?',
-				elm$core$Maybe$Just('\n                        If \'Yes\', and your application involves subdividing or changing the use of the land, sampling\n                        or disturbing soil, or removing or replacing a fuel storage system, then the NES may apply and\n                        you may need to seek consent for this concurrently in your application.\n                        ')),
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        If \'Yes\', and your application involves subdividing or changing the use of the land, sampling\n                        or disturbing soil, or removing or replacing a fuel storage system, then the NES may apply and\n                        you may need to seek consent for this concurrently in your application.\n                        '))),
 				A4(
 				author$project$Main$ApplicationQuestion,
 				'nes-assessment',
@@ -5809,7 +5885,8 @@ var author$project$Main$createApplication = function (model) {
 	var fees = A3(
 		author$project$Main$ApplicationSection,
 		'Fees',
-		elm$core$Maybe$Just('\n                An initial fee must be paid before we can process your application.\n                The initial fee due for this non-notified land use consent is: $1650\n                '),
+		elm$core$Maybe$Just(
+			elm$html$Html$text('\n                An initial fee must be paid before we can process your application.\n                The initial fee due for this non-notified land use consent is: $1650\n                ')),
 		_List_fromArray(
 			[
 				A4(
@@ -5823,7 +5900,8 @@ var author$project$Main$createApplication = function (model) {
 				'fees-declaration',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Declaration for Initial Fee',
-				elm$core$Maybe$Just('\n                        I confirm that I have read and understood the fee payment terms, conditions and\n                        declaration for the service of applying for a resource consent [link to guidance\n                        on text \'fee payment terms, conditions and declaration\']\n                        '))
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        I confirm that I have read and understood the fee payment terms, conditions and\n                        declaration for the service of applying for a resource consent [link to guidance\n                        on text \'fee payment terms, conditions and declaration\']\n                        ')))
 			]));
 	var descriptionOfProposedActivity = A3(
 		author$project$Main$ApplicationSection,
@@ -5836,7 +5914,8 @@ var author$project$Main$createApplication = function (model) {
 				'activity-description',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Description of Activity',
-				elm$core$Maybe$Just('\n                        Clearly describe the proposal to which this application relates.\n                        '))
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        Clearly describe the proposal to which this application relates.\n                        ')))
 			]));
 	var declarationOnBehalf = A3(
 		author$project$Main$ApplicationSection,
@@ -5855,7 +5934,8 @@ var author$project$Main$createApplication = function (model) {
 				'authorised-declaration-declaration',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Declaration for Agent',
-				elm$core$Maybe$Just('\n                        As authorised agent for the applicant, I confirm that I have read and understood\n                        the notes for the applicant [link to the guidance pop up on the text \'notes for\n                        the applicant\'] and confirm that I have fully informed the applicant of their/its\n                        liability under this application, including for fees and other charges, and that\n                        I have the applicant\'s authority to submit this application on their/its behalf.\n                        '))
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        As authorised agent for the applicant, I confirm that I have read and understood\n                        the notes for the applicant [link to the guidance pop up on the text \'notes for\n                        the applicant\'] and confirm that I have fully informed the applicant of their/its\n                        liability under this application, including for fees and other charges, and that\n                        I have the applicant\'s authority to submit this application on their/its behalf.\n                        ')))
 			]));
 	var declaration = A3(
 		author$project$Main$ApplicationSection,
@@ -5874,7 +5954,8 @@ var author$project$Main$createApplication = function (model) {
 				'declaration-declaration',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Declaration',
-				elm$core$Maybe$Just('\n                        I confirm that I have read and understood the notes for the applicant.\n                        [link to the guidance pop up on the text \'notes for the applicant\']\n                        '))
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        I confirm that I have read and understood the notes for the applicant.\n                        [link to the guidance pop up on the text \'notes for the applicant\']\n                        ')))
 			]));
 	var consentType = A3(
 		author$project$Main$ApplicationSection,
@@ -5899,13 +5980,15 @@ var author$project$Main$createApplication = function (model) {
 				'consent-type-activity-status',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Prefilled'),
 				'Overall Activity Status',
-				elm$core$Maybe$Just('\n                        This status is indicative only, and must be verified by a Council Planner.\n                        ')),
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        This status is indicative only, and must be verified by a Council Planner.\n                        '))),
 				A4(
 				author$project$Main$ApplicationQuestion,
 				'consent-type-fast-track',
 				A2(author$project$Main$Text, elm$core$Maybe$Nothing, ''),
 				'Fast-track Consent',
-				elm$core$Maybe$Just('\n                        I opt out / do not opt out of the fast track consent process\n                        '))
+				elm$core$Maybe$Just(
+					elm$html$Html$text('\n                        I opt out / do not opt out of the fast track consent process\n                        ')))
 			]));
 	var applicantDetails = A3(
 		author$project$Main$ApplicationSection,
@@ -6382,7 +6465,6 @@ var elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
-var elm$json$Json$Encode$string = _Json_wrap;
 var author$project$Main$encodeAnswers = function (answers) {
 	var encodeMaybe = function (encoder) {
 		return A2(
@@ -6611,18 +6693,8 @@ var author$project$Main$update = F2(
 		}
 	});
 var author$project$Main$ToggleApplication = {$: 'ToggleApplication'};
-var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
@@ -6672,9 +6744,7 @@ var author$project$Main$textInput = F5(
 							elm$html$Html$Attributes$class('small text-muted mb-2')
 						]),
 					_List_fromArray(
-						[
-							elm$html$Html$text(h)
-						]));
+						[h]));
 			} else {
 				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
 			}
@@ -6792,9 +6862,7 @@ var author$project$Main$renderApplicationForm = function (sections) {
 											elm$html$Html$Attributes$class('card-text')
 										]),
 									_List_fromArray(
-										[
-											elm$html$Html$text(i)
-										]))
+										[i]))
 								]))
 						]));
 			} else {
@@ -8344,7 +8412,6 @@ var author$project$Main$renderSection = F3(
 					modalDialog
 				]));
 	});
-var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$form = _VirtualDom_node('form');
 var elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -8370,12 +8437,6 @@ var elm$html$Html$Attributes$classList = function (classes) {
 				elm$core$List$map,
 				elm$core$Tuple$first,
 				A2(elm$core$List$filter, elm$core$Tuple$second, classes))));
-};
-var elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
 };
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};

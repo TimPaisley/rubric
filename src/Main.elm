@@ -134,7 +134,7 @@ type Status
 
 type alias ApplicationSection =
     { name : String
-    , info : Maybe String
+    , info : Maybe (Html Msg)
     , questions : List ApplicationQuestion
     }
 
@@ -143,7 +143,7 @@ type alias ApplicationQuestion =
     { key : String
     , input : Input
     , question : String
-    , help : Maybe String
+    , help : Maybe (Html Msg)
     }
 
 
@@ -832,7 +832,7 @@ renderApplicationForm sections =
                         Just i ->
                             div [ class "card mb-3" ]
                                 [ div [ class "card-body" ]
-                                    [ p [ class "card-text" ] [ text i ] ]
+                                    [ p [ class "card-text" ] [ i ] ]
                                 ]
 
                         Nothing ->
@@ -898,13 +898,13 @@ main =
 -- HELPERS
 
 
-textInput : (String -> Msg) -> String -> String -> String -> Maybe String -> Html Msg
+textInput : (String -> Msg) -> String -> String -> String -> Maybe (Html Msg) -> Html Msg
 textInput message answer key prompt help =
     let
         helpDiv =
             case help of
                 Just h ->
-                    div [ class "small text-muted mb-2" ] [ text h ]
+                    div [ class "small text-muted mb-2" ] [ h ]
 
                 Nothing ->
                     div [] []
@@ -1087,17 +1087,16 @@ createApplication model =
                 Nothing
                 [ ApplicationQuestion "property-image" (Text Nothing "") "Image" Nothing
                 , ApplicationQuestion "property-address" (Text Nothing "") "Address" Nothing
-
-                --, ApplicationQuestion "property-wufi" (Text Nothing "") "WUFI" Nothing
-                --, ApplicationQuestion "property-zone" (Text Nothing "") "Zone" Nothing
+                , ApplicationQuestion "property-wufi" (Text Nothing "") "WUFI" Nothing
+                , ApplicationQuestion "property-zone" (Text Nothing "") "Zone" Nothing
                 , ApplicationQuestion "property-legal-description" (Text Nothing "") "Legal Description of the Site for this Application" Nothing
                 , ApplicationQuestion "property-aka" (Text Nothing "") "Any Other Commonly Known Names of the Site" Nothing
                 , ApplicationQuestion "property-description" (Text Nothing "") "Site Description" <|
                     Just
-                        """
+                        (text """
                         Describe the site including its natural and physical characteristics and any adjacent
                         uses that may be relevant to the consideration of the application.
-                        """
+                        """)
                 ]
 
         consentType =
@@ -1107,14 +1106,14 @@ createApplication model =
                 , ApplicationQuestion "consent-type-activity" (Text Nothing "") "Proposed Activity" Nothing
                 , ApplicationQuestion "consent-type-activity-status" (Text Nothing "Prefilled") "Overall Activity Status" <|
                     Just
-                        """
+                        (text """
                         This status is indicative only, and must be verified by a Council Planner.
-                        """
+                        """)
                 , ApplicationQuestion "consent-type-fast-track" (Text Nothing "") "Fast-track Consent" <|
                     Just
-                        """
+                        (text """
                         I opt out / do not opt out of the fast track consent process
-                        """
+                        """)
                 ]
 
         applicantDetails =
@@ -1134,9 +1133,9 @@ createApplication model =
                 Nothing
                 [ ApplicationQuestion "activity-description" (Text Nothing "") "Description of Activity" <|
                     Just
-                        """
+                        (text """
                         Clearly describe the proposal to which this application relates.
-                        """
+                        """)
                 ]
 
         otherResourceConsents =
@@ -1144,63 +1143,65 @@ createApplication model =
                 Nothing
                 [ ApplicationQuestion "other-consents" (Text Nothing "") "Are there any other resource consents required/granted from any consent authority for this activity?" <|
                     Just
-                        """
+                        (text """
                         Applicant to check with Greater Wellington Regional Council to confirm this.
-                        """
+                        """)
                 , ApplicationQuestion "other-consents-details" (Text Nothing "") "Detail of other resource consents required" <|
                     Just
-                        """
+                        (text """
                         A statement specifying all other resource consents that the applicant may require
                         from any consent authority in respect of the activity to which the application relates,
                         and whether or not the applicant has applied for such consents.
-                        """
+                        """)
                 ]
 
         supportingInformation =
             ApplicationSection "Supporting Information"
-                (Just """
-                To satisfy the requirement of Section 88(2) of the Resource Management Act 1991
-                and rule 3.2.2 in the District Plan. If all of the required information is not
-                provided we may be unable to accept your application and it will be returned to you.
-                """)
+                (Just (text """
+                    To satisfy the requirement of Section 88(2) of the Resource Management Act 1991
+                    and rule 3.2.2 in the District Plan. If all of the required information is not
+                    provided we may be unable to accept your application and it will be returned to you.
+                    """))
                 [ ApplicationQuestion "supporting-info-consideration" (Text Nothing "") "Matters for consideration for the Assessment of Environmental Effects" <|
                     Just
-                        """
+                        (text """
                         As determined by your answers to questions about the proposed activity in
                         relation to the standards in the District Plan, below are the matters for
                         consideration for the Assessment of Environmental Effects:
 
                         [insert from RuBRIC the matters for consideration] 
-                        """
+                        """)
                 , ApplicationQuestion "supporting-ingo-aee" (Text Nothing "") "Assessment of Environmental Effects" <|
                     Just
-                        """
+                        (text """
                         The Assessment of Environmental Effects (AEE) is an assessment of any actual
                         or potential effects that the activity may have on the environment, and the ways
                         in which any adverse effects may be mitigated, as per Section 88(6) of the
                         Resource Management Act 1991.
-                        """
+                        """)
                 , ApplicationQuestion "supporting-info-rma" (Text Nothing "") "Assessment against Part 2 of the RMA Matters" <|
                     Just
-                        """
-                        Assess the consistency of the effects of your proposal against Part 2 of the Resource Management Act 1991
-                        [link on the text 'Resource Management Act 1991'
-                        http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1]
-                        """
+                        (div []
+                            [ text "Assess the consistency of the effects of your proposal against Part 2 of the "
+                            , a [ href "http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1" ]
+                                [ text "Resource Management Act 1991" ]
+                            , text "."
+                            ]
+                        )
                 , ApplicationQuestion "supporting-info-planning-docs" (Text Nothing "") "Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents" <|
                     Just
-                        """
+                        (text """
                         Assess the consistency of the effects of your proposal against objectives and policies from
                         the District Plan AND against any relevant planning documents in section 104(1)(b) of the
                         Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]
-                        """
+                        """)
                 , ApplicationQuestion "supporting-info-title-records" (Text Nothing "") "Current copies of all Records of Title for the Subject Site" <|
                     Just
-                        """
+                        (text """
                         A 'current' record of title is one that has been issued by Land Information New Zealand within the last 3 months,
                         including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered
                         instruments, such as right of way documents, esplanade instruments, etc.
-                        """
+                        """)
                 , ApplicationQuestion "supporting-info-plan-scale" (Text Nothing "") "Site Plan Scale" Nothing
                 , ApplicationQuestion "supporting-info-plan-existing-detail" (Text Nothing "") "Site Plan Existing Detail" Nothing
                 , ApplicationQuestion "supporting-info-plan-proposed-detail" (Text Nothing "") "Site Plan Proposed Detail" Nothing
@@ -1211,30 +1212,37 @@ createApplication model =
 
         nationalEnvironmentalStandard =
             ApplicationSection "National Environmental Standard"
-                (Just """
-                This site may be subject to or covered by the the NES for Assessing and Managing Contaminants
-                in Soil to Protect Human Health Regulations 2011. This is determined by reference to the Hazardous
-                Activities and Industries List (HAIL) which identifies those activities and industries which are
-                more likely to use or store hazardous substances and therefore have a greater probability of site
-                contamination. A full list can be found on the Ministry for the Environment's website [link for text 'Ministry
-                for the Environment's website' https://www.mfe.govt.nz/land/hazardous-activities-and-industries-list-hail]
-                """)
+                (Just
+                    (div []
+                        [ text
+                            """
+                            This site may be subject to or covered by the the NES for Assessing and Managing Contaminants
+                            in Soil to Protect Human Health Regulations 2011. This is determined by reference to the Hazardous
+                            Activities and Industries List (HAIL) which identifies those activities and industries which are
+                            more likely to use or store hazardous substances and therefore have a greater probability of site
+                            contamination. A full list can be found on the 
+                            """
+                        , a [ href "https://www.mfe.govt.nz/land/hazardous-activities-and-industries-list-hail" ] [ text "Ministry for the Environment's website" ]
+                        , text "."
+                        ]
+                    )
+                )
                 [ ApplicationQuestion "nes-hail" (Text Nothing "") "Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?" <|
                     Just
-                        """
+                        (text """
                         If 'Yes', and your application involves subdividing or changing the use of the land, sampling
                         or disturbing soil, or removing or replacing a fuel storage system, then the NES may apply and
                         you may need to seek consent for this concurrently in your application.
-                        """
+                        """)
                 , ApplicationQuestion "nes-assessment" (Text Nothing "") "Assessment against the NES" Nothing
                 ]
 
         siteVisit =
             ApplicationSection "Site Visit"
-                (Just """
+                (Just (text """
                 In order to assess your application it will generally be necessary for the Council Planner to visit your site.
                 This typically involves an outdoor inspection only, and there is no need for you to be home for this purpose.
-                """)
+                """))
                 [ ApplicationQuestion "site-visit-security" (Text Nothing "") "Are there any locked gates, security systems or anything else restricting access by Council?" Nothing
                 , ApplicationQuestion "site-visit-dogs" (Text Nothing "") "Are there any dogs on the property?" Nothing
                 , ApplicationQuestion "site-visit-notice" (Text Nothing "") "Do you require notice prior to the site visit?" Nothing
@@ -1247,10 +1255,10 @@ createApplication model =
                 [ ApplicationQuestion "application-name" (Text Nothing "") "Name of the Person Submitting this Form" Nothing
                 , ApplicationQuestion "declaration-declaration" (Text Nothing "") "Declaration" <|
                     Just
-                        """
+                        (text """
                         I confirm that I have read and understood the notes for the applicant.
                         [link to the guidance pop up on the text 'notes for the applicant']
-                        """
+                        """)
                 ]
 
         declarationOnBehalf =
@@ -1259,29 +1267,29 @@ createApplication model =
                 [ ApplicationQuestion "authorised-declaration-name" (Text Nothing "") "Full Name of Agent" Nothing
                 , ApplicationQuestion "authorised-declaration-declaration" (Text Nothing "") "Declaration for Agent" <|
                     Just
-                        """
+                        (text """
                         As authorised agent for the applicant, I confirm that I have read and understood
                         the notes for the applicant [link to the guidance pop up on the text 'notes for
                         the applicant'] and confirm that I have fully informed the applicant of their/its
                         liability under this application, including for fees and other charges, and that
                         I have the applicant's authority to submit this application on their/its behalf.
-                        """
+                        """)
                 ]
 
         fees =
             ApplicationSection "Fees"
-                (Just """
+                (Just (text """
                 An initial fee must be paid before we can process your application.
                 The initial fee due for this non-notified land use consent is: $1650
-                """)
+                """))
                 [ ApplicationQuestion "fees-method" (Text Nothing "") "Payment Method" Nothing
                 , ApplicationQuestion "fees-declaration" (Text Nothing "") "Declaration for Initial Fee" <|
                     Just
-                        """
+                        (text """
                         I confirm that I have read and understood the fee payment terms, conditions and
                         declaration for the service of applying for a resource consent [link to guidance
                         on text 'fee payment terms, conditions and declaration']
-                        """
+                        """)
                 ]
 
         additionalInvoices =
