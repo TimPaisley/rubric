@@ -5658,13 +5658,13 @@ var author$project$Main$decodeQuestion = A3(
 				'key',
 				elm$json$Json$Decode$string,
 				elm$json$Json$Decode$succeed(author$project$Main$Question)))));
-var author$project$Main$Results = F3(
-	function (status, appliedRules, metStandards) {
-		return {appliedRules: appliedRules, metStandards: metStandards, status: status};
+var author$project$Main$Results = F4(
+	function (status, rules, standards, conditions) {
+		return {conditions: conditions, rules: rules, standards: standards, status: status};
 	});
-var author$project$Main$Rule = F2(
-	function (rule, status) {
-		return {rule: rule, status: status};
+var author$project$Main$Rule = F4(
+	function (key, mattersOfDiscretion, activityStatus, status) {
+		return {activityStatus: activityStatus, key: key, mattersOfDiscretion: mattersOfDiscretion, status: status};
 	});
 var author$project$Main$Controlled = {$: 'Controlled'};
 var author$project$Main$DiscretionaryRestricted = {$: 'DiscretionaryRestricted'};
@@ -5700,39 +5700,59 @@ var author$project$Main$decodeStatus = A2(
 	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string));
 var author$project$Main$decodeRule = A3(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'activityStatus',
-	author$project$Main$decodeStatus,
-	A3(
-		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'rule',
-		elm$json$Json$Decode$string,
-		elm$json$Json$Decode$succeed(author$project$Main$Rule)));
-var author$project$Main$Standard = F2(
-	function (standard, engineRule) {
-		return {engineRule: engineRule, standard: standard};
-	});
-var author$project$Main$decodeStandard = A3(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'engine_rule',
+	'status',
 	elm$json$Json$Decode$string,
 	A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'standard',
-		elm$json$Json$Decode$string,
-		elm$json$Json$Decode$succeed(author$project$Main$Standard)));
-var author$project$Main$decodeResults = A3(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'metStandards',
-	elm$json$Json$Decode$list(author$project$Main$decodeStandard),
-	A3(
-		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'appliedRules',
-		elm$json$Json$Decode$list(author$project$Main$decodeRule),
+		'activityStatus',
+		author$project$Main$decodeStatus,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'activityStatus',
-			author$project$Main$decodeStatus,
-			elm$json$Json$Decode$succeed(author$project$Main$Results))));
+			'matters_of_discretion',
+			elm$json$Json$Decode$list(elm$json$Json$Decode$string),
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'key',
+				elm$json$Json$Decode$string,
+				elm$json$Json$Decode$succeed(author$project$Main$Rule)))));
+var author$project$Main$Standard = F4(
+	function (key, engineRule, status, value) {
+		return {engineRule: engineRule, key: key, status: status, value: value};
+	});
+var author$project$Main$decodeStandard = A3(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'value',
+	elm$json$Json$Decode$string,
+	A3(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'status',
+		elm$json$Json$Decode$string,
+		A3(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'engine_rule',
+			elm$json$Json$Decode$string,
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'key',
+				elm$json$Json$Decode$string,
+				elm$json$Json$Decode$succeed(author$project$Main$Standard)))));
+var author$project$Main$decodeResults = A3(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'conditions',
+	elm$json$Json$Decode$list(author$project$Main$decodeRule),
+	A3(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'standards',
+		elm$json$Json$Decode$list(author$project$Main$decodeStandard),
+		A3(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'rules',
+			elm$json$Json$Decode$list(author$project$Main$decodeRule),
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'activityStatus',
+				author$project$Main$decodeStatus,
+				elm$json$Json$Decode$succeed(author$project$Main$Results)))));
 var author$project$Main$decodeSection = A4(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'activityStatus',
@@ -6169,7 +6189,6 @@ var author$project$Main$textInput = F5(
 	});
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$h4 = _VirtualDom_node('h4');
-var elm$html$Html$h5 = _VirtualDom_node('h5');
 var elm$html$Html$hr = _VirtualDom_node('hr');
 var elm$html$Html$p = _VirtualDom_node('p');
 var elm$html$Html$span = _VirtualDom_node('span');
@@ -6242,16 +6261,6 @@ var author$project$Main$renderApplicationForm = function (sections) {
 							_List_fromArray(
 								[
 									A2(
-									elm$html$Html$h5,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('card-title')
-										]),
-									_List_fromArray(
-										[
-											elm$html$Html$text('Info')
-										])),
-									A2(
 									elm$html$Html$p,
 									_List_fromArray(
 										[
@@ -6313,6 +6322,7 @@ var author$project$Main$renderApplicationForm = function (sections) {
 var author$project$Main$SelectActivity = function (a) {
 	return {$: 'SelectActivity', a: a};
 };
+var elm$html$Html$h5 = _VirtualDom_node('h5');
 var elm$html$Html$img = _VirtualDom_node('img');
 var elm$html$Html$option = _VirtualDom_node('option');
 var elm$html$Html$select = _VirtualDom_node('select');
@@ -8082,7 +8092,7 @@ var author$project$Main$renderSidebar = F2(
 						_List_fromArray(
 							[
 								elm$html$Html$text(
-								author$project$Main$formatKey(s.standard))
+								author$project$Main$formatKey(s.key))
 							]));
 				};
 				var sectionItem = A2(
@@ -8137,7 +8147,20 @@ var author$project$Main$renderSidebar = F2(
 						_List_fromArray(
 							[
 								elm$html$Html$text(
-								author$project$Main$formatKey(r.rule))
+								author$project$Main$formatKey(r.key))
+							]));
+				};
+				var conditionItem = function (c) {
+					return A2(
+						elm$html$Html$a,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('list-group-item list-group-item-action')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								author$project$Main$formatKey(c.key))
 							]));
 				};
 				return A2(
@@ -8150,8 +8173,10 @@ var author$project$Main$renderSidebar = F2(
 						elm$core$List$cons,
 						sectionItem,
 						_Utils_ap(
-							A2(elm$core$List$map, ruleItem, section.results.appliedRules),
-							A2(elm$core$List$map, standardItem, section.results.metStandards))));
+							A2(elm$core$List$map, ruleItem, section.results.rules),
+							_Utils_ap(
+								A2(elm$core$List$map, standardItem, section.results.standards),
+								A2(elm$core$List$map, conditionItem, section.results.conditions)))));
 			});
 		var preapp = A2(
 			elm$html$Html$div,

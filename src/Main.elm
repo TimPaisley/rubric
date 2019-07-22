@@ -72,20 +72,33 @@ type alias Question =
 
 type alias Results =
     { status : Status
-    , appliedRules : List Rule
-    , metStandards : List Standard
+    , rules : List Rule
+    , standards : List Standard
+    , conditions : List Rule
     }
 
 
 type alias Rule =
-    { rule : String
-    , status : Status
+    { key : String
+    , mattersOfDiscretion : List String
+    , activityStatus : Status
+    , status : String
     }
 
 
 type alias Standard =
-    { standard : String
+    { key : String
     , engineRule : String
+    , status : String
+    , value : String
+    }
+
+
+type alias Condition =
+    { key : String
+    , mattersOfDiscretion : List String
+    , activityStatus : Status
+    , status : String
     }
 
 
@@ -341,22 +354,36 @@ decodeResults : Decode.Decoder Results
 decodeResults =
     Decode.succeed Results
         |> required "activityStatus" decodeStatus
-        |> required "appliedRules" (Decode.list decodeRule)
-        |> required "metStandards" (Decode.list decodeStandard)
+        |> required "rules" (Decode.list decodeRule)
+        |> required "standards" (Decode.list decodeStandard)
+        |> required "conditions" (Decode.list decodeRule)
 
 
 decodeRule : Decode.Decoder Rule
 decodeRule =
     Decode.succeed Rule
-        |> required "rule" string
+        |> required "key" string
+        |> required "matters_of_discretion" (Decode.list string)
         |> required "activityStatus" decodeStatus
+        |> required "status" string
 
 
 decodeStandard : Decode.Decoder Standard
 decodeStandard =
     Decode.succeed Standard
-        |> required "standard" string
+        |> required "key" string
         |> required "engine_rule" string
+        |> required "status" string
+        |> required "value" string
+
+
+decodeCondition : Decode.Decoder Condition
+decodeCondition =
+    Decode.succeed Condition
+        |> required "key" string
+        |> required "matters_of_discretion" (Decode.list string)
+        |> required "activityStatus" decodeStatus
+        |> required "status" string
 
 
 decodeInput : Decode.Decoder Input
@@ -476,16 +503,21 @@ renderSidebar sections prop =
 
                 ruleItem r =
                     a [ class "list-group-item list-group-item-action" ]
-                        [ text <| formatKey r.rule ]
+                        [ text <| formatKey r.key ]
 
                 standardItem s =
                     a [ class "list-group-item list-group-item-action" ]
-                        [ text <| formatKey s.standard ]
+                        [ text <| formatKey s.key ]
+
+                conditionItem c =
+                    a [ class "list-group-item list-group-item-action" ]
+                        [ text <| formatKey c.key ]
             in
             div [ class "list-group mb-3" ] <|
                 sectionItem
-                    :: List.map ruleItem section.results.appliedRules
-                    ++ List.map standardItem section.results.metStandards
+                    :: List.map ruleItem section.results.rules
+                    ++ List.map standardItem section.results.standards
+                    ++ List.map conditionItem section.results.conditions
 
         preapp =
             div [ class "card" ]
@@ -790,9 +822,7 @@ renderApplicationForm sections =
                         Just i ->
                             div [ class "card mb-3" ]
                                 [ div [ class "card-body" ]
-                                    [ h5 [ class "card-title" ] [ text "Info" ]
-                                    , p [ class "card-text" ] [ text i ]
-                                    ]
+                                    [ p [ class "card-text" ] [ text i ] ]
                                 ]
 
                         Nothing ->
