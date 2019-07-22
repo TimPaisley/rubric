@@ -1,6 +1,7 @@
 port module Main exposing (Model)
 
 import Browser
+import Browser.Events exposing (onKeyPress)
 import Browser.Navigation as Nav
 import Dict exposing (Dict)
 import ElmEscapeHtml exposing (escape, unescape)
@@ -83,6 +84,8 @@ type alias Rule =
     , mattersOfDiscretion : List String
     , activityStatus : Status
     , status : String
+    , title : String
+    , definition : Maybe String
     }
 
 
@@ -91,6 +94,8 @@ type alias Standard =
     , engineRule : String
     , status : String
     , value : String
+    , title : String
+    , definition : Maybe String
     }
 
 
@@ -99,6 +104,8 @@ type alias Condition =
     , mattersOfDiscretion : List String
     , activityStatus : Status
     , status : String
+    , title : String
+    , definition : Maybe String
     }
 
 
@@ -366,6 +373,8 @@ decodeRule =
         |> required "matters_of_discretion" (Decode.list string)
         |> required "activityStatus" decodeStatus
         |> required "status" string
+        |> required "title" string
+        |> required "definition" (nullable string)
 
 
 decodeStandard : Decode.Decoder Standard
@@ -375,6 +384,8 @@ decodeStandard =
         |> required "engine_rule" string
         |> required "status" string
         |> required "value" string
+        |> required "title" string
+        |> required "definition" (nullable string)
 
 
 decodeCondition : Decode.Decoder Condition
@@ -384,6 +395,8 @@ decodeCondition =
         |> required "matters_of_discretion" (Decode.list string)
         |> required "activityStatus" decodeStatus
         |> required "status" string
+        |> required "title" string
+        |> required "definition" (nullable string)
 
 
 decodeInput : Decode.Decoder Input
@@ -501,23 +514,20 @@ renderSidebar sections prop =
                         , div [] [ small [] [ text <| statusToString section.results.status ] ]
                         ]
 
-                ruleItem r =
-                    a [ class "list-group-item list-group-item-action" ]
-                        [ text <| formatKey r.key ]
-
-                standardItem s =
-                    a [ class "list-group-item list-group-item-action" ]
-                        [ text <| formatKey s.key ]
-
-                conditionItem c =
-                    a [ class "list-group-item list-group-item-action" ]
-                        [ text <| formatKey c.key ]
+                item i =
+                    a [ class "list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1" ]
+                        [ div []
+                            [ small [] [ text <| formatKey i.key ]
+                            , h6 [ class "my-0" ] [ text <| i.title ]
+                            ]
+                        , div [] []
+                        ]
             in
             div [ class "list-group mb-3" ] <|
                 sectionItem
-                    :: List.map ruleItem section.results.rules
-                    ++ List.map standardItem section.results.standards
-                    ++ List.map conditionItem section.results.conditions
+                    :: List.map item section.results.rules
+                    ++ List.map item section.results.conditions
+                    ++ List.map item section.results.standards
 
         preapp =
             div [ class "card" ]
@@ -855,7 +865,19 @@ renderApplicationForm sections =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch [ selectMapProperty SelectMapProperty, receiveSections ReceiveSections ]
+    let
+        checkKeycode k =
+            if k == "Enter" then
+                AskRubric
+
+            else
+                NoOp
+    in
+    Sub.batch
+        [ onKeyPress (Decode.map checkKeycode keyDecoder)
+        , selectMapProperty SelectMapProperty
+        , receiveSections ReceiveSections
+        ]
 
 
 
@@ -934,8 +956,8 @@ multichoiceInput message answer key prompt options =
     let
         radioButton o =
             div [ class "form-check form-check-inline" ]
-                [ input [ type_ "radio", value o, id o, class "form-check-input", onInput message, checked (answer == Just o) ] []
-                , label [ for o, class "form-check-label" ] [ text o ]
+                [ input [ type_ "radio", value o, id <| key ++ o, class "form-check-input", onInput message, checked (answer == Just o) ] []
+                , label [ for <| key ++ o, class "form-check-label" ] [ text o ]
                 ]
     in
     div [ class "mb-3" ]
@@ -1037,6 +1059,11 @@ answerDictionary sections =
     List.foldl (\s l -> s.questions ++ l) [] sections
         |> List.map (\q -> ( q.key, q.input ))
         |> Dict.fromList
+
+
+keyDecoder : Decode.Decoder String
+keyDecoder =
+    Decode.field "key" string
 
 
 
