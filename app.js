@@ -8651,6 +8651,7 @@ var author$project$Main$statusToString = function (status) {
 	}
 };
 var elm$html$Html$h6 = _VirtualDom_node('h6');
+var elm$html$Html$li = _VirtualDom_node('li');
 var elm$html$Html$small = _VirtualDom_node('small');
 var elm$html$Html$ul = _VirtualDom_node('ul');
 var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('target');
@@ -8660,6 +8661,41 @@ var author$project$Main$renderSidebar = F2(
 			function (index, section) {
 				var statusClass = function (s) {
 					return 'list-group-item-' + author$project$Main$statusToClass(s);
+				};
+				var standardItem = function (s) {
+					return A2(
+						elm$html$Html$a,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$small,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text(
+												author$project$Main$formatKey(s.key))
+											])),
+										A2(
+										elm$html$Html$h6,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('my-0')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(s.title)
+											]))
+									]))
+							]));
 				};
 				var sectionItem = A2(
 					elm$html$Html$a,
@@ -8703,40 +8739,134 @@ var author$project$Main$renderSidebar = F2(
 										]))
 								]))
 						]));
-				var item = function (i) {
+				var ruleItem = function (r) {
 					return A2(
 						elm$html$Html$a,
 						_List_fromArray(
 							[
-								elm$html$Html$Attributes$class('list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1')
+								elm$html$Html$Attributes$class('list-group-item list-group-item-action py-1')
 							]),
 						_List_fromArray(
 							[
 								A2(
 								elm$html$Html$div,
-								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
+									]),
 								_List_fromArray(
 									[
 										A2(
-										elm$html$Html$small,
+										elm$html$Html$div,
 										_List_Nil,
 										_List_fromArray(
 											[
-												elm$html$Html$text(
-												author$project$Main$formatKey(i.key))
-											])),
-										A2(
-										elm$html$Html$h6,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('my-0')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text(i.title)
+												A2(
+												elm$html$Html$small,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text(
+														author$project$Main$formatKey(r.key))
+													])),
+												A2(
+												elm$html$Html$h6,
+												_List_fromArray(
+													[
+														elm$html$Html$Attributes$class('my-0')
+													]),
+												_List_fromArray(
+													[
+														elm$html$Html$text(r.title)
+													]))
 											]))
 									])),
-								A2(elm$html$Html$div, _List_Nil, _List_Nil)
+								A2(
+								elm$html$Html$ul,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('small')
+									]),
+								A2(
+									elm$core$List$map,
+									function (m) {
+										return A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('mb-2')
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text(m)
+												]));
+									},
+									r.mattersOfDiscretion))
+							]));
+				};
+				var conditionItem = function (c) {
+					return A2(
+						elm$html$Html$a,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('list-group-item list-group-item-action py-1')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$div,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$div,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$small,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text(
+														author$project$Main$formatKey(c.key))
+													])),
+												A2(
+												elm$html$Html$h6,
+												_List_fromArray(
+													[
+														elm$html$Html$Attributes$class('my-0')
+													]),
+												_List_fromArray(
+													[
+														elm$html$Html$text(c.title)
+													]))
+											]))
+									])),
+								A2(
+								elm$html$Html$ul,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('small')
+									]),
+								A2(
+									elm$core$List$map,
+									function (m) {
+										return A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('mb-2')
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text(m)
+												]));
+									},
+									c.mattersOfDiscretion))
 							]));
 				};
 				return A2(
@@ -8749,10 +8879,10 @@ var author$project$Main$renderSidebar = F2(
 						elm$core$List$cons,
 						sectionItem,
 						_Utils_ap(
-							A2(elm$core$List$map, item, section.results.rules),
+							A2(elm$core$List$map, ruleItem, section.results.rules),
 							_Utils_ap(
-								A2(elm$core$List$map, item, section.results.conditions),
-								A2(elm$core$List$map, item, section.results.standards)))));
+								A2(elm$core$List$map, conditionItem, section.results.conditions),
+								A2(elm$core$List$map, standardItem, section.results.standards)))));
 			});
 		var preapp = A2(
 			elm$html$Html$div,

@@ -513,20 +513,47 @@ renderSidebar sections prop =
                         , div [] [ small [] [ text <| statusToString section.results.status ] ]
                         ]
 
-                item i =
+                ruleItem r =
+                    a [ class "list-group-item list-group-item-action py-1" ]
+                        [ div [ class "d-flex justify-content-between align-items-center" ]
+                            [ div []
+                                [ small [] [ text <| formatKey r.key ]
+                                , h6 [ class "my-0" ] [ text <| r.title ]
+                                ]
+
+                            -- , small [ class "text-muted" ] [ text "Click to Read Rule" ]
+                            ]
+                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) r.mattersOfDiscretion)
+                        ]
+
+                conditionItem c =
+                    a [ class "list-group-item list-group-item-action py-1" ]
+                        [ div [ class "d-flex justify-content-between align-items-center" ]
+                            [ div []
+                                [ small [] [ text <| formatKey c.key ]
+                                , h6 [ class "my-0" ] [ text <| c.title ]
+                                ]
+
+                            -- , small [ class "text-muted" ] [ text "Click to Read Condition" ]
+                            ]
+                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) c.mattersOfDiscretion)
+                        ]
+
+                standardItem s =
                     a [ class "list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1" ]
                         [ div []
-                            [ small [] [ text <| formatKey i.key ]
-                            , h6 [ class "my-0" ] [ text <| i.title ]
+                            [ small [] [ text <| formatKey s.key ]
+                            , h6 [ class "my-0" ] [ text <| s.title ]
                             ]
-                        , div [] []
+
+                        -- , small [ class "text-muted" ] [ text "Click to Read Standard" ]
                         ]
             in
             div [ class "list-group mb-3" ] <|
                 sectionItem
-                    :: List.map item section.results.rules
-                    ++ List.map item section.results.conditions
-                    ++ List.map item section.results.standards
+                    :: List.map ruleItem section.results.rules
+                    ++ List.map conditionItem section.results.conditions
+                    ++ List.map standardItem section.results.standards
 
         preapp =
             div [ class "card" ]
