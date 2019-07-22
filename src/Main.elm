@@ -26,7 +26,8 @@ type alias Model =
     , selectedProperty : Maybe Property
     , sections : List Section
     , status : Status
-    , answeredQuestions : Int
+    , applying : Bool
+    , application : List ApplicationSection
     }
 
 
@@ -111,6 +112,21 @@ type Status
     | Unknown
 
 
+type alias ApplicationSection =
+    { name : String
+    , info : Maybe String
+    , questions : List ApplicationQuestion
+    }
+
+
+type alias ApplicationQuestion =
+    { key : String
+    , input : Input
+    , question : String
+    , help : Maybe String
+    }
+
+
 type Msg
     = NoOp
     | SelectActivity Activity
@@ -118,6 +134,7 @@ type Msg
     | ReceiveSections Decode.Value
     | InputAnswer Section Question String
     | AskRubric
+    | ToggleApplication
 
 
 init : List String -> ( Model, Cmd Msg )
@@ -129,7 +146,8 @@ init flags =
             , selectedProperty = Nothing
             , sections = []
             , status = Unknown
-            , answeredQuestions = -1
+            , applying = False
+            , application = []
             }
     in
     ( model, Cmd.none )
@@ -205,12 +223,13 @@ update msg model =
         AskRubric ->
             case ( model.selectedActivity, model.selectedProperty ) of
                 ( Just a, Just p ) ->
-                    ( { model | answeredQuestions = List.length model.sections }
-                    , askRubric <| encodePayload a p (answerDictionary model.sections)
-                    )
+                    ( model, askRubric <| encodePayload a p (answerDictionary model.sections) )
 
                 _ ->
                     ( model, Cmd.none )
+
+        ToggleApplication ->
+            ( { model | applying = not model.applying, application = createApplication model }, Cmd.none )
 
 
 
@@ -503,25 +522,44 @@ renderContent model =
         continueButton =
             let
                 btn switch =
-                    button [ type_ "button", class "btn btn-primary btn-lg btn-block", onClick AskRubric, disabled switch ]
-                        [ text "Continue" ]
+                    div [ class "row" ]
+                        [ div [ class "col-md-8" ]
+                            [ a
+                                [ class "btn btn-primary btn-block btn-lg"
+                                , onClick AskRubric
+                                , classList [ ( "disabled", switch ) ]
+                                , tabindex -1
+                                ]
+                                [ text "Determine your Compliance" ]
+                            ]
+                        , div [ class "col-md-4" ]
+                            [ a
+                                [ href "#home"
+                                , class "btn btn-success btn-block btn-lg"
+                                , onClick ToggleApplication
+                                , classList [ ( "disabled", switch ) ]
+                                , tabindex -1
+                                ]
+                                [ text "Apply" ]
+                            ]
+                        ]
             in
             case ( model.selectedActivity, model.selectedProperty ) of
                 ( Just _, Just _ ) ->
                     [ btn False ]
 
                 ( Just _, Nothing ) ->
-                    [ div [ class "text-muted text-center" ] [ text "You need to select a property before continuing." ]
+                    [ div [ class "text-muted text-center mb-3" ] [ text "You need to select a property before continuing." ]
                     , btn True
                     ]
 
                 ( Nothing, Just _ ) ->
-                    [ div [ class "text-muted text-center" ] [ text "You need to select an activity before continuing." ]
+                    [ div [ class "text-muted text-center mb-3" ] [ text "You need to select an activity before continuing." ]
                     , btn True
                     ]
 
                 ( Nothing, Nothing ) ->
-                    [ div [ class "text-muted text-center" ] [ text "You need to select a property and an activity before continuing." ]
+                    [ div [ class "text-muted text-center mb-3" ] [ text "You need to select a property and an activity before continuing." ]
                     , btn True
                     ]
 
@@ -532,18 +570,15 @@ renderContent model =
                     ++ continueButton
 
         content =
-            -- List.length model.sections == model.answeredQuestions
-            if False then
-                -- we didn't get any more questions back from the engine
+            if model.applying then
                 case ( model.selectedActivity, model.selectedProperty ) of
                     ( Just a, Just p ) ->
-                        renderApplicationForm a p model.sections
+                        renderApplicationForm model.application
 
                     _ ->
                         compliance
 
             else
-                -- we have more questions to answer
                 compliance
     in
     div [ class "col-md-8 order-md-1" ] [ content ]
@@ -678,6 +713,7 @@ renderQuestion answers section question =
                         (Maybe.withDefault "" answer)
                         question.key
                         (unescape prompt)
+                        Nothing
 
                 Number answer prompt ->
                     numberInput
@@ -701,6 +737,7 @@ renderQuestion answers section question =
                         (Maybe.withDefault "" answer)
                         question.key
                         (unescape prompt)
+                        Nothing
     in
     if List.map met question.prerequisites |> List.member False then
         div [] []
@@ -743,325 +780,43 @@ renderModal name modalHeader modalContent =
     ( buttonAttrs, modalDialog )
 
 
-renderApplicationForm : Activity -> Property -> List Section -> Html Msg
-renderApplicationForm activity property sections =
+renderApplicationForm : List ApplicationSection -> Html Msg
+renderApplicationForm sections =
     let
-        input =
-            textInput (\_ -> NoOp) ""
+        renderAppSection { name, info, questions } =
+            let
+                infoCard =
+                    case info of
+                        Just i ->
+                            div [ class "card mb-3" ]
+                                [ div [ class "card-body" ]
+                                    [ h5 [ class "card-title" ] [ text "Info" ]
+                                    , p [ class "card-text" ] [ text i ]
+                                    ]
+                                ]
 
-        inputHelp =
-            textInputWithHelp (\_ -> NoOp) ""
-
-        info title content =
-            div [ class "card mb-3" ]
-                [ div [ class "card-body" ]
-                    [ h5 [ class "card-title" ] [ text title ]
-                    , p [ class "card-text" ] [ text content ]
-                    ]
-                ]
-
-        section title questions =
-            div [ class "sections" ]
-                [ h4 [ class "d-flex justify-content-start align-items-center mb-3" ]
-                    [ span [] [ text title ] ]
-                , div [ class "questions" ] questions
+                        Nothing ->
+                            div [] []
+            in
+            div []
+                [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
+                    [ span [] [ text name ] ]
+                , infoCard
+                , div [ class "questions" ] (List.map renderAppQuestion questions)
                 , hr [ class "mb-4" ] []
                 ]
-    in
-    Html.form []
-        [ section "Property Information"
-            [ div [ class "row mb-3" ]
-                [ div [ class "col-md-4" ] [ img [ src property.imageUrl, class "cover" ] [] ]
-                , div [ class "col-md-8" ]
-                    [ input "property-address" "Address"
-                    , input "property-wufi" "WUFI"
-                    , input "property-zone" "Zone"
-                    ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "property-legal-description" "Legal description of the site this application relates" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "property-aka" "Any other commonly known name of the site" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "property-description"
-                        "Site description"
-                        """
-                        Describe the site including its natural and physical characteristics and any adjacent
-                        uses that may be relevant to the consideration of the application.
-                        """
-                    ]
-                ]
-            ]
-        , section "Consent Type"
-            [ div [ class "row" ]
-                [ div [ class "col-md-6" ]
-                    [ input "consent-type" "Consent Type" ]
-                , div [ class "col-md-6" ]
-                    [ input "consent-type-activity" "Proposed Activity" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "consent-type-activity-status"
-                        "Overall Activity Status"
-                        """
-                        This status is indicative only, and must be verified by a Council Planner.
-                        """
-                    ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "consent-type-fast-track"
-                        "Fast-track Consent"
-                        """
-                        I opt out / do not opt out of the fast track consent process
-                        """
-                    ]
-                ]
-            ]
-        , section "Applicant Details" (personalDetails "applicant")
-        , section "Agent Details" (personalDetails "agent")
-        , section "Owner Details" (personalDetails "owner")
-        , section "Occupier Details" (personalDetails "occupier")
-        , section "Description of Proposed Activity"
-            [ div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "activity-description"
-                        "Description of Activity"
-                        """
-                        Clearly describe the proposal to which this application relates.
-                        """
-                    ]
-                ]
-            ]
-        , section "Other Resource Consents"
-            [ div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "other-consents"
-                        "Are there any other resource consents required/granted from any consent authority for this activity?"
-                        """
-                        Applicant to check with Greater Wellington Regional Council to confirm this.
-                        """
-                    ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "other-consents-details"
-                        "Detail of other resource consents required"
-                        """
-                        A statement specifying all other resource consents that the applicant may require
-                        from any consent authority in respect of the activity to which the application relates,
-                        and whether or not the applicant has applied for such consents.
-                        """
-                    ]
-                ]
-            ]
-        , section "Supporting Information"
-            [ info "Information which must be submitted with this application"
-                """
-                To satisfy the requirement of Section 88(2) of the Resource Management Act 1991
-                and rule 3.2.2 in the District Plan. If all of the required information is not
-                provided we may be unable to accept your application and it will be returned to you.
-                """
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "supporting-info-consideration"
-                        "Matters for consideration for the Assessment of Environmental Effects"
-                        """
-                        As determined by your answers to questions about the proposed activity in
-                        relation to the standards in the District Plan, below are the matters for
-                        consideration for the Assessment of Environmental Effects:
 
-                        [insert from RuBRIC the matters for consideration] 
-                        """
-                    ]
-                ]
-            , div [ class "row" ]
+        renderAppQuestion { key, input, question, help } =
+            div [ class "row" ]
                 [ div [ class "col-md-12" ]
-                    [ inputHelp "supporting-info-aee"
-                        "Assessment of Environmental Effects"
-                        """
-                        The Assessment of Environmental Effects (AEE) is an assessment of any actual
-                        or potential effects that the activity may have on the environment, and the ways
-                        in which any adverse effects may be mitigated, as per Section 88(6) of the
-                        Resource Management Act 1991.
-                        """
-                    ]
+                    [ textInput (\_ -> NoOp) "" key question help ]
                 ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "supporting-info-rma"
-                        "Assessment against Part 2 of the RMA matters"
-                        """
-                        Assess the consistency of the effects of your proposal against Part 2 of the Resource Management Act 1991
-                        [link on the text 'Resource Management Act 1991'
-                        http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1]
-                        """
-                    ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "supporting-info-planning-docs"
-                        "Assessment against relevant objectives and policies and provisions of other planning documents"
-                        """
-                        Assess the consistency of the effects of your proposal against objectives and policies from
-                        the District Plan AND against any relevant planning documents in section 104(1)(b) of the
-                        Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]
-                        """
-                    ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "supporting-info-title-records"
-                        "Current copies of all records of title for the subject site"
-                        """
-                        A 'current' record of title is one that has been issued by Land Information New Zealand within the last 3 months,
-                        including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered
-                        instruments, such as right of way documents, esplanade instruments, etc.
-                        """
-                    ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "supporting-info-plan-scale" "Site plan scale" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "supporting-info-plan-existing-detail" "Site plan existing detail" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "supporting-info-plan-proposed-detail" "Site plan proposed detail" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "supporting-info-elevation-drawings" "Elevation drawings" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "supporting-info-other-info" "Other information which may be required by the District Plan" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "supporting-info-party-approval" "Written approvals from affected parties" ]
-                ]
-            ]
-        , section "National Environmental Standard"
-            [ info "National Environmental Standard (NES) Assessing and Managing Contaminants in Soil to Protect Human Health"
-                """
-                This site may be subject to or covered by the the NES for Assessing and Managing Contaminants
-                in Soil to Protect Human Health Regulations 2011. This is determined by reference to the Hazardous
-                Activities and Industries List (HAIL) which identifies those activities and industries which are
-                more likely to use or store hazardous substances and therefore have a greater probability of site
-                contamination. A full list can be found on the Ministry for the Environment's website [link for text 'Ministry
-                for the Environment's website' https://www.mfe.govt.nz/land/hazardous-activities-and-industries-list-hail]
-                """
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "nes-hail"
-                        "Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?"
-                        """
-                        If 'Yes', and your application involves subdividing or changing the use of the land, sampling
-                        or disturbing soil, or removing or replacing a fuel storage system, then the NES may apply and
-                        you may need to seek consent for this concurrently in your application.
-                        """
-                    ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "nes-assessment" "Assessment against the NES" ]
-                ]
-            ]
-        , section "Site Visit"
-            [ info "Site visit requirements"
-                """
-                In order to assess your application it will generally be necessary for the Council Planner to visit your site.
-                This typically involves an outdoor inspection only, and there is no need for you to be home for this purpose.
-                """
-            , div [ class "row align-items-end" ]
-                [ div [ class "col-md-4 " ]
-                    [ input "site-visit-security" "Are there any locked gates, security systems or anything else restricting access by Council?" ]
-                , div [ class "col-md-4" ]
-                    [ input "site-visit-dogs" "Are there any dogs on the property?" ]
-                , div [ class "col-md-4" ]
-                    [ input "site-visit-notice" "Do you require notice prior to the site visit?" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "site-visit-safety" "Are there any other Health and Safety requirements Council staff should be aware of before visiting the site. If so, please describe." ]
-                ]
-            ]
-        , section "Declaration for the agent or authorised agent or other"
-            [ div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "declaration-name" "Name of person submitting this form" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "declaration-declaration"
-                        "Declaration"
-                        """
-                        I confirm that I have read and understood the notes for the applicant.
-                        [link to the guidance pop up on the text 'notes for the applicant']
-                        """
-                    ]
-                ]
-            ]
-        , section "Declaration for the agent authorised to sign on behalf of the applicant"
-            [ div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "authorised-declaration-name" "Full name of agent" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "authorised-declaration-declaration"
-                        "Declaration for agent"
-                        """
-                        As authorised agent for the applicant, I confirm that I have read and understood
-                        the notes for the applicant [link to the guidance pop up on the text 'notes for
-                        the applicant'] and confirm that I have fully informed the applicant of their/its
-                        liability under this application, including for fees and other charges, and that
-                        I have the applicant's authority to submit this application on their/its behalf.
-                        """
-                    ]
-                ]
-            ]
-        , section "Fees"
-            [ info "Initial Fee"
-                """
-                An initial fee must be paid before we can process your application.
-                The initial fee due for this non-notified land use consent is: $1650
-                """
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "fees-method" "Payment method" ]
-                ]
-            , div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputHelp "fees-declaration"
-                        "Declaration for initial fee"
-                        """
-                        I confirm that I have read and understood the fee payment terms, conditions and
-                        declaration for the service of applying for a resource consent [link to guidance
-                        on text 'fee payment terms, conditions and declaration']
-                        """
-                    ]
-                ]
-            ]
-        , section "Additional Invoices" <|
-            [ div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ input "additional-invoices-send" "Payment method" ]
-                ]
-            ]
-                ++ personalDetails "additional-invoices"
-        , button [ type_ "button", class "btn btn-success btn-lg btn-block" ]
-            [ text "Submit" ]
-        ]
+
+        submitButton =
+            button [ type_ "button", class "btn btn-success btn-lg btn-block" ]
+                [ text "Submit" ]
+    in
+    div [] <| List.map renderAppSection sections
 
 
 
@@ -1091,26 +846,20 @@ main =
 -- HELPERS
 
 
-textInput : (String -> Msg) -> String -> String -> String -> Html Msg
-textInput message answer key prompt =
-    div [ class "mb-3" ]
-        [ label [ for key ] [ text prompt ]
-        , input
-            [ id key
-            , class "form-control"
-            , type_ "text"
-            , value answer
-            , onInput message
-            ]
-            []
-        ]
+textInput : (String -> Msg) -> String -> String -> String -> Maybe String -> Html Msg
+textInput message answer key prompt help =
+    let
+        helpDiv =
+            case help of
+                Just h ->
+                    div [ class "small text-muted mb-2" ] [ text h ]
 
-
-textInputWithHelp : (String -> Msg) -> String -> String -> String -> String -> Html Msg
-textInputWithHelp message answer key prompt help =
+                Nothing ->
+                    div [] []
+    in
     div [ class "mb-3" ]
         [ label [ for key, class "mb-0" ] [ text prompt ]
-        , div [ class "small text-muted mb-2" ] [ text help ]
+        , helpDiv
         , input
             [ id key
             , class "form-control"
@@ -1184,22 +933,22 @@ personalDetails : String -> List (Html Msg)
 personalDetails key =
     [ div [ class "row" ]
         [ div [ class "col-md-6" ]
-            [ textInput (\_ -> NoOp) "" (key ++ "-fname") "First Name" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-fname") "First Name" Nothing ]
         , div [ class "col-md-6" ]
-            [ textInput (\_ -> NoOp) "" (key ++ "-lname") "Last Name" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-lname") "Last Name" Nothing ]
         ]
     , div [ class "row" ]
         [ div [ class "col-md-12" ]
-            [ textInput (\_ -> NoOp) "" (key ++ "-address") "Postal Address" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-address") "Postal Address" Nothing ]
         ]
     , div [ class "row" ]
         [ div [ class "col-md-6" ]
-            [ textInput (\_ -> NoOp) "" (key ++ "-phone") "Phone (day)" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-phone") "Phone (day)" Nothing ]
         , div [ class "col-md-6" ]
-            [ textInput (\_ -> NoOp) "" (key ++ "-mobile") "Mobile" ]
+            [ textInput (\_ -> NoOp) "" (key ++ "-mobile") "Mobile" Nothing ]
         ]
     , div [ class "row" ]
-        [ div [ class "col-md-12" ] [ textInput (\_ -> NoOp) "" (key ++ "-email") "E-mail" ]
+        [ div [ class "col-md-12" ] [ textInput (\_ -> NoOp) "" (key ++ "-email") "E-mail" Nothing ]
         ]
     ]
 
@@ -1258,3 +1007,244 @@ answerDictionary sections =
     List.foldl (\s l -> s.questions ++ l) [] sections
         |> List.map (\q -> ( q.key, q.input ))
         |> Dict.fromList
+
+
+
+-- APPLICATION
+
+
+createApplication : Model -> List ApplicationSection
+createApplication model =
+    let
+        personalDetailQuestions key =
+            [ ApplicationQuestion (key ++ "-fname") (Text Nothing "") "First Name" Nothing
+            , ApplicationQuestion (key ++ "-lname") (Text Nothing "") "Last Name" Nothing
+            , ApplicationQuestion (key ++ "-address") (Text Nothing "") "Postal Address" Nothing
+            , ApplicationQuestion (key ++ "-phone") (Text Nothing "") "Phone (day)" Nothing
+            , ApplicationQuestion (key ++ "-mobile") (Text Nothing "") "Mobile" Nothing
+            , ApplicationQuestion (key ++ "-email") (Text Nothing "") "E-mail" Nothing
+            ]
+
+        propertyInformation =
+            ApplicationSection "Property Information"
+                Nothing
+                [ ApplicationQuestion "property-image" (Text Nothing "") "Image" Nothing
+                , ApplicationQuestion "property-address" (Text Nothing "") "Address" Nothing
+
+                --, ApplicationQuestion "property-wufi" (Text Nothing "") "WUFI" Nothing
+                --, ApplicationQuestion "property-zone" (Text Nothing "") "Zone" Nothing
+                , ApplicationQuestion "property-legal-description" (Text Nothing "") "Legal Description of the Site for this Application" Nothing
+                , ApplicationQuestion "property-aka" (Text Nothing "") "Any Other Commonly Known Names of the Site" Nothing
+                , ApplicationQuestion "property-description" (Text Nothing "") "Site Description" <|
+                    Just
+                        """
+                        Describe the site including its natural and physical characteristics and any adjacent
+                        uses that may be relevant to the consideration of the application.
+                        """
+                ]
+
+        consentType =
+            ApplicationSection "Consent Type"
+                Nothing
+                [ ApplicationQuestion "consent-type" (Text Nothing "") "Consent Type" Nothing
+                , ApplicationQuestion "consent-type-activity" (Text Nothing "") "Proposed Activity" Nothing
+                , ApplicationQuestion "consent-type-activity-status" (Text Nothing "Prefilled") "Overall Activity Status" <|
+                    Just
+                        """
+                        This status is indicative only, and must be verified by a Council Planner.
+                        """
+                , ApplicationQuestion "consent-type-fast-track" (Text Nothing "") "Fast-track Consent" <|
+                    Just
+                        """
+                        I opt out / do not opt out of the fast track consent process
+                        """
+                ]
+
+        applicantDetails =
+            ApplicationSection "Applicant Details" Nothing (personalDetailQuestions "applicant")
+
+        agentDetails =
+            ApplicationSection "Agent Details" Nothing (personalDetailQuestions "agent")
+
+        ownerDetails =
+            ApplicationSection "Owner Details" Nothing (personalDetailQuestions "owner")
+
+        occupierDetails =
+            ApplicationSection "Occupier Details" Nothing (personalDetailQuestions "occupier")
+
+        descriptionOfProposedActivity =
+            ApplicationSection "Description of Proposed Activity"
+                Nothing
+                [ ApplicationQuestion "activity-description" (Text Nothing "") "Description of Activity" <|
+                    Just
+                        """
+                        Clearly describe the proposal to which this application relates.
+                        """
+                ]
+
+        otherResourceConsents =
+            ApplicationSection "Other Resource Consents"
+                Nothing
+                [ ApplicationQuestion "other-consents" (Text Nothing "") "Are there any other resource consents required/granted from any consent authority for this activity?" <|
+                    Just
+                        """
+                        Applicant to check with Greater Wellington Regional Council to confirm this.
+                        """
+                , ApplicationQuestion "other-consents-details" (Text Nothing "") "Detail of other resource consents required" <|
+                    Just
+                        """
+                        A statement specifying all other resource consents that the applicant may require
+                        from any consent authority in respect of the activity to which the application relates,
+                        and whether or not the applicant has applied for such consents.
+                        """
+                ]
+
+        supportingInformation =
+            ApplicationSection "Supporting Information"
+                (Just """
+                To satisfy the requirement of Section 88(2) of the Resource Management Act 1991
+                and rule 3.2.2 in the District Plan. If all of the required information is not
+                provided we may be unable to accept your application and it will be returned to you.
+                """)
+                [ ApplicationQuestion "supporting-info-consideration" (Text Nothing "") "Matters for consideration for the Assessment of Environmental Effects" <|
+                    Just
+                        """
+                        As determined by your answers to questions about the proposed activity in
+                        relation to the standards in the District Plan, below are the matters for
+                        consideration for the Assessment of Environmental Effects:
+
+                        [insert from RuBRIC the matters for consideration] 
+                        """
+                , ApplicationQuestion "supporting-ingo-aee" (Text Nothing "") "Assessment of Environmental Effects" <|
+                    Just
+                        """
+                        The Assessment of Environmental Effects (AEE) is an assessment of any actual
+                        or potential effects that the activity may have on the environment, and the ways
+                        in which any adverse effects may be mitigated, as per Section 88(6) of the
+                        Resource Management Act 1991.
+                        """
+                , ApplicationQuestion "supporting-info-rma" (Text Nothing "") "Assessment against Part 2 of the RMA Matters" <|
+                    Just
+                        """
+                        Assess the consistency of the effects of your proposal against Part 2 of the Resource Management Act 1991
+                        [link on the text 'Resource Management Act 1991'
+                        http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1]
+                        """
+                , ApplicationQuestion "supporting-info-planning-docs" (Text Nothing "") "Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents" <|
+                    Just
+                        """
+                        Assess the consistency of the effects of your proposal against objectives and policies from
+                        the District Plan AND against any relevant planning documents in section 104(1)(b) of the
+                        Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]
+                        """
+                , ApplicationQuestion "supporting-info-title-records" (Text Nothing "") "Current copies of all Records of Title for the Subject Site" <|
+                    Just
+                        """
+                        A 'current' record of title is one that has been issued by Land Information New Zealand within the last 3 months,
+                        including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered
+                        instruments, such as right of way documents, esplanade instruments, etc.
+                        """
+                , ApplicationQuestion "supporting-info-plan-scale" (Text Nothing "") "Site Plan Scale" Nothing
+                , ApplicationQuestion "supporting-info-plan-existing-detail" (Text Nothing "") "Site Plan Existing Detail" Nothing
+                , ApplicationQuestion "supporting-info-plan-proposed-detail" (Text Nothing "") "Site Plan Proposed Detail" Nothing
+                , ApplicationQuestion "supporting-info-elevation-drawings" (Text Nothing "") "Elevation Drawings" Nothing
+                , ApplicationQuestion "supporting-info-other-info" (Text Nothing "") "Other Information which may be required by the District Plan" Nothing
+                , ApplicationQuestion "supporting-info-party-approval" (Text Nothing "") "Written Approvals from Affected Parties" Nothing
+                ]
+
+        nationalEnvironmentalStandard =
+            ApplicationSection "National Environmental Standard"
+                (Just """
+                This site may be subject to or covered by the the NES for Assessing and Managing Contaminants
+                in Soil to Protect Human Health Regulations 2011. This is determined by reference to the Hazardous
+                Activities and Industries List (HAIL) which identifies those activities and industries which are
+                more likely to use or store hazardous substances and therefore have a greater probability of site
+                contamination. A full list can be found on the Ministry for the Environment's website [link for text 'Ministry
+                for the Environment's website' https://www.mfe.govt.nz/land/hazardous-activities-and-industries-list-hail]
+                """)
+                [ ApplicationQuestion "nes-hail" (Text Nothing "") "Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?" <|
+                    Just
+                        """
+                        If 'Yes', and your application involves subdividing or changing the use of the land, sampling
+                        or disturbing soil, or removing or replacing a fuel storage system, then the NES may apply and
+                        you may need to seek consent for this concurrently in your application.
+                        """
+                , ApplicationQuestion "nes-assessment" (Text Nothing "") "Assessment against the NES" Nothing
+                ]
+
+        siteVisit =
+            ApplicationSection "Site Visit"
+                (Just """
+                In order to assess your application it will generally be necessary for the Council Planner to visit your site.
+                This typically involves an outdoor inspection only, and there is no need for you to be home for this purpose.
+                """)
+                [ ApplicationQuestion "site-visit-security" (Text Nothing "") "Are there any locked gates, security systems or anything else restricting access by Council?" Nothing
+                , ApplicationQuestion "site-visit-dogs" (Text Nothing "") "Are there any dogs on the property?" Nothing
+                , ApplicationQuestion "site-visit-notice" (Text Nothing "") "Do you require notice prior to the site visit?" Nothing
+                , ApplicationQuestion "site-visit-safety" (Text Nothing "") "Are there any other Health and Safety requirements Council staff should be aware of before visiting the site. If so, please describe." Nothing
+                ]
+
+        declaration =
+            ApplicationSection "Declaration for the Agent of Authorised Agent or Other"
+                Nothing
+                [ ApplicationQuestion "application-name" (Text Nothing "") "Name of the Person Submitting this Form" Nothing
+                , ApplicationQuestion "declaration-declaration" (Text Nothing "") "Declaration" <|
+                    Just
+                        """
+                        I confirm that I have read and understood the notes for the applicant.
+                        [link to the guidance pop up on the text 'notes for the applicant']
+                        """
+                ]
+
+        declarationOnBehalf =
+            ApplicationSection "Declaration for the Agent Authorised to Sign on Behalf of the Applicant"
+                Nothing
+                [ ApplicationQuestion "authorised-declaration-name" (Text Nothing "") "Full Name of Agent" Nothing
+                , ApplicationQuestion "authorised-declaration-declaration" (Text Nothing "") "Declaration for Agent" <|
+                    Just
+                        """
+                        As authorised agent for the applicant, I confirm that I have read and understood
+                        the notes for the applicant [link to the guidance pop up on the text 'notes for
+                        the applicant'] and confirm that I have fully informed the applicant of their/its
+                        liability under this application, including for fees and other charges, and that
+                        I have the applicant's authority to submit this application on their/its behalf.
+                        """
+                ]
+
+        fees =
+            ApplicationSection "Fees"
+                (Just """
+                An initial fee must be paid before we can process your application.
+                The initial fee due for this non-notified land use consent is: $1650
+                """)
+                [ ApplicationQuestion "fees-method" (Text Nothing "") "Payment Method" Nothing
+                , ApplicationQuestion "fees-declaration" (Text Nothing "") "Declaration for Initial Fee" <|
+                    Just
+                        """
+                        I confirm that I have read and understood the fee payment terms, conditions and
+                        declaration for the service of applying for a resource consent [link to guidance
+                        on text 'fee payment terms, conditions and declaration']
+                        """
+                ]
+
+        additionalInvoices =
+            ApplicationSection "Additional Invoices" Nothing <|
+                [ ApplicationQuestion "additional-invoices-send" (Text Nothing "") "Payment Method" Nothing ]
+                    ++ personalDetailQuestions "additional-invoices"
+    in
+    [ propertyInformation
+    , consentType
+    , applicantDetails
+    , agentDetails
+    , ownerDetails
+    , occupierDetails
+    , descriptionOfProposedActivity
+    , otherResourceConsents
+    , supportingInformation
+    , nationalEnvironmentalStandard
+    , siteVisit
+    , declaration
+    , declarationOnBehalf
+    , fees
+    , additionalInvoices
+    ]
