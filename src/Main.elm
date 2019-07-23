@@ -542,7 +542,7 @@ renderSidebar status sections prop =
                         [ class <| "list-group-item list-group-item-action d-flex justify-content-between align-items-center " ++ statusClass section.results.status
                         , href <| "#section-" ++ String.fromInt index
                         ]
-                        [ div [] [ h6 [ class "my-0" ] [ text section.name ] ]
+                        [ div [] [ h6 [ class "my-0 py-3" ] [ text section.name ] ]
                         , div [] [ small [] [ text <| statusToString section.results.status ] ]
                         ]
             in
@@ -1178,7 +1178,7 @@ statusToClass status =
             "success"
 
         Unknown ->
-            "light"
+            "secondary"
 
 
 formatKey : String -> String

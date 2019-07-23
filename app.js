@@ -9093,7 +9093,7 @@ var author$project$Main$statusToClass = function (status) {
 		case 'Permitted':
 			return 'success';
 		default:
-			return 'light';
+			return 'secondary';
 	}
 };
 var author$project$Main$statusToString = function (status) {
@@ -9194,7 +9194,7 @@ var author$project$Main$renderSidebar = F3(
 									elm$html$Html$h6,
 									_List_fromArray(
 										[
-											elm$html$Html$Attributes$class('my-0')
+											elm$html$Html$Attributes$class('my-0 py-3')
 										]),
 									_List_fromArray(
 										[
