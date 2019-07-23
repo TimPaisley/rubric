@@ -10,5 +10,6 @@ app.ports.askRubric.subscribe(function(data) {
   } else {
     engine = new Rubric({ fields: data.scenario });
     app.ports.receiveSections.send(engine.standards);
+    app.ports.receiveStatus.send(engine.overallActivityStatus);
   }
 });

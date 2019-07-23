@@ -4797,6 +4797,9 @@ var author$project$Main$NoOp = {$: 'NoOp'};
 var author$project$Main$ReceiveSections = function (a) {
 	return {$: 'ReceiveSections', a: a};
 };
+var author$project$Main$ReceiveStatus = function (a) {
+	return {$: 'ReceiveStatus', a: a};
+};
 var author$project$Main$SelectMapProperty = function (a) {
 	return {$: 'SelectMapProperty', a: a};
 };
@@ -4805,6 +4808,7 @@ var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Main$keyDecoder = A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string);
 var elm$json$Json$Decode$value = _Json_decodeValue;
 var author$project$Main$receiveSections = _Platform_incomingPort('receiveSections', elm$json$Json$Decode$value);
+var author$project$Main$receiveStatus = _Platform_incomingPort('receiveStatus', elm$json$Json$Decode$value);
 var author$project$Main$selectMapProperty = _Platform_incomingPort('selectMapProperty', elm$json$Json$Decode$value);
 var elm$browser$Browser$Events$Document = {$: 'Document'};
 var elm$browser$Browser$Events$MySub = F3(
@@ -5531,7 +5535,8 @@ var author$project$Main$subscriptions = function (_n0) {
 				elm$browser$Browser$Events$onKeyPress(
 				A2(elm$json$Json$Decode$map, checkKeycode, author$project$Main$keyDecoder)),
 				author$project$Main$selectMapProperty(author$project$Main$SelectMapProperty),
-				author$project$Main$receiveSections(author$project$Main$ReceiveSections)
+				author$project$Main$receiveSections(author$project$Main$ReceiveSections),
+				author$project$Main$receiveStatus(author$project$Main$ReceiveStatus)
 			]));
 };
 var author$project$Main$File = F2(
@@ -6608,6 +6613,20 @@ var author$project$Main$update = F2(
 						elm$json$Json$Decode$errorToString(err));
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
+			case 'ReceiveStatus':
+				var val = msg.a;
+				var _n3 = A2(elm$json$Json$Decode$decodeValue, author$project$Main$decodeStatus, val);
+				if (_n3.$ === 'Ok') {
+					var s = _n3.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{status: s}),
+						elm$core$Platform$Cmd$none);
+				} else {
+					var err = _n3.a;
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
 			case 'InputAnswer':
 				var section = msg.a;
 				var question = msg.b;
@@ -6675,10 +6694,10 @@ var author$project$Main$update = F2(
 						{sections: newSections}),
 					elm$core$Platform$Cmd$none);
 			case 'AskRubric':
-				var _n4 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
-				if ((_n4.a.$ === 'Just') && (_n4.b.$ === 'Just')) {
-					var a = _n4.a.a;
-					var p = _n4.b.a;
+				var _n5 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
+				if ((_n5.a.$ === 'Just') && (_n5.b.$ === 'Just')) {
+					var a = _n5.a.a;
+					var p = _n5.b.a;
 					return _Utils_Tuple2(
 						model,
 						author$project$Main$askRubric(
@@ -8679,65 +8698,59 @@ var author$project$Main$showCondition = function (condition) {
 		}
 	}();
 	return A2(
-		elm$html$Html$div,
-		_List_Nil,
+		elm$html$Html$a,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('list-group-item list-group-item-action py-1'),
+				A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
+				A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (condition.key + '-modal'))
+			]),
 		_List_fromArray(
 			[
 				A2(
-				elm$html$Html$a,
+				elm$html$Html$div,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$class('list-group-item list-group-item-action py-1'),
-						A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
-						A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (condition.key + '-modal'))
+						elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
 					]),
 				_List_fromArray(
 					[
 						A2(
 						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
-							]),
+						_List_Nil,
 						_List_fromArray(
 							[
 								A2(
-								elm$html$Html$div,
+								elm$html$Html$small,
 								_List_Nil,
 								_List_fromArray(
 									[
-										A2(
-										elm$html$Html$small,
-										_List_Nil,
-										_List_fromArray(
-											[
-												elm$html$Html$text(
-												author$project$Main$formatKey(condition.key))
-											])),
-										A2(
-										elm$html$Html$h6,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('my-0')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text(condition.title)
-											]))
+										elm$html$Html$text(
+										author$project$Main$formatKey(condition.key))
 									])),
 								A2(
-								elm$html$Html$small,
+								elm$html$Html$h6,
 								_List_fromArray(
 									[
-										elm$html$Html$Attributes$class('text-muted')
+										elm$html$Html$Attributes$class('my-0')
 									]),
 								_List_fromArray(
 									[
-										elm$html$Html$text(condition.status)
+										elm$html$Html$text(condition.title)
 									]))
 							])),
-						mattersForDiscretion
-					]))
+						A2(
+						elm$html$Html$small,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('text-muted')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(condition.status)
+							]))
+					])),
+				mattersForDiscretion
 			]));
 };
 var author$project$Main$showRule = function (rule) {
@@ -8926,13 +8939,62 @@ var elm$core$List$concatMap = F2(
 			A2(elm$core$List$map, f, list));
 	});
 var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('target');
-var author$project$Main$renderSidebar = F2(
-	function (sections, prop) {
+var author$project$Main$renderSidebar = F3(
+	function (status, sections, prop) {
+		var statusClass = function (s) {
+			return 'list-group-item-' + author$project$Main$statusToClass(s);
+		};
+		var statusCard = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('list-group')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class(
+							'list-group-item d-flex justify-content-between align-items-center ' + statusClass(status))
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$h6,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('my-0')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Overall Activity Status')
+										]))
+								])),
+							A2(
+							elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$small,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											author$project$Main$statusToString(status))
+										]))
+								]))
+						]))
+				]));
 		var sectionGroup = F2(
 			function (index, section) {
-				var statusClass = function (s) {
-					return 'list-group-item-' + author$project$Main$statusToClass(s);
-				};
 				var sectionItem = A2(
 					elm$html$Html$a,
 					_List_fromArray(
@@ -8979,7 +9041,7 @@ var author$project$Main$renderSidebar = F2(
 					elm$html$Html$div,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$class('list-group mb-3')
+							elm$html$Html$Attributes$class('list-group list-group-flush')
 						]),
 					A2(
 						elm$core$List$cons,
@@ -9095,11 +9157,12 @@ var author$project$Main$renderSidebar = F2(
 												elm$core$List$length(sections)))
 										]))
 								])),
+							statusCard,
 							A2(
-							elm$html$Html$ul,
+							elm$html$Html$div,
 							_List_fromArray(
 								[
-									elm$html$Html$Attributes$class('list-group overflow-auto mb-3')
+									elm$html$Html$Attributes$class('overflow-auto rounded border my-3')
 								]),
 							A2(elm$core$List$indexedMap, sectionGroup, sections)),
 							preapp
@@ -9210,7 +9273,7 @@ var author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A2(author$project$Main$renderSidebar, model.sections, model.selectedProperty),
+						A3(author$project$Main$renderSidebar, model.status, model.sections, model.selectedProperty),
 						author$project$Main$renderContent(model)
 					]))
 			]));

@@ -151,6 +151,7 @@ type Msg
     | SelectActivity Activity
     | SelectMapProperty Decode.Value
     | ReceiveSections Decode.Value
+    | ReceiveStatus Decode.Value
     | InputAnswer Section Question String
     | AskRubric
     | ToggleApplication
@@ -211,6 +212,14 @@ update msg model =
                     in
                     ( model, Cmd.none )
 
+        ReceiveStatus val ->
+            case Decode.decodeValue decodeStatus val of
+                Ok s ->
+                    ( { model | status = s }, Cmd.none )
+
+                Err err ->
+                    ( model, Cmd.none )
+
         InputAnswer section question answer ->
             let
                 -- oof ouch elm
@@ -262,6 +271,9 @@ port askRubric : Encode.Value -> Cmd msg
 
 
 port receiveSections : (Decode.Value -> msg) -> Sub msg
+
+
+port receiveStatus : (Decode.Value -> msg) -> Sub msg
 
 
 encodePayload : Activity -> Property -> Dict String Input -> Encode.Value
@@ -505,20 +517,20 @@ view model =
     div [ id "home", class "container" ]
         [ hero
         , div [ class "row mb-5" ]
-            [ renderSidebar model.sections model.selectedProperty
+            [ renderSidebar model.status model.sections model.selectedProperty
             , renderContent model
             ]
         ]
 
 
-renderSidebar : List Section -> Maybe Property -> Html Msg
-renderSidebar sections prop =
+renderSidebar : Status -> List Section -> Maybe Property -> Html Msg
+renderSidebar status sections prop =
     let
+        statusClass s =
+            "list-group-item-" ++ statusToClass s
+
         sectionGroup index section =
             let
-                statusClass s =
-                    "list-group-item-" ++ statusToClass s
-
                 sectionItem =
                     a
                         [ class <| "list-group-item list-group-item-action d-flex justify-content-between align-items-center " ++ statusClass section.results.status
@@ -528,7 +540,7 @@ renderSidebar sections prop =
                         , div [] [ small [] [ text <| statusToString section.results.status ] ]
                         ]
             in
-            div [ class "list-group mb-3" ] <|
+            div [ class "list-group list-group-flush" ] <|
                 sectionItem
                     :: List.map showRule section.results.rules
                     ++ List.map showCondition section.results.conditions
@@ -551,6 +563,15 @@ renderSidebar sections prop =
 
         itemModal item =
             renderModal (item.key ++ "-modal") item.title (text <| Maybe.withDefault "placeholder" item.definition)
+
+        statusCard =
+            div [ class "list-group" ]
+                [ div
+                    [ class <| "list-group-item d-flex justify-content-between align-items-center " ++ statusClass status ]
+                    [ div [] [ h6 [ class "my-0" ] [ text "Overall Activity Status" ] ]
+                    , div [] [ small [] [ text <| statusToString status ] ]
+                    ]
+                ]
     in
     div [ class "col-md-4 order-md-2" ]
         [ div [ class "sticky-top py-3 vh-100 d-flex flex-column" ]
@@ -559,8 +580,9 @@ renderSidebar sections prop =
                 , span [ class "text-muted badge" ]
                     [ text <| String.fromInt (List.length sections) ]
                 ]
+            , statusCard
             , List.indexedMap sectionGroup sections
-                |> ul [ class "list-group overflow-auto mb-3" ]
+                |> div [ class "overflow-auto rounded border my-3" ]
             , preapp
             ]
         , div [ class "rule-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.rules) sections
@@ -609,17 +631,15 @@ showCondition condition =
                         , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) condition.mattersOfDiscretion)
                         ]
     in
-    div []
-        [ a [ class "list-group-item list-group-item-action py-1", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ condition.key ++ "-modal") ]
-            [ div [ class "d-flex justify-content-between align-items-center" ]
-                [ div []
-                    [ small [] [ text <| formatKey condition.key ]
-                    , h6 [ class "my-0" ] [ text <| condition.title ]
-                    ]
-                , small [ class "text-muted" ] [ text condition.status ]
+    a [ class "list-group-item list-group-item-action py-1", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ condition.key ++ "-modal") ]
+        [ div [ class "d-flex justify-content-between align-items-center" ]
+            [ div []
+                [ small [] [ text <| formatKey condition.key ]
+                , h6 [ class "my-0" ] [ text <| condition.title ]
                 ]
-            , mattersForDiscretion
+            , small [ class "text-muted" ] [ text condition.status ]
             ]
+        , mattersForDiscretion
         ]
 
 
@@ -913,6 +933,7 @@ subscriptions _ =
         [ onKeyPress (Decode.map checkKeycode keyDecoder)
         , selectMapProperty SelectMapProperty
         , receiveSections ReceiveSections
+        , receiveStatus ReceiveStatus
         ]
 
 
