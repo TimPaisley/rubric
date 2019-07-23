@@ -113,7 +113,8 @@ type Input
     = Text (Maybe String) String
     | Number (Maybe Int) String
     | Multichoice (Maybe String) String (List String)
-    | File (Maybe String) String
+    | File Bool String
+    | Checkbox Bool String String
 
 
 type alias Prerequisite =
@@ -235,7 +236,10 @@ update msg model =
                             Multichoice (Just answer) p ops
 
                         File _ p ->
-                            File (Just answer) p
+                            File (boolFromString answer) p
+
+                        Checkbox _ p s ->
+                            Checkbox (boolFromString answer) p s
 
                 updateQuestion q =
                     { q | input = updateInput q.input }
@@ -317,7 +321,10 @@ encodeAnswers answers =
                     encodeMaybe Encode.string a
 
                 File a _ ->
-                    encodeMaybe Encode.string a
+                    Encode.bool a
+
+                Checkbox a _ _ ->
+                    Encode.bool a
     in
     answers
         |> Dict.map encodeAnswer
@@ -452,7 +459,7 @@ matchInput format =
 
         "file" ->
             Decode.succeed File
-                |> required "previousAnswer" (nullable string)
+                |> required "previousAnswer" decodeBool
                 |> required "prompt" string
 
         _ ->
@@ -490,6 +497,20 @@ decodeStatus =
 
                     _ ->
                         Decode.succeed Unknown
+            )
+
+
+decodeBool : Decode.Decoder Bool
+decodeBool =
+    nullable string
+        |> Decode.andThen
+            (\bool ->
+                case bool of
+                    Just "true" ->
+                        Decode.succeed True
+
+                    _ ->
+                        Decode.succeed False
             )
 
 
@@ -981,13 +1002,24 @@ inputToHtml input key unit msg help =
                 key
                 (unescape prompt)
                 options
+                help
 
         File answer prompt ->
-            textInput
+            checkboxInput
                 msg
-                (Maybe.withDefault "" answer)
+                answer
                 key
                 (unescape prompt)
+                "Check to Upload File"
+                help
+
+        Checkbox answer prompt statement ->
+            checkboxInput
+                msg
+                answer
+                key
+                (unescape prompt)
+                statement
                 help
 
 
@@ -1044,33 +1076,55 @@ numberInput message answer key prompt unit =
         ]
 
 
-multichoiceInput : (String -> Msg) -> Maybe String -> String -> String -> List String -> Html Msg
-multichoiceInput message answer key prompt options =
+multichoiceInput : (String -> Msg) -> Maybe String -> String -> String -> List String -> Maybe (Html Msg) -> Html Msg
+multichoiceInput message answer key prompt options help =
     let
         radioButton o =
             div [ class "form-check form-check-inline" ]
                 [ input [ type_ "radio", value o, id <| key ++ o, class "form-check-input", onInput message, checked (answer == Just o) ] []
                 , label [ for <| key ++ o, class "form-check-label" ] [ text o ]
                 ]
+
+        helpDiv =
+            case help of
+                Just h ->
+                    div [ class "small text-muted mb-2" ] [ h ]
+
+                Nothing ->
+                    div [] []
     in
     div [ class "mb-3" ]
         [ label [] [ text prompt ]
+        , helpDiv
         , div [] (List.map radioButton options)
         ]
 
 
-checkboxInput : Msg -> Bool -> String -> String -> Html Msg
-checkboxInput message switch key prompt =
+checkboxInput : (String -> Msg) -> Bool -> String -> String -> String -> Maybe (Html Msg) -> Html Msg
+checkboxInput message switch key prompt statement help =
+    let
+        helpDiv =
+            case help of
+                Just h ->
+                    div [ class "small text-muted mb-2" ] [ h ]
+
+                Nothing ->
+                    div [] []
+    in
     div [ class "mb-3" ]
-        [ label [ for key ] [ text prompt ]
-        , input
-            [ id key
-            , class "form-control"
-            , type_ "checkbox"
-            , checked switch
-            , onClick message
+        [ p [] [ text prompt ]
+        , helpDiv
+        , div [ class "form-check" ]
+            [ input
+                [ id key
+                , class "form-check-input"
+                , type_ "checkbox"
+                , checked switch
+                , onClick (message "")
+                ]
+                []
+            , label [ class "form-check-label", for key ] [ text statement ]
             ]
-            []
         ]
 
 
@@ -1159,6 +1213,26 @@ keyDecoder =
     Decode.field "key" string
 
 
+boolToString : Bool -> String
+boolToString b =
+    case b of
+        True ->
+            "true"
+
+        False ->
+            "false"
+
+
+boolFromString : String -> Bool
+boolFromString s =
+    case s of
+        "true" ->
+            True
+
+        _ ->
+            False
+
+
 
 -- APPLICATION
 
@@ -1216,7 +1290,7 @@ createApplication model =
                         (text """
                         This status is indicative only, and must be verified by a Council Planner.
                         """)
-                , ApplicationQuestion "consent-type-fast-track" (Text Nothing "Fast-track Consent") <|
+                , ApplicationQuestion "consent-type-fast-track" (Multichoice Nothing "Fast-track Consent" [ "Yes", "No" ]) <|
                     Just
                         (text """
                         I opt out / do not opt out of the fast track consent process
@@ -1248,7 +1322,7 @@ createApplication model =
         otherResourceConsents =
             ApplicationSection "Other Resource Consents"
                 Nothing
-                [ ApplicationQuestion "other-consents" (Text Nothing "Are there any other resource consents required/granted from any consent authority for this activity?") <|
+                [ ApplicationQuestion "other-consents" (Multichoice Nothing "Are there any other resource consents required/granted from any consent authority for this activity?" [ "Yes", "No" ]) <|
                     Just
                         (text """
                         Applicant to check with Greater Wellington Regional Council to confirm this.
@@ -1278,7 +1352,7 @@ createApplication model =
 
                         [insert from RuBRIC the matters for consideration] 
                         """)
-                , ApplicationQuestion "supporting-ingo-aee" (Text Nothing "Assessment of Environmental Effects") <|
+                , ApplicationQuestion "supporting-ingo-aee" (File False "Assessment of Environmental Effects") <|
                     Just
                         (text """
                         The Assessment of Environmental Effects (AEE) is an assessment of any actual
@@ -1286,7 +1360,7 @@ createApplication model =
                         in which any adverse effects may be mitigated, as per Section 88(6) of the
                         Resource Management Act 1991.
                         """)
-                , ApplicationQuestion "supporting-info-rma" (Text Nothing "Assessment against Part 2 of the RMA Matters") <|
+                , ApplicationQuestion "supporting-info-rma" (File False "Assessment against Part 2 of the RMA Matters") <|
                     Just
                         (div []
                             [ text "Assess the consistency of the effects of your proposal against Part 2 of the "
@@ -1295,26 +1369,26 @@ createApplication model =
                             , text "."
                             ]
                         )
-                , ApplicationQuestion "supporting-info-planning-docs" (Text Nothing "Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents") <|
+                , ApplicationQuestion "supporting-info-planning-docs" (File False "Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents") <|
                     Just
                         (text """
                         Assess the consistency of the effects of your proposal against objectives and policies from
                         the District Plan AND against any relevant planning documents in section 104(1)(b) of the
                         Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]
                         """)
-                , ApplicationQuestion "supporting-info-title-records" (Text Nothing "Current copies of all Records of Title for the Subject Site") <|
+                , ApplicationQuestion "supporting-info-title-records" (File False "Current copies of all Records of Title for the Subject Site") <|
                     Just
                         (text """
                         A 'current' record of title is one that has been issued by Land Information New Zealand within the last 3 months,
                         including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered
                         instruments, such as right of way documents, esplanade instruments, etc.
                         """)
-                , ApplicationQuestion "supporting-info-plan-scale" (Text Nothing "Site Plan Scale") Nothing
-                , ApplicationQuestion "supporting-info-plan-existing-detail" (Text Nothing "Site Plan Existing Detail") Nothing
-                , ApplicationQuestion "supporting-info-plan-proposed-detail" (Text Nothing "Site Plan Proposed Detail") Nothing
-                , ApplicationQuestion "supporting-info-elevation-drawings" (Text Nothing "Elevation Drawings") Nothing
-                , ApplicationQuestion "supporting-info-other-info" (Text Nothing "Other Information which may be required by the District Plan") Nothing
-                , ApplicationQuestion "supporting-info-party-approval" (Text Nothing "Written Approvals from Affected Parties") Nothing
+                , ApplicationQuestion "supporting-info-plan-scale" (Multichoice Nothing "Site Plan Scale" [ "1:100", "1:200", "Other" ]) Nothing
+                , ApplicationQuestion "supporting-info-plan-existing-detail" (File False "Site Plan Existing Detail") Nothing
+                , ApplicationQuestion "supporting-info-plan-proposed-detail" (File False "Site Plan Proposed Detail") Nothing
+                , ApplicationQuestion "supporting-info-elevation-drawings" (File False "Elevation Drawings") Nothing
+                , ApplicationQuestion "supporting-info-other-info" (File False "Other Information which may be required by the District Plan") Nothing
+                , ApplicationQuestion "supporting-info-party-approval" (File False "Written Approvals from Affected Parties") Nothing
                 ]
 
         nationalEnvironmentalStandard =
@@ -1334,14 +1408,14 @@ createApplication model =
                         ]
                     )
                 )
-                [ ApplicationQuestion "nes-hail" (Text Nothing "Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?") <|
+                [ ApplicationQuestion "nes-hail" (Multichoice Nothing "Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?" [ "Yes", "No" ]) <|
                     Just
                         (text """
                         If 'Yes', and your application involves subdividing or changing the use of the land, sampling
                         or disturbing soil, or removing or replacing a fuel storage system, then the NES may apply and
                         you may need to seek consent for this concurrently in your application.
                         """)
-                , ApplicationQuestion "nes-assessment" (Text Nothing "Assessment against the NES") Nothing
+                , ApplicationQuestion "nes-assessment" (File False "Assessment against the NES") Nothing
                 ]
 
         siteVisit =
@@ -1350,9 +1424,9 @@ createApplication model =
                 In order to assess your application it will generally be necessary for the Council Planner to visit your site.
                 This typically involves an outdoor inspection only, and there is no need for you to be home for this purpose.
                 """))
-                [ ApplicationQuestion "site-visit-security" (Text Nothing "Are there any locked gates, security systems or anything else restricting access by Council?") Nothing
-                , ApplicationQuestion "site-visit-dogs" (Text Nothing "Are there any dogs on the property?") Nothing
-                , ApplicationQuestion "site-visit-notice" (Text Nothing "Do you require notice prior to the site visit?") Nothing
+                [ ApplicationQuestion "site-visit-security" (Multichoice Nothing "Are there any locked gates, security systems or anything else restricting access by Council?" [ "Yes", "No" ]) Nothing
+                , ApplicationQuestion "site-visit-dogs" (Multichoice Nothing "Are there any dogs on the property?" [ "Yes", "No" ]) Nothing
+                , ApplicationQuestion "site-visit-notice" (Multichoice Nothing "Do you require notice prior to the site visit?" [ "Yes", "No" ]) Nothing
                 , ApplicationQuestion "site-visit-safety" (Text Nothing "Are there any other Health and Safety requirements Council staff should be aware of before visiting the site. If so, please describe.") Nothing
                 ]
 
@@ -1360,7 +1434,7 @@ createApplication model =
             ApplicationSection "Declaration for the Agent of Authorised Agent or Other"
                 Nothing
                 [ ApplicationQuestion "application-name" (Text Nothing "Name of the Person Submitting this Form") Nothing
-                , ApplicationQuestion "declaration-declaration" (Text Nothing "Declaration") <|
+                , ApplicationQuestion "declaration-declaration" (Checkbox False "Declaration" "I agree with these terms") <|
                     Just
                         (text """
                         I confirm that I have read and understood the notes for the applicant.
@@ -1372,7 +1446,7 @@ createApplication model =
             ApplicationSection "Declaration for the Agent Authorised to Sign on Behalf of the Applicant"
                 Nothing
                 [ ApplicationQuestion "authorised-declaration-name" (Text Nothing "Full Name of Agent") Nothing
-                , ApplicationQuestion "authorised-declaration-declaration" (Text Nothing "Declaration for Agent") <|
+                , ApplicationQuestion "authorised-declaration-declaration" (Checkbox False "Declaration for Agent" "I agree with these terms") <|
                     Just
                         (text """
                         As authorised agent for the applicant, I confirm that I have read and understood
@@ -1389,8 +1463,8 @@ createApplication model =
                 An initial fee must be paid before we can process your application.
                 The initial fee due for this non-notified land use consent is: $1650
                 """))
-                [ ApplicationQuestion "fees-method" (Text Nothing "Payment Method") Nothing
-                , ApplicationQuestion "fees-declaration" (Text Nothing "Declaration for Initial Fee") <|
+                [ ApplicationQuestion "fees-method" (Multichoice Nothing "Payment Method" [ "Internet Banking", "Online (Credit Card)", "By Phone (Credit Card)" ]) Nothing
+                , ApplicationQuestion "fees-declaration" (Checkbox False "Declaration for Initial Fee" "I agree with these terms") <|
                     Just
                         (text """
                         I confirm that I have read and understood the fee payment terms, conditions and
@@ -1401,7 +1475,7 @@ createApplication model =
 
         additionalInvoices =
             ApplicationSection "Additional Invoices" Nothing <|
-                [ ApplicationQuestion "additional-invoices-send" (Text Nothing "Payment Method") Nothing ]
+                [ ApplicationQuestion "additional-invoices-send" (Multichoice Nothing "Send All Invoices" [ "To Applicant", "To Agent", "Other" ]) Nothing ]
                     ++ personalDetailQuestions "additional-invoices"
     in
     [ propertyInformation

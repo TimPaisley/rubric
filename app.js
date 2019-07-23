@@ -5539,6 +5539,10 @@ var author$project$Main$subscriptions = function (_n0) {
 				author$project$Main$receiveStatus(author$project$Main$ReceiveStatus)
 			]));
 };
+var author$project$Main$Checkbox = F3(
+	function (a, b, c) {
+		return {$: 'Checkbox', a: a, b: b, c: c};
+	});
 var author$project$Main$File = F2(
 	function (a, b) {
 		return {$: 'File', a: a, b: b};
@@ -5572,6 +5576,13 @@ var author$project$Main$answerDictionary = function (sections) {
 				sections)));
 };
 var author$project$Main$askRubric = _Platform_outgoingPort('askRubric', elm$core$Basics$identity);
+var author$project$Main$boolFromString = function (s) {
+	if (s === 'true') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var author$project$Main$ApplicationQuestion = F3(
 	function (key, input, help) {
 		return {help: help, input: input, key: key};
@@ -5625,13 +5636,13 @@ var author$project$Main$createApplication = function (model) {
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-ingo-aee',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Assessment of Environmental Effects'),
+				A2(author$project$Main$File, false, 'Assessment of Environmental Effects'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        The Assessment of Environmental Effects (AEE) is an assessment of any actual\n                        or potential effects that the activity may have on the environment, and the ways\n                        in which any adverse effects may be mitigated, as per Section 88(6) of the\n                        Resource Management Act 1991.\n                        '))),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-rma',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Assessment against Part 2 of the RMA Matters'),
+				A2(author$project$Main$File, false, 'Assessment against Part 2 of the RMA Matters'),
 				elm$core$Maybe$Just(
 					A2(
 						elm$html$Html$div,
@@ -5654,44 +5665,49 @@ var author$project$Main$createApplication = function (model) {
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-planning-docs',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents'),
+				A2(author$project$Main$File, false, 'Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        Assess the consistency of the effects of your proposal against objectives and policies from\n                        the District Plan AND against any relevant planning documents in section 104(1)(b) of the\n                        Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]\n                        '))),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-title-records',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Current copies of all Records of Title for the Subject Site'),
+				A2(author$project$Main$File, false, 'Current copies of all Records of Title for the Subject Site'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        A \'current\' record of title is one that has been issued by Land Information New Zealand within the last 3 months,\n                        including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered\n                        instruments, such as right of way documents, esplanade instruments, etc.\n                        '))),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-plan-scale',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Site Plan Scale'),
+				A3(
+					author$project$Main$Multichoice,
+					elm$core$Maybe$Nothing,
+					'Site Plan Scale',
+					_List_fromArray(
+						['1:100', '1:200', 'Other'])),
 				elm$core$Maybe$Nothing),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-plan-existing-detail',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Site Plan Existing Detail'),
+				A2(author$project$Main$File, false, 'Site Plan Existing Detail'),
 				elm$core$Maybe$Nothing),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-plan-proposed-detail',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Site Plan Proposed Detail'),
+				A2(author$project$Main$File, false, 'Site Plan Proposed Detail'),
 				elm$core$Maybe$Nothing),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-elevation-drawings',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Elevation Drawings'),
+				A2(author$project$Main$File, false, 'Elevation Drawings'),
 				elm$core$Maybe$Nothing),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-other-info',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Other Information which may be required by the District Plan'),
+				A2(author$project$Main$File, false, 'Other Information which may be required by the District Plan'),
 				elm$core$Maybe$Nothing),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'supporting-info-party-approval',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Written Approvals from Affected Parties'),
+				A2(author$project$Main$File, false, 'Written Approvals from Affected Parties'),
 				elm$core$Maybe$Nothing)
 			]));
 	var siteVisit = A3(
@@ -5704,17 +5720,32 @@ var author$project$Main$createApplication = function (model) {
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'site-visit-security',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Are there any locked gates, security systems or anything else restricting access by Council?'),
+				A3(
+					author$project$Main$Multichoice,
+					elm$core$Maybe$Nothing,
+					'Are there any locked gates, security systems or anything else restricting access by Council?',
+					_List_fromArray(
+						['Yes', 'No'])),
 				elm$core$Maybe$Nothing),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'site-visit-dogs',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Are there any dogs on the property?'),
+				A3(
+					author$project$Main$Multichoice,
+					elm$core$Maybe$Nothing,
+					'Are there any dogs on the property?',
+					_List_fromArray(
+						['Yes', 'No'])),
 				elm$core$Maybe$Nothing),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'site-visit-notice',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Do you require notice prior to the site visit?'),
+				A3(
+					author$project$Main$Multichoice,
+					elm$core$Maybe$Nothing,
+					'Do you require notice prior to the site visit?',
+					_List_fromArray(
+						['Yes', 'No'])),
 				elm$core$Maybe$Nothing),
 				A3(
 				author$project$Main$ApplicationQuestion,
@@ -5843,7 +5874,12 @@ var author$project$Main$createApplication = function (model) {
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'other-consents',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Are there any other resource consents required/granted from any consent authority for this activity?'),
+				A3(
+					author$project$Main$Multichoice,
+					elm$core$Maybe$Nothing,
+					'Are there any other resource consents required/granted from any consent authority for this activity?',
+					_List_fromArray(
+						['Yes', 'No'])),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        Applicant to check with Greater Wellington Regional Council to confirm this.\n                        '))),
 				A3(
@@ -5885,13 +5921,18 @@ var author$project$Main$createApplication = function (model) {
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'nes-hail',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?'),
+				A3(
+					author$project$Main$Multichoice,
+					elm$core$Maybe$Nothing,
+					'Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?',
+					_List_fromArray(
+						['Yes', 'No'])),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        If \'Yes\', and your application involves subdividing or changing the use of the land, sampling\n                        or disturbing soil, or removing or replacing a fuel storage system, then the NES may apply and\n                        you may need to seek consent for this concurrently in your application.\n                        '))),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'nes-assessment',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Assessment against the NES'),
+				A2(author$project$Main$File, false, 'Assessment against the NES'),
 				elm$core$Maybe$Nothing)
 			]));
 	var fees = A3(
@@ -5904,12 +5945,17 @@ var author$project$Main$createApplication = function (model) {
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'fees-method',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Payment Method'),
+				A3(
+					author$project$Main$Multichoice,
+					elm$core$Maybe$Nothing,
+					'Payment Method',
+					_List_fromArray(
+						['Internet Banking', 'Online (Credit Card)', 'By Phone (Credit Card)'])),
 				elm$core$Maybe$Nothing),
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'fees-declaration',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Declaration for Initial Fee'),
+				A3(author$project$Main$Checkbox, false, 'Declaration for Initial Fee', 'I agree with these terms'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        I confirm that I have read and understood the fee payment terms, conditions and\n                        declaration for the service of applying for a resource consent [link to guidance\n                        on text \'fee payment terms, conditions and declaration\']\n                        ')))
 			]));
@@ -5940,7 +5986,7 @@ var author$project$Main$createApplication = function (model) {
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'authorised-declaration-declaration',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Declaration for Agent'),
+				A3(author$project$Main$Checkbox, false, 'Declaration for Agent', 'I agree with these terms'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        As authorised agent for the applicant, I confirm that I have read and understood\n                        the notes for the applicant [link to the guidance pop up on the text \'notes for\n                        the applicant\'] and confirm that I have fully informed the applicant of their/its\n                        liability under this application, including for fees and other charges, and that\n                        I have the applicant\'s authority to submit this application on their/its behalf.\n                        ')))
 			]));
@@ -5958,7 +6004,7 @@ var author$project$Main$createApplication = function (model) {
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'declaration-declaration',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Declaration'),
+				A3(author$project$Main$Checkbox, false, 'Declaration', 'I agree with these terms'),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        I confirm that I have read and understood the notes for the applicant.\n                        [link to the guidance pop up on the text \'notes for the applicant\']\n                        ')))
 			]));
@@ -5987,7 +6033,12 @@ var author$project$Main$createApplication = function (model) {
 				A3(
 				author$project$Main$ApplicationQuestion,
 				'consent-type-fast-track',
-				A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Fast-track Consent'),
+				A3(
+					author$project$Main$Multichoice,
+					elm$core$Maybe$Nothing,
+					'Fast-track Consent',
+					_List_fromArray(
+						['Yes', 'No'])),
 				elm$core$Maybe$Just(
 					elm$html$Html$text('\n                        I opt out / do not opt out of the fast track consent process\n                        ')))
 			]));
@@ -6011,7 +6062,12 @@ var author$project$Main$createApplication = function (model) {
 					A3(
 					author$project$Main$ApplicationQuestion,
 					'additional-invoices-send',
-					A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Payment Method'),
+					A3(
+						author$project$Main$Multichoice,
+						elm$core$Maybe$Nothing,
+						'Send All Invoices',
+						_List_fromArray(
+							['To Applicant', 'To Agent', 'Other'])),
 					elm$core$Maybe$Nothing)
 				]),
 			personalDetailQuestions('additional-invoices')));
@@ -6168,7 +6224,6 @@ var author$project$Main$Question = F4(
 	function (key, input, unit, prerequisites) {
 		return {input: input, key: key, prerequisites: prerequisites, unit: unit};
 	});
-var elm$json$Json$Decode$list = _Json_decodeList;
 var elm$json$Json$Decode$nullable = function (decoder) {
 	return elm$json$Json$Decode$oneOf(
 		_List_fromArray(
@@ -6177,6 +6232,17 @@ var elm$json$Json$Decode$nullable = function (decoder) {
 				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
 			]));
 };
+var author$project$Main$decodeBool = A2(
+	elm$json$Json$Decode$andThen,
+	function (bool) {
+		if ((bool.$ === 'Just') && (bool.a === 'true')) {
+			return elm$json$Json$Decode$succeed(true);
+		} else {
+			return elm$json$Json$Decode$succeed(false);
+		}
+	},
+	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string));
+var elm$json$Json$Decode$list = _Json_decodeList;
 var author$project$Main$matchInput = function (format) {
 	switch (format) {
 		case 'text':
@@ -6221,7 +6287,7 @@ var author$project$Main$matchInput = function (format) {
 				A3(
 					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 					'previousAnswer',
-					elm$json$Json$Decode$nullable(elm$json$Json$Decode$string),
+					author$project$Main$decodeBool,
 					elm$json$Json$Decode$succeed(author$project$Main$File)));
 		default:
 			return elm$json$Json$Decode$fail('Invalid format: ' + format);
@@ -6464,6 +6530,7 @@ var elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
+var elm$json$Json$Encode$bool = _Json_wrap;
 var elm$json$Json$Encode$int = _Json_wrap;
 var elm$json$Json$Encode$null = _Json_encodeNull;
 var elm$json$Json$Encode$object = function (pairs) {
@@ -6497,9 +6564,12 @@ var author$project$Main$encodeAnswers = function (answers) {
 			case 'Multichoice':
 				var a = i.a;
 				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
+			case 'File':
+				var a = i.a;
+				return elm$json$Json$Encode$bool(a);
 			default:
 				var a = i.a;
-				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
+				return elm$json$Json$Encode$bool(a);
 		}
 	};
 	var encodeAnswer = F2(
@@ -6653,12 +6723,20 @@ var author$project$Main$update = F2(
 								elm$core$Maybe$Just(answer),
 								p,
 								ops);
-						default:
+						case 'File':
 							var p = i.b;
 							return A2(
 								author$project$Main$File,
-								elm$core$Maybe$Just(answer),
+								author$project$Main$boolFromString(answer),
 								p);
+						default:
+							var p = i.b;
+							var s = i.c;
+							return A3(
+								author$project$Main$Checkbox,
+								author$project$Main$boolFromString(answer),
+								p,
+								s);
 					}
 				};
 				var updateQuestion = function (q) {
@@ -6723,7 +6801,7 @@ var author$project$Main$update = F2(
 var author$project$Main$ToggleApplication = {$: 'ToggleApplication'};
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
-var elm$json$Json$Encode$bool = _Json_wrap;
+var elm$html$Html$p = _VirtualDom_node('p');
 var elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
 		return A2(
@@ -6736,6 +6814,90 @@ var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('cl
 var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
+var author$project$Main$checkboxInput = F6(
+	function (message, _switch, key, prompt, statement, help) {
+		var helpDiv = function () {
+			if (help.$ === 'Just') {
+				var h = help.a;
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('small text-muted mb-2')
+						]),
+					_List_fromArray(
+						[h]));
+			} else {
+				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+			}
+		}();
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('mb-3')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(prompt)
+						])),
+					helpDiv,
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('form-check')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$input,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$id(key),
+									elm$html$Html$Attributes$class('form-check-input'),
+									elm$html$Html$Attributes$type_('checkbox'),
+									elm$html$Html$Attributes$checked(_switch),
+									elm$html$Html$Events$onClick(
+									message(''))
+								]),
+							_List_Nil),
+							A2(
+							elm$html$Html$label,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('form-check-label'),
+									elm$html$Html$Attributes$for(key)
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(statement)
+								]))
+						]))
+				]));
+	});
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -6743,7 +6905,6 @@ var elm$html$Html$Events$alwaysStop = function (x) {
 var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -6769,8 +6930,8 @@ var elm$html$Html$Events$onInput = function (tagger) {
 			elm$html$Html$Events$alwaysStop,
 			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
 };
-var author$project$Main$multichoiceInput = F5(
-	function (message, answer, key, prompt, options) {
+var author$project$Main$multichoiceInput = F6(
+	function (message, answer, key, prompt, options, help) {
 		var radioButton = function (o) {
 			return A2(
 				elm$html$Html$div,
@@ -6810,6 +6971,21 @@ var author$project$Main$multichoiceInput = F5(
 							]))
 					]));
 		};
+		var helpDiv = function () {
+			if (help.$ === 'Just') {
+				var h = help.a;
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('small text-muted mb-2')
+						]),
+					_List_fromArray(
+						[h]));
+			} else {
+				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+			}
+		}();
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -6825,6 +7001,7 @@ var author$project$Main$multichoiceInput = F5(
 						[
 							elm$html$Html$text(prompt)
 						])),
+					helpDiv,
 					A2(
 					elm$html$Html$div,
 					_List_Nil,
@@ -7696,29 +7873,42 @@ var author$project$Main$inputToHtml = F5(
 				var answer = input.a;
 				var prompt = input.b;
 				var options = input.c;
-				return A5(
+				return A6(
 					author$project$Main$multichoiceInput,
 					msg,
 					answer,
 					key,
 					marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
-					options);
+					options,
+					help);
+			case 'File':
+				var answer = input.a;
+				var prompt = input.b;
+				return A6(
+					author$project$Main$checkboxInput,
+					msg,
+					answer,
+					key,
+					marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
+					'Check to Upload File',
+					help);
 			default:
 				var answer = input.a;
 				var prompt = input.b;
-				return A5(
-					author$project$Main$textInput,
+				var statement = input.c;
+				return A6(
+					author$project$Main$checkboxInput,
 					msg,
-					A2(elm$core$Maybe$withDefault, '', answer),
+					answer,
 					key,
 					marcosh$elm_html_to_unicode$ElmEscapeHtml$unescape(prompt),
+					statement,
 					help);
 		}
 	});
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$h4 = _VirtualDom_node('h4');
 var elm$html$Html$hr = _VirtualDom_node('hr');
-var elm$html$Html$p = _VirtualDom_node('p');
 var author$project$Main$renderApplicationForm = function (sections) {
 	var submitButton = A2(
 		elm$html$Html$button,
@@ -8343,22 +8533,6 @@ var elm$html$Html$Attributes$tabindex = function (n) {
 		_VirtualDom_attribute,
 		'tabIndex',
 		elm$core$String$fromInt(n));
-};
-var elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		elm$html$Html$Events$on,
-		'click',
-		elm$json$Json$Decode$succeed(msg));
 };
 var author$project$Main$renderContent = function (model) {
 	var continueButton = function () {
