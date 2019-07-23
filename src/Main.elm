@@ -372,8 +372,13 @@ decodeRule =
         |> required "matters_of_discretion" (Decode.list string)
         |> required "activityStatus" decodeStatus
         |> required "status" string
-        |> required "title" string
-        |> required "definition" (nullable string)
+        |> hardcoded "Rule Title"
+        |> hardcoded Nothing
+
+
+
+--|> required "title" string
+--|> required "definition" (nullable string)
 
 
 decodeStandard : Decode.Decoder Standard
@@ -383,8 +388,13 @@ decodeStandard =
         |> required "engine_rule" string
         |> required "status" string
         |> required "value" string
-        |> required "title" string
-        |> required "definition" (nullable string)
+        |> hardcoded "Standard Title"
+        |> hardcoded Nothing
+
+
+
+--|> required "title" string
+--|> required "definition" (nullable string)
 
 
 decodeCondition : Decode.Decoder Condition
@@ -394,8 +404,13 @@ decodeCondition =
         |> required "matters_of_discretion" (Decode.list string)
         |> required "activityStatus" decodeStatus
         |> required "status" string
-        |> required "title" string
-        |> required "definition" (nullable string)
+        |> hardcoded "Condition Title"
+        |> hardcoded Nothing
+
+
+
+--|> required "title" string
+--|> required "definition" (nullable string)
 
 
 decodeInput : Decode.Decoder Input
