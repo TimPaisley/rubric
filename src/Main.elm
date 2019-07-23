@@ -75,11 +75,21 @@ type alias Results =
     { status : Status
     , rules : List Rule
     , standards : List Standard
-    , conditions : List Rule
     }
 
 
 type alias Rule =
+    { key : String
+    , mattersOfDiscretion : List String
+    , activityStatus : Status
+    , status : String
+    , conditions : List Condition
+    , title : String
+    , definition : Maybe String
+    }
+
+
+type alias Condition =
     { key : String
     , mattersOfDiscretion : List String
     , activityStatus : Status
@@ -94,16 +104,6 @@ type alias Standard =
     , engineRule : String
     , status : String
     , value : String
-    , title : String
-    , definition : Maybe String
-    }
-
-
-type alias Condition =
-    { key : String
-    , mattersOfDiscretion : List String
-    , activityStatus : Status
-    , status : String
     , title : String
     , definition : Maybe String
     }
@@ -381,7 +381,6 @@ decodeResults =
         |> required "activityStatus" decodeStatus
         |> required "rules" (Decode.list decodeRule)
         |> required "standards" (Decode.list decodeStandard)
-        |> required "conditions" (Decode.list decodeCondition)
 
 
 decodeRule : Decode.Decoder Rule
@@ -391,6 +390,7 @@ decodeRule =
         |> required "matters_of_discretion" (Decode.list string)
         |> required "activityStatus" decodeStatus
         |> required "status" string
+        |> required "conditions" (Decode.list decodeCondition)
         |> required "title" string
         |> required "definition" (nullable string)
 
@@ -549,7 +549,6 @@ renderSidebar status sections prop =
             div [ class "list-group list-group-flush" ] <|
                 sectionItem
                     :: List.map showRule section.results.rules
-                    ++ List.map showCondition section.results.conditions
                     ++ List.map showStandard section.results.standards
 
         preapp =
@@ -592,7 +591,6 @@ renderSidebar status sections prop =
             , preapp
             ]
         , div [ class "rule-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.rules) sections
-        , div [ class "condition-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.conditions) sections
         , div [ class "standard-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.standards) sections
         ]
 
@@ -600,6 +598,17 @@ renderSidebar status sections prop =
 showRule : Rule -> Html Msg
 showRule rule =
     let
+        conditions =
+            case rule.conditions of
+                [] ->
+                    div [] []
+
+                _ ->
+                    div []
+                        [ div [ class "small mb-0 mt-2 font-weight-bold" ] [ text "Conditions" ]
+                        , ul [ class "small" ] (List.map (\c -> li [ class "mb-2" ] [ text c.title ]) rule.conditions)
+                        ]
+
         mattersForDiscretion =
             case rule.mattersOfDiscretion of
                 [] ->
@@ -619,32 +628,7 @@ showRule rule =
                 ]
             , small [ class "text-muted" ] [ text rule.status ]
             ]
-        , mattersForDiscretion
-        ]
-
-
-showCondition : Condition -> Html Msg
-showCondition condition =
-    let
-        mattersForDiscretion =
-            case condition.mattersOfDiscretion of
-                [] ->
-                    div [] []
-
-                _ ->
-                    div []
-                        [ div [ class "small mb-0 mt-2 font-weight-bold" ] [ text "Matters for Discretion" ]
-                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) condition.mattersOfDiscretion)
-                        ]
-    in
-    a [ class "list-group-item list-group-item-action py-1", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ condition.key ++ "-modal") ]
-        [ div [ class "d-flex justify-content-between align-items-center" ]
-            [ div []
-                [ small [] [ text <| formatKey condition.key ]
-                , h6 [ class "my-0" ] [ text <| condition.title ]
-                ]
-            , small [ class "text-muted" ] [ text condition.status ]
-            ]
+        , conditions
         , mattersForDiscretion
         ]
 

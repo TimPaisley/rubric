@@ -6331,9 +6331,13 @@ var author$project$Main$decodeQuestion = A3(
 				'key',
 				elm$json$Json$Decode$string,
 				elm$json$Json$Decode$succeed(author$project$Main$Question)))));
-var author$project$Main$Results = F4(
-	function (status, rules, standards, conditions) {
-		return {conditions: conditions, rules: rules, standards: standards, status: status};
+var author$project$Main$Results = F3(
+	function (status, rules, standards) {
+		return {rules: rules, standards: standards, status: status};
+	});
+var author$project$Main$Rule = F7(
+	function (key, mattersOfDiscretion, activityStatus, status, conditions, title, definition) {
+		return {activityStatus: activityStatus, conditions: conditions, definition: definition, key: key, mattersOfDiscretion: mattersOfDiscretion, status: status, title: title};
 	});
 var author$project$Main$Condition = F6(
 	function (key, mattersOfDiscretion, activityStatus, status, title, definition) {
@@ -6396,10 +6400,6 @@ var author$project$Main$decodeCondition = A3(
 						'key',
 						elm$json$Json$Decode$string,
 						elm$json$Json$Decode$succeed(author$project$Main$Condition)))))));
-var author$project$Main$Rule = F6(
-	function (key, mattersOfDiscretion, activityStatus, status, title, definition) {
-		return {activityStatus: activityStatus, definition: definition, key: key, mattersOfDiscretion: mattersOfDiscretion, status: status, title: title};
-	});
 var author$project$Main$decodeRule = A3(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 	'definition',
@@ -6410,21 +6410,25 @@ var author$project$Main$decodeRule = A3(
 		elm$json$Json$Decode$string,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'status',
-			elm$json$Json$Decode$string,
+			'conditions',
+			elm$json$Json$Decode$list(author$project$Main$decodeCondition),
 			A3(
 				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'activityStatus',
-				author$project$Main$decodeStatus,
+				'status',
+				elm$json$Json$Decode$string,
 				A3(
 					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'matters_of_discretion',
-					elm$json$Json$Decode$list(elm$json$Json$Decode$string),
+					'activityStatus',
+					author$project$Main$decodeStatus,
 					A3(
 						NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'key',
-						elm$json$Json$Decode$string,
-						elm$json$Json$Decode$succeed(author$project$Main$Rule)))))));
+						'matters_of_discretion',
+						elm$json$Json$Decode$list(elm$json$Json$Decode$string),
+						A3(
+							NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'key',
+							elm$json$Json$Decode$string,
+							elm$json$Json$Decode$succeed(author$project$Main$Rule))))))));
 var author$project$Main$Standard = F6(
 	function (key, engineRule, status, value, title, definition) {
 		return {definition: definition, engineRule: engineRule, key: key, status: status, title: title, value: value};
@@ -6456,21 +6460,17 @@ var author$project$Main$decodeStandard = A3(
 						elm$json$Json$Decode$succeed(author$project$Main$Standard)))))));
 var author$project$Main$decodeResults = A3(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'conditions',
-	elm$json$Json$Decode$list(author$project$Main$decodeCondition),
+	'standards',
+	elm$json$Json$Decode$list(author$project$Main$decodeStandard),
 	A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'standards',
-		elm$json$Json$Decode$list(author$project$Main$decodeStandard),
+		'rules',
+		elm$json$Json$Decode$list(author$project$Main$decodeRule),
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'rules',
-			elm$json$Json$Decode$list(author$project$Main$decodeRule),
-			A3(
-				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'activityStatus',
-				author$project$Main$decodeStatus,
-				elm$json$Json$Decode$succeed(author$project$Main$Results)))));
+			'activityStatus',
+			author$project$Main$decodeStatus,
+			elm$json$Json$Decode$succeed(author$project$Main$Results))));
 var author$project$Main$decodeSection = A4(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'activityStatus',
@@ -8831,111 +8831,10 @@ var elm$html$Html$h6 = _VirtualDom_node('h6');
 var elm$html$Html$li = _VirtualDom_node('li');
 var elm$html$Html$small = _VirtualDom_node('small');
 var elm$html$Html$ul = _VirtualDom_node('ul');
-var author$project$Main$showCondition = function (condition) {
-	var mattersForDiscretion = function () {
-		var _n0 = condition.mattersOfDiscretion;
-		if (!_n0.b) {
-			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-		} else {
-			return A2(
-				elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('small mb-0 mt-2 font-weight-bold')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('Matters for Discretion')
-							])),
-						A2(
-						elm$html$Html$ul,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('small')
-							]),
-						A2(
-							elm$core$List$map,
-							function (m) {
-								return A2(
-									elm$html$Html$li,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('mb-2')
-										]),
-									_List_fromArray(
-										[
-											elm$html$Html$text(m)
-										]));
-							},
-							condition.mattersOfDiscretion))
-					]));
-		}
-	}();
-	return A2(
-		elm$html$Html$a,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$class('list-group-item list-group-item-action py-1'),
-				A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
-				A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (condition.key + '-modal'))
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$small,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text(
-										author$project$Main$formatKey(condition.key))
-									])),
-								A2(
-								elm$html$Html$h6,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('my-0')
-									]),
-								_List_fromArray(
-									[
-										elm$html$Html$text(condition.title)
-									]))
-							])),
-						A2(
-						elm$html$Html$small,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('text-muted')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text(condition.status)
-							]))
-					])),
-				mattersForDiscretion
-			]));
-};
 var author$project$Main$showRule = function (rule) {
 	var mattersForDiscretion = function () {
-		var _n0 = rule.mattersOfDiscretion;
-		if (!_n0.b) {
+		var _n1 = rule.mattersOfDiscretion;
+		if (!_n1.b) {
 			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
 		} else {
 			return A2(
@@ -8974,6 +8873,50 @@ var author$project$Main$showRule = function (rule) {
 										]));
 							},
 							rule.mattersOfDiscretion))
+					]));
+		}
+	}();
+	var conditions = function () {
+		var _n0 = rule.conditions;
+		if (!_n0.b) {
+			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+		} else {
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('small mb-0 mt-2 font-weight-bold')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Conditions')
+							])),
+						A2(
+						elm$html$Html$ul,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('small')
+							]),
+						A2(
+							elm$core$List$map,
+							function (c) {
+								return A2(
+									elm$html$Html$li,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('mb-2')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(c.title)
+										]));
+							},
+							rule.conditions))
 					]));
 		}
 	}();
@@ -9030,6 +8973,7 @@ var author$project$Main$showRule = function (rule) {
 								elm$html$Html$text(rule.status)
 							]))
 					])),
+				conditions,
 				mattersForDiscretion
 			]));
 };
@@ -9227,9 +9171,7 @@ var author$project$Main$renderSidebar = F3(
 						sectionItem,
 						_Utils_ap(
 							A2(elm$core$List$map, author$project$Main$showRule, section.results.rules),
-							_Utils_ap(
-								A2(elm$core$List$map, author$project$Main$showCondition, section.results.conditions),
-								A2(elm$core$List$map, author$project$Main$showStandard, section.results.standards)))));
+							A2(elm$core$List$map, author$project$Main$showStandard, section.results.standards))));
 			});
 		var preapp = A2(
 			elm$html$Html$div,
@@ -9356,18 +9298,6 @@ var author$project$Main$renderSidebar = F3(
 						elm$core$List$concatMap,
 						function (s) {
 							return A2(elm$core$List$map, itemModal, s.results.rules);
-						},
-						sections)),
-					A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('condition-modals')
-						]),
-					A2(
-						elm$core$List$concatMap,
-						function (s) {
-							return A2(elm$core$List$map, itemModal, s.results.conditions);
 						},
 						sections)),
 					A2(
