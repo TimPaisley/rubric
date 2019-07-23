@@ -6335,12 +6335,6 @@ var author$project$Main$Results = F4(
 	function (status, rules, standards, conditions) {
 		return {conditions: conditions, rules: rules, standards: standards, status: status};
 	});
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2(elm$core$Basics$composeR, elm$json$Json$Decode$succeed, NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
 var author$project$Main$Condition = F6(
 	function (key, mattersOfDiscretion, activityStatus, status, title, definition) {
 		return {activityStatus: activityStatus, definition: definition, key: key, mattersOfDiscretion: mattersOfDiscretion, status: status, title: title};
@@ -6377,12 +6371,14 @@ var author$project$Main$decodeStatus = A2(
 		return elm$json$Json$Decode$succeed(author$project$Main$Unknown);
 	},
 	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string));
-var author$project$Main$decodeCondition = A2(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-	elm$core$Maybe$Nothing,
-	A2(
-		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-		'Condition Title',
+var author$project$Main$decodeCondition = A3(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'definition',
+	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string),
+	A3(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'title',
+		elm$json$Json$Decode$string,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 			'status',
@@ -6404,12 +6400,14 @@ var author$project$Main$Rule = F6(
 	function (key, mattersOfDiscretion, activityStatus, status, title, definition) {
 		return {activityStatus: activityStatus, definition: definition, key: key, mattersOfDiscretion: mattersOfDiscretion, status: status, title: title};
 	});
-var author$project$Main$decodeRule = A2(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-	elm$core$Maybe$Nothing,
-	A2(
-		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-		'Rule Title',
+var author$project$Main$decodeRule = A3(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'definition',
+	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string),
+	A3(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'title',
+		elm$json$Json$Decode$string,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 			'status',
@@ -6431,12 +6429,14 @@ var author$project$Main$Standard = F6(
 	function (key, engineRule, status, value, title, definition) {
 		return {definition: definition, engineRule: engineRule, key: key, status: status, title: title, value: value};
 	});
-var author$project$Main$decodeStandard = A2(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-	elm$core$Maybe$Nothing,
-	A2(
-		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-		'Standard Title',
+var author$project$Main$decodeStandard = A3(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'definition',
+	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string),
+	A3(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'title',
+		elm$json$Json$Decode$string,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 			'value',
@@ -6502,6 +6502,11 @@ var author$project$Main$decodeSection = A4(
 							elm$json$Json$Decode$string,
 							elm$json$Json$Decode$succeed(author$project$Main$Section))))))));
 var author$project$Main$decodeSections = elm$json$Json$Decode$list(author$project$Main$decodeSection);
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
