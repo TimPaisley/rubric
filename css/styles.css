@@ -30,6 +30,10 @@
   object-fit: cover;
 }
 
+.list-group-item-action {
+  cursor: pointer;
+}
+
 /* ArcGIS Style Overrides */
 
 .esri-search {

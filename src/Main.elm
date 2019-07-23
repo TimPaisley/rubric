@@ -362,7 +362,7 @@ decodeResults =
         |> required "activityStatus" decodeStatus
         |> required "rules" (Decode.list decodeRule)
         |> required "standards" (Decode.list decodeStandard)
-        |> required "conditions" (Decode.list decodeRule)
+        |> required "conditions" (Decode.list decodeCondition)
 
 
 decodeRule : Decode.Decoder Rule
@@ -527,69 +527,12 @@ renderSidebar sections prop =
                         [ div [] [ h6 [ class "my-0" ] [ text section.name ] ]
                         , div [] [ small [] [ text <| statusToString section.results.status ] ]
                         ]
-
-                ruleItem r =
-                    let
-                        mfd =
-                            case r.mattersOfDiscretion of
-                                [] ->
-                                    div [] []
-
-                                _ ->
-                                    div []
-                                        [ div [ class "small mb-0 mt-2 font-weight-bold" ] [ text "Matters for Discretion" ]
-                                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) r.mattersOfDiscretion)
-                                        ]
-                    in
-                    a [ class "list-group-item list-group-item-action py-1" ]
-                        [ div [ class "d-flex justify-content-between align-items-center" ]
-                            [ div []
-                                [ small [] [ text <| formatKey r.key ]
-                                , h6 [ class "my-0" ] [ text <| r.title ]
-                                ]
-                            , small [ class "text-muted" ] [ text r.status ]
-                            ]
-                        , mfd
-                        ]
-
-                conditionItem c =
-                    let
-                        mfd =
-                            case c.mattersOfDiscretion of
-                                [] ->
-                                    div [] []
-
-                                _ ->
-                                    div []
-                                        [ div [ class "small mb-0 mt-2 font-weight-bold" ] [ text "Matters for Discretion" ]
-                                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) c.mattersOfDiscretion)
-                                        ]
-                    in
-                    a [ class "list-group-item list-group-item-action py-1" ]
-                        [ div [ class "d-flex justify-content-between align-items-center" ]
-                            [ div []
-                                [ small [] [ text <| formatKey c.key ]
-                                , h6 [ class "my-0" ] [ text <| c.title ]
-                                ]
-                            , small [ class "text-muted" ] [ text c.status ]
-                            ]
-                        , mfd
-                        ]
-
-                standardItem s =
-                    a [ class "list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1" ]
-                        [ div []
-                            [ small [] [ text <| formatKey s.key ]
-                            , h6 [ class "my-0" ] [ text <| s.title ]
-                            ]
-                        , small [ class "text-muted" ] [ text s.status ]
-                        ]
             in
             div [ class "list-group mb-3" ] <|
                 sectionItem
-                    :: List.map ruleItem section.results.rules
-                    ++ List.map conditionItem section.results.conditions
-                    ++ List.map standardItem section.results.standards
+                    :: List.map showRule section.results.rules
+                    ++ List.map showCondition section.results.conditions
+                    ++ List.map showStandard section.results.standards
 
         preapp =
             div [ class "card" ]
@@ -605,6 +548,9 @@ renderSidebar sections prop =
                         [ text "Request a Pre-Application Meeting" ]
                     ]
                 ]
+
+        itemModal item =
+            renderModal (item.key ++ "-modal") item.title (text <| Maybe.withDefault "placeholder" item.definition)
     in
     div [ class "col-md-4 order-md-2" ]
         [ div [ class "sticky-top py-3 vh-100 d-flex flex-column" ]
@@ -617,6 +563,74 @@ renderSidebar sections prop =
                 |> ul [ class "list-group overflow-auto mb-3" ]
             , preapp
             ]
+        , div [ class "rule-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.rules) sections
+        , div [ class "condition-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.conditions) sections
+        , div [ class "standard-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.standards) sections
+        ]
+
+
+showRule : Rule -> Html Msg
+showRule rule =
+    let
+        mattersForDiscretion =
+            case rule.mattersOfDiscretion of
+                [] ->
+                    div [] []
+
+                _ ->
+                    div []
+                        [ div [ class "small mb-0 mt-2 font-weight-bold" ] [ text "Matters for Discretion" ]
+                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) rule.mattersOfDiscretion)
+                        ]
+    in
+    a [ class "list-group-item list-group-item-action py-1", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ rule.key ++ "-modal") ]
+        [ div [ class "d-flex justify-content-between align-items-center" ]
+            [ div []
+                [ small [] [ text <| formatKey rule.key ]
+                , h6 [ class "my-0" ] [ text <| rule.title ]
+                ]
+            , small [ class "text-muted" ] [ text rule.status ]
+            ]
+        , mattersForDiscretion
+        ]
+
+
+showCondition : Condition -> Html Msg
+showCondition condition =
+    let
+        mattersForDiscretion =
+            case condition.mattersOfDiscretion of
+                [] ->
+                    div [] []
+
+                _ ->
+                    div []
+                        [ div [ class "small mb-0 mt-2 font-weight-bold" ] [ text "Matters for Discretion" ]
+                        , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) condition.mattersOfDiscretion)
+                        ]
+    in
+    div []
+        [ a [ class "list-group-item list-group-item-action py-1", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ condition.key ++ "-modal") ]
+            [ div [ class "d-flex justify-content-between align-items-center" ]
+                [ div []
+                    [ small [] [ text <| formatKey condition.key ]
+                    , h6 [ class "my-0" ] [ text <| condition.title ]
+                    ]
+                , small [ class "text-muted" ] [ text condition.status ]
+                ]
+            , mattersForDiscretion
+            ]
+        ]
+
+
+showStandard : Standard -> Html Msg
+showStandard standard =
+    a [ class "list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ standard.key ++ "-modal") ]
+        [ div []
+            [ small [] [ text <| formatKey standard.key ]
+            , h6 [ class "my-0" ] [ text <| standard.title ]
+            ]
+        , small [ class "text-muted" ] [ text standard.status ]
         ]
 
 
@@ -775,9 +789,6 @@ renderSection answers index section =
         unique =
             "section-" ++ String.fromInt index
 
-        ( buttonAttrs, modalDialog ) =
-            renderModal (unique ++ "-modal") section.name (text placeholder)
-
         placeholder =
             List.repeat 500 "placeholder"
                 |> String.join " "
@@ -788,7 +799,6 @@ renderSection answers index section =
         , div [ class "questions" ] <|
             List.map (renderQuestion answers section) section.questions
         , hr [ class "mb-4" ] []
-        , modalDialog
         ]
 
 
@@ -819,16 +829,11 @@ renderQuestion answers section question =
         input
 
 
-renderModal : String -> String -> Html Msg -> ( List (Html.Attribute Msg), Html Msg )
-renderModal name modalHeader modalContent =
+renderModal : String -> String -> Html Msg -> Html Msg
+renderModal key modalHeader modalContent =
     let
         title =
-            name ++ "-title"
-
-        buttonAttrs =
-            [ attribute "data-toggle" "modal"
-            , attribute "data-target" ("#" ++ name)
-            ]
+            key ++ "-modal-title"
 
         header =
             div [ class "modal-header" ]
@@ -845,12 +850,12 @@ renderModal name modalHeader modalContent =
                 [ button [ type_ "button", class "btn btn-secondary", attribute "data-dismiss" "modal" ] [ text "Close" ] ]
 
         modalDialog =
-            div [ class "modal fade", id name, tabindex -1, attribute "role" "dialog", attribute "aria-labelledby" title ]
+            div [ class "modal fade", id key, tabindex -1, attribute "role" "dialog", attribute "aria-labelledby" title ]
                 [ div [ class "modal-dialog modal-lg modal-dialog-scrollable", attribute "role" "document" ]
                     [ div [ class "modal-content" ] [ header, body, footer ] ]
                 ]
     in
-    ( buttonAttrs, modalDialog )
+    modalDialog
 
 
 renderApplicationForm : List ApplicationSection -> Html Msg

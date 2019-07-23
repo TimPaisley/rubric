@@ -6270,7 +6270,7 @@ var elm$core$Basics$composeR = F3(
 			f(x));
 	});
 var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2(elm$core$Basics$composeR, elm$json$Json$Decode$succeed, NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
-var author$project$Main$Rule = F6(
+var author$project$Main$Condition = F6(
 	function (key, mattersOfDiscretion, activityStatus, status, title, definition) {
 		return {activityStatus: activityStatus, definition: definition, key: key, mattersOfDiscretion: mattersOfDiscretion, status: status, title: title};
 	});
@@ -6306,6 +6306,33 @@ var author$project$Main$decodeStatus = A2(
 		return elm$json$Json$Decode$succeed(author$project$Main$Unknown);
 	},
 	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string));
+var author$project$Main$decodeCondition = A2(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	elm$core$Maybe$Nothing,
+	A2(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+		'Condition Title',
+		A3(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'status',
+			elm$json$Json$Decode$string,
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'activityStatus',
+				author$project$Main$decodeStatus,
+				A3(
+					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'matters_of_discretion',
+					elm$json$Json$Decode$list(elm$json$Json$Decode$string),
+					A3(
+						NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'key',
+						elm$json$Json$Decode$string,
+						elm$json$Json$Decode$succeed(author$project$Main$Condition)))))));
+var author$project$Main$Rule = F6(
+	function (key, mattersOfDiscretion, activityStatus, status, title, definition) {
+		return {activityStatus: activityStatus, definition: definition, key: key, mattersOfDiscretion: mattersOfDiscretion, status: status, title: title};
+	});
 var author$project$Main$decodeRule = A2(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
 	elm$core$Maybe$Nothing,
@@ -6359,7 +6386,7 @@ var author$project$Main$decodeStandard = A2(
 var author$project$Main$decodeResults = A3(
 	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 	'conditions',
-	elm$json$Json$Decode$list(author$project$Main$decodeRule),
+	elm$json$Json$Decode$list(author$project$Main$decodeCondition),
 	A3(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 		'standards',
@@ -8105,135 +8132,6 @@ var author$project$Main$renderProposal = F2(
 					_List_Nil)
 				]));
 	});
-var elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var elm$html$Html$Attributes$attribute = elm$virtual_dom$VirtualDom$attribute;
-var elm$html$Html$Attributes$tabindex = function (n) {
-	return A2(
-		_VirtualDom_attribute,
-		'tabIndex',
-		elm$core$String$fromInt(n));
-};
-var author$project$Main$renderModal = F3(
-	function (name, modalHeader, modalContent) {
-		var title = name + '-title';
-		var header = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('modal-header')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$h5,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('modal-title'),
-							elm$html$Html$Attributes$id(title)
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text(modalHeader)
-						])),
-					A2(
-					elm$html$Html$button,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$type_('button'),
-							elm$html$Html$Attributes$class('close'),
-							A2(elm$html$Html$Attributes$attribute, 'data-dismiss', 'modal'),
-							A2(elm$html$Html$Attributes$attribute, 'aria-label', 'Close')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$span,
-							_List_fromArray(
-								[
-									A2(elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text('×')
-								]))
-						]))
-				]));
-		var footer = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('modal-footer')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$button,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$type_('button'),
-							elm$html$Html$Attributes$class('btn btn-secondary'),
-							A2(elm$html$Html$Attributes$attribute, 'data-dismiss', 'modal')
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('Close')
-						]))
-				]));
-		var buttonAttrs = _List_fromArray(
-			[
-				A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
-				A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + name)
-			]);
-		var body = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('modal-body')
-				]),
-			_List_fromArray(
-				[modalContent]));
-		var modalDialog = A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('modal fade'),
-					elm$html$Html$Attributes$id(name),
-					elm$html$Html$Attributes$tabindex(-1),
-					A2(elm$html$Html$Attributes$attribute, 'role', 'dialog'),
-					A2(elm$html$Html$Attributes$attribute, 'aria-labelledby', title)
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('modal-dialog modal-lg modal-dialog-scrollable'),
-							A2(elm$html$Html$Attributes$attribute, 'role', 'document')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('modal-content')
-								]),
-							_List_fromArray(
-								[header, body, footer]))
-						]))
-				]));
-		return _Utils_Tuple2(buttonAttrs, modalDialog);
-	});
 var author$project$Main$InputAnswer = F3(
 	function (a, b, c) {
 		return {$: 'InputAnswer', a: a, b: b, c: c};
@@ -8348,13 +8246,6 @@ var author$project$Main$renderSection = F3(
 			elm$core$String$join,
 			' ',
 			A2(elm$core$List$repeat, 500, 'placeholder'));
-		var _n0 = A3(
-			author$project$Main$renderModal,
-			unique + '-modal',
-			section.name,
-			elm$html$Html$text(placeholder));
-		var buttonAttrs = _n0.a;
-		var modalDialog = _n0.b;
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -8396,10 +8287,12 @@ var author$project$Main$renderSection = F3(
 						[
 							elm$html$Html$Attributes$class('mb-4')
 						]),
-					_List_Nil),
-					modalDialog
+					_List_Nil)
 				]));
 	});
+var elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var elm$html$Html$form = _VirtualDom_node('form');
 var elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -8425,6 +8318,12 @@ var elm$html$Html$Attributes$classList = function (classes) {
 				elm$core$List$map,
 				elm$core$Tuple$first,
 				A2(elm$core$List$filter, elm$core$Tuple$second, classes))));
+};
+var elm$html$Html$Attributes$tabindex = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'tabIndex',
+		elm$core$String$fromInt(n));
 };
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -8605,6 +8504,121 @@ var author$project$Main$renderContent = function (model) {
 		_List_fromArray(
 			[content]));
 };
+var elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var elm$html$Html$Attributes$attribute = elm$virtual_dom$VirtualDom$attribute;
+var author$project$Main$renderModal = F3(
+	function (key, modalHeader, modalContent) {
+		var title = key + '-modal-title';
+		var header = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('modal-header')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h5,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('modal-title'),
+							elm$html$Html$Attributes$id(title)
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(modalHeader)
+						])),
+					A2(
+					elm$html$Html$button,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$type_('button'),
+							elm$html$Html$Attributes$class('close'),
+							A2(elm$html$Html$Attributes$attribute, 'data-dismiss', 'modal'),
+							A2(elm$html$Html$Attributes$attribute, 'aria-label', 'Close')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$span,
+							_List_fromArray(
+								[
+									A2(elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text('×')
+								]))
+						]))
+				]));
+		var footer = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('modal-footer')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$button,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$type_('button'),
+							elm$html$Html$Attributes$class('btn btn-secondary'),
+							A2(elm$html$Html$Attributes$attribute, 'data-dismiss', 'modal')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text('Close')
+						]))
+				]));
+		var body = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('modal-body')
+				]),
+			_List_fromArray(
+				[modalContent]));
+		var modalDialog = A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('modal fade'),
+					elm$html$Html$Attributes$id(key),
+					elm$html$Html$Attributes$tabindex(-1),
+					A2(elm$html$Html$Attributes$attribute, 'role', 'dialog'),
+					A2(elm$html$Html$Attributes$attribute, 'aria-labelledby', title)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('modal-dialog modal-lg modal-dialog-scrollable'),
+							A2(elm$html$Html$Attributes$attribute, 'role', 'document')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('modal-content')
+								]),
+							_List_fromArray(
+								[header, body, footer]))
+						]))
+				]));
+		return modalDialog;
+	});
 var elm$core$String$replace = F3(
 	function (before, after, string) {
 		return A2(
@@ -8614,6 +8628,265 @@ var elm$core$String$replace = F3(
 	});
 var author$project$Main$formatKey = function (key) {
 	return A3(elm$core$String$replace, '_', '.', key);
+};
+var elm$html$Html$h6 = _VirtualDom_node('h6');
+var elm$html$Html$li = _VirtualDom_node('li');
+var elm$html$Html$small = _VirtualDom_node('small');
+var elm$html$Html$ul = _VirtualDom_node('ul');
+var author$project$Main$showCondition = function (condition) {
+	var mattersForDiscretion = function () {
+		var _n0 = condition.mattersOfDiscretion;
+		if (!_n0.b) {
+			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+		} else {
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('small mb-0 mt-2 font-weight-bold')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Matters for Discretion')
+							])),
+						A2(
+						elm$html$Html$ul,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('small')
+							]),
+						A2(
+							elm$core$List$map,
+							function (m) {
+								return A2(
+									elm$html$Html$li,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('mb-2')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(m)
+										]));
+							},
+							condition.mattersOfDiscretion))
+					]));
+		}
+	}();
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$a,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('list-group-item list-group-item-action py-1'),
+						A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
+						A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (condition.key + '-modal'))
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$small,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text(
+												author$project$Main$formatKey(condition.key))
+											])),
+										A2(
+										elm$html$Html$h6,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('my-0')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(condition.title)
+											]))
+									])),
+								A2(
+								elm$html$Html$small,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('text-muted')
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(condition.status)
+									]))
+							])),
+						mattersForDiscretion
+					]))
+			]));
+};
+var author$project$Main$showRule = function (rule) {
+	var mattersForDiscretion = function () {
+		var _n0 = rule.mattersOfDiscretion;
+		if (!_n0.b) {
+			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+		} else {
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('small mb-0 mt-2 font-weight-bold')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Matters for Discretion')
+							])),
+						A2(
+						elm$html$Html$ul,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('small')
+							]),
+						A2(
+							elm$core$List$map,
+							function (m) {
+								return A2(
+									elm$html$Html$li,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('mb-2')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(m)
+										]));
+							},
+							rule.mattersOfDiscretion))
+					]));
+		}
+	}();
+	return A2(
+		elm$html$Html$a,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('list-group-item list-group-item-action py-1'),
+				A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
+				A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (rule.key + '-modal'))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$small,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										author$project$Main$formatKey(rule.key))
+									])),
+								A2(
+								elm$html$Html$h6,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('my-0')
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(rule.title)
+									]))
+							])),
+						A2(
+						elm$html$Html$small,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('text-muted')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(rule.status)
+							]))
+					])),
+				mattersForDiscretion
+			]));
+};
+var author$project$Main$showStandard = function (standard) {
+	return A2(
+		elm$html$Html$a,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1'),
+				A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
+				A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (standard.key + '-modal'))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$small,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								author$project$Main$formatKey(standard.key))
+							])),
+						A2(
+						elm$html$Html$h6,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('my-0')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(standard.title)
+							]))
+					])),
+				A2(
+				elm$html$Html$small,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('text-muted')
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text(standard.status)
+					]))
+			]));
 };
 var author$project$Main$statusToClass = function (status) {
 	switch (status.$) {
@@ -8647,10 +8920,11 @@ var author$project$Main$statusToString = function (status) {
 			return 'Status Unknown';
 	}
 };
-var elm$html$Html$h6 = _VirtualDom_node('h6');
-var elm$html$Html$li = _VirtualDom_node('li');
-var elm$html$Html$small = _VirtualDom_node('small');
-var elm$html$Html$ul = _VirtualDom_node('ul');
+var elm$core$List$concatMap = F2(
+	function (f, list) {
+		return elm$core$List$concat(
+			A2(elm$core$List$map, f, list));
+	});
 var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('target');
 var author$project$Main$renderSidebar = F2(
 	function (sections, prop) {
@@ -8658,51 +8932,6 @@ var author$project$Main$renderSidebar = F2(
 			function (index, section) {
 				var statusClass = function (s) {
 					return 'list-group-item-' + author$project$Main$statusToClass(s);
-				};
-				var standardItem = function (s) {
-					return A2(
-						elm$html$Html$a,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$small,
-										_List_Nil,
-										_List_fromArray(
-											[
-												elm$html$Html$text(
-												author$project$Main$formatKey(s.key))
-											])),
-										A2(
-										elm$html$Html$h6,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('my-0')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text(s.title)
-											]))
-									])),
-								A2(
-								elm$html$Html$small,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('text-muted')
-									]),
-								_List_fromArray(
-									[
-										elm$html$Html$text(s.status)
-									]))
-							]));
 				};
 				var sectionItem = A2(
 					elm$html$Html$a,
@@ -8746,204 +8975,6 @@ var author$project$Main$renderSidebar = F2(
 										]))
 								]))
 						]));
-				var ruleItem = function (r) {
-					var mfd = function () {
-						var _n1 = r.mattersOfDiscretion;
-						if (!_n1.b) {
-							return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-						} else {
-							return A2(
-								elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$div,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('small mb-0 mt-2 font-weight-bold')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text('Matters for Discretion')
-											])),
-										A2(
-										elm$html$Html$ul,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('small')
-											]),
-										A2(
-											elm$core$List$map,
-											function (m) {
-												return A2(
-													elm$html$Html$li,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('mb-2')
-														]),
-													_List_fromArray(
-														[
-															elm$html$Html$text(m)
-														]));
-											},
-											r.mattersOfDiscretion))
-									]));
-						}
-					}();
-					return A2(
-						elm$html$Html$a,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('list-group-item list-group-item-action py-1')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$div,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$div,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												elm$html$Html$small,
-												_List_Nil,
-												_List_fromArray(
-													[
-														elm$html$Html$text(
-														author$project$Main$formatKey(r.key))
-													])),
-												A2(
-												elm$html$Html$h6,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('my-0')
-													]),
-												_List_fromArray(
-													[
-														elm$html$Html$text(r.title)
-													]))
-											])),
-										A2(
-										elm$html$Html$small,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('text-muted')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text(r.status)
-											]))
-									])),
-								mfd
-							]));
-				};
-				var conditionItem = function (c) {
-					var mfd = function () {
-						var _n0 = c.mattersOfDiscretion;
-						if (!_n0.b) {
-							return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-						} else {
-							return A2(
-								elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$div,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('small mb-0 mt-2 font-weight-bold')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text('Matters for Discretion')
-											])),
-										A2(
-										elm$html$Html$ul,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('small')
-											]),
-										A2(
-											elm$core$List$map,
-											function (m) {
-												return A2(
-													elm$html$Html$li,
-													_List_fromArray(
-														[
-															elm$html$Html$Attributes$class('mb-2')
-														]),
-													_List_fromArray(
-														[
-															elm$html$Html$text(m)
-														]));
-											},
-											c.mattersOfDiscretion))
-									]));
-						}
-					}();
-					return A2(
-						elm$html$Html$a,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('list-group-item list-group-item-action py-1')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$div,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$div,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												elm$html$Html$small,
-												_List_Nil,
-												_List_fromArray(
-													[
-														elm$html$Html$text(
-														author$project$Main$formatKey(c.key))
-													])),
-												A2(
-												elm$html$Html$h6,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('my-0')
-													]),
-												_List_fromArray(
-													[
-														elm$html$Html$text(c.title)
-													]))
-											])),
-										A2(
-										elm$html$Html$small,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('text-muted')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text(c.status)
-											]))
-									])),
-								mfd
-							]));
-				};
 				return A2(
 					elm$html$Html$div,
 					_List_fromArray(
@@ -8954,10 +8985,10 @@ var author$project$Main$renderSidebar = F2(
 						elm$core$List$cons,
 						sectionItem,
 						_Utils_ap(
-							A2(elm$core$List$map, ruleItem, section.results.rules),
+							A2(elm$core$List$map, author$project$Main$showRule, section.results.rules),
 							_Utils_ap(
-								A2(elm$core$List$map, conditionItem, section.results.conditions),
-								A2(elm$core$List$map, standardItem, section.results.standards)))));
+								A2(elm$core$List$map, author$project$Main$showCondition, section.results.conditions),
+								A2(elm$core$List$map, author$project$Main$showStandard, section.results.standards)))));
 			});
 		var preapp = A2(
 			elm$html$Html$div,
@@ -9009,6 +9040,14 @@ var author$project$Main$renderSidebar = F2(
 								]))
 						]))
 				]));
+		var itemModal = function (item) {
+			return A3(
+				author$project$Main$renderModal,
+				item.key + '-modal',
+				item.title,
+				elm$html$Html$text(
+					A2(elm$core$Maybe$withDefault, 'placeholder', item.definition)));
+		};
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -9064,7 +9103,43 @@ var author$project$Main$renderSidebar = F2(
 								]),
 							A2(elm$core$List$indexedMap, sectionGroup, sections)),
 							preapp
-						]))
+						])),
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('rule-modals')
+						]),
+					A2(
+						elm$core$List$concatMap,
+						function (s) {
+							return A2(elm$core$List$map, itemModal, s.results.rules);
+						},
+						sections)),
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('condition-modals')
+						]),
+					A2(
+						elm$core$List$concatMap,
+						function (s) {
+							return A2(elm$core$List$map, itemModal, s.results.conditions);
+						},
+						sections)),
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('standard-modals')
+						]),
+					A2(
+						elm$core$List$concatMap,
+						function (s) {
+							return A2(elm$core$List$map, itemModal, s.results.standards);
+						},
+						sections))
 				]));
 	});
 var elm$html$Html$h2 = _VirtualDom_node('h2');
