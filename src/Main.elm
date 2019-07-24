@@ -60,6 +60,7 @@ type alias Section =
     , questions : List Question
     , results : Results
     , status : Status
+    , open : Bool
     }
 
 
@@ -153,6 +154,7 @@ type Msg
     | ReceiveSections Decode.Value
     | ReceiveStatus Decode.Value
     | InputAnswer Section Question String
+    | ToggleSection Section
     | AskRubric
     | ToggleApplication
 
@@ -245,6 +247,16 @@ update msg model =
 
                 updateSection s =
                     { s | questions = ListX.updateIf (\q -> q.key == question.key) updateQuestion s.questions }
+
+                newSections =
+                    ListX.updateIf (\s -> s.key == section.key) updateSection model.sections
+            in
+            ( { model | sections = newSections }, Cmd.none )
+
+        ToggleSection section ->
+            let
+                updateSection s =
+                    { s | open = not s.open }
 
                 newSections =
                     ListX.updateIf (\s -> s.key == section.key) updateSection model.sections
@@ -363,6 +375,7 @@ decodeSection =
         |> required "questions" (Decode.list decodeQuestion)
         |> required "results" decodeResults
         |> optional "activityStatus" decodeStatus Unknown
+        |> hardcoded False
 
 
 decodeQuestion : Decode.Decoder Question
@@ -535,19 +548,45 @@ renderSidebar status sections prop =
 
         sectionGroup index section =
             let
-                sectionItem =
+                toggleIndicator =
+                    if section.open then
+                        "▼"
+
+                    else
+                        "▶"
+
+                toggle =
+                    case ( section.results.rules, section.results.standards ) of
+                        ( [], [] ) ->
+                            div [] []
+
+                        _ ->
+                            div [ class "small text-muted d-flex justify-content-center align-items-center pr-3" ]
+                                [ text toggleIndicator ]
+
+                sectionHeader =
                     a
-                        [ class <| "list-group-item list-group-item-action d-flex justify-content-between align-items-center " ++ statusClass section.results.status
-                        , href <| "#section-" ++ String.fromInt index
+                        [ class <| "list-group-item list-group-item-action " ++ statusClass section.results.status
+                        , attribute "data-toggle" "collapse"
+                        , attribute "data-target" ("#" ++ section.key ++ "-results")
+                        , onClick <| ToggleSection section
                         ]
-                        [ div [] [ h6 [ class "my-0 py-3" ] [ text section.name ] ]
-                        , div [] [ small [] [ text <| statusToString section.results.status ] ]
+                        [ div [ class "row px-3" ]
+                            [ toggle
+                            , div []
+                                [ h6 [ class "my-0" ] [ text section.name ]
+                                , small [] [ text <| statusToString section.results.status ]
+                                ]
+                            ]
                         ]
             in
-            div [ class "list-group list-group-flush" ] <|
-                sectionItem
-                    :: List.map (showRule <| ListX.last section.results.rules) section.results.rules
-                    ++ List.map showStandard section.results.standards
+            div [ class "list-group list-group-flush" ]
+                [ sectionHeader
+                , div [ id (section.key ++ "-results"), class "collapse" ]
+                    (List.map (showRule <| ListX.last section.results.rules) section.results.rules
+                        ++ List.map showStandard section.results.standards
+                    )
+                ]
 
         preapp =
             div [ class "card" ]
@@ -570,9 +609,9 @@ renderSidebar status sections prop =
         statusCard =
             div [ class "list-group" ]
                 [ div
-                    [ class <| "list-group-item d-flex justify-content-between align-items-center " ++ statusClass status ]
-                    [ div [] [ h6 [ class "my-0" ] [ text "Overall Activity Status" ] ]
-                    , div [] [ small [] [ text <| statusToString status ] ]
+                    [ class <| "list-group-item d-flex flex-column justify-content-between align-items-center " ++ statusClass status ]
+                    [ div [] [ small [] [ text "Overall Activity Status" ] ]
+                    , div [] [ h6 [ class "my-0" ] [ text <| statusToString status ] ]
                     ]
                 ]
     in
@@ -585,7 +624,7 @@ renderSidebar status sections prop =
                 ]
             , statusCard
             , List.indexedMap sectionGroup sections
-                |> div [ class "overflow-auto rounded border my-3" ]
+                |> div [ class "accordion overflow-auto rounded border my-3" ]
             , preapp
             ]
         , div [ class "rule-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.rules) sections
@@ -638,12 +677,20 @@ showRule lastRule rule =
 
 showStandard : Standard -> Html Msg
 showStandard standard =
+    let
+        mute =
+            if standard.status == "Not met" then
+                "text-muted"
+
+            else
+                ""
+    in
     a [ class "list-group-item list-group-item-action", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ standard.key ++ "-modal") ]
         [ div [ class "d-flex justify-content-between align-items-center mb-2" ]
-            [ small [] [ text <| "ⓘ " ++ formatKey standard.key ]
+            [ small [ class mute ] [ text <| "ⓘ " ++ formatKey standard.key ]
             , small [ class "text-muted" ] [ text standard.status ]
             ]
-        , h6 [ class "my-0" ] [ text <| standard.title ]
+        , h6 [ class ("my-0 " ++ mute) ] [ text <| standard.title ]
         ]
 
 

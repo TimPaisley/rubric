@@ -6216,9 +6216,15 @@ var author$project$Main$decodeProperty = A3(
 												'fullAddress',
 												elm$json$Json$Decode$string,
 												elm$json$Json$Decode$succeed(author$project$Main$Property)))))))))))));
-var author$project$Main$Section = F7(
-	function (key, description, name, section, questions, results, status) {
-		return {description: description, key: key, name: name, questions: questions, results: results, section: section, status: status};
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2(elm$core$Basics$composeR, elm$json$Json$Decode$succeed, NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
+var author$project$Main$Section = F8(
+	function (key, description, name, section, questions, results, status, open) {
+		return {description: description, key: key, name: name, open: open, questions: questions, results: results, section: section, status: status};
 	});
 var author$project$Main$Question = F4(
 	function (key, input, unit, prerequisites) {
@@ -6467,42 +6473,40 @@ var author$project$Main$decodeResults = A3(
 			'activityStatus',
 			author$project$Main$decodeStatus,
 			elm$json$Json$Decode$succeed(author$project$Main$Results))));
-var author$project$Main$decodeSection = A4(
-	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'activityStatus',
-	author$project$Main$decodeStatus,
-	author$project$Main$Unknown,
-	A3(
-		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'results',
-		author$project$Main$decodeResults,
+var author$project$Main$decodeSection = A2(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	false,
+	A4(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'activityStatus',
+		author$project$Main$decodeStatus,
+		author$project$Main$Unknown,
 		A3(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'questions',
-			elm$json$Json$Decode$list(author$project$Main$decodeQuestion),
+			'results',
+			author$project$Main$decodeResults,
 			A3(
 				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'section',
-				elm$json$Json$Decode$string,
+				'questions',
+				elm$json$Json$Decode$list(author$project$Main$decodeQuestion),
 				A3(
 					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'name',
+					'section',
 					elm$json$Json$Decode$string,
 					A3(
 						NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'description',
+						'name',
 						elm$json$Json$Decode$string,
 						A3(
 							NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'key',
+							'description',
 							elm$json$Json$Decode$string,
-							elm$json$Json$Decode$succeed(author$project$Main$Section))))))));
+							A3(
+								NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'key',
+								elm$json$Json$Decode$string,
+								elm$json$Json$Decode$succeed(author$project$Main$Section)))))))));
 var author$project$Main$decodeSections = elm$json$Json$Decode$list(author$project$Main$decodeSection);
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -6759,6 +6763,25 @@ var author$project$Main$update = F2(
 								updateQuestion,
 								s.questions)
 						});
+				};
+				var newSections = A3(
+					elm_community$list_extra$List$Extra$updateIf,
+					function (s) {
+						return _Utils_eq(s.key, section.key);
+					},
+					updateSection,
+					model.sections);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{sections: newSections}),
+					elm$core$Platform$Cmd$none);
+			case 'ToggleSection':
+				var section = msg.a;
+				var updateSection = function (s) {
+					return _Utils_update(
+						s,
+						{open: !s.open});
 				};
 				var newSections = A3(
 					elm_community$list_extra$List$Extra$updateIf,
@@ -8698,6 +8721,9 @@ var author$project$Main$renderContent = function (model) {
 		_List_fromArray(
 			[content]));
 };
+var author$project$Main$ToggleSection = function (a) {
+	return {$: 'ToggleSection', a: a};
+};
 var elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
 		return A2(
@@ -8993,6 +9019,7 @@ var author$project$Main$showRule = F2(
 				]));
 	});
 var author$project$Main$showStandard = function (standard) {
+	var mute = (standard.status === 'Not met') ? 'text-muted' : '';
 	return A2(
 		elm$html$Html$a,
 		_List_fromArray(
@@ -9013,7 +9040,10 @@ var author$project$Main$showStandard = function (standard) {
 					[
 						A2(
 						elm$html$Html$small,
-						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class(mute)
+							]),
 						_List_fromArray(
 							[
 								elm$html$Html$text(
@@ -9034,7 +9064,7 @@ var author$project$Main$showStandard = function (standard) {
 				elm$html$Html$h6,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$class('my-0')
+						elm$html$Html$Attributes$class('my-0 ' + mute)
 					]),
 				_List_fromArray(
 					[
@@ -9100,10 +9130,23 @@ var author$project$Main$renderSidebar = F3(
 					_List_fromArray(
 						[
 							elm$html$Html$Attributes$class(
-							'list-group-item d-flex justify-content-between align-items-center ' + statusClass(status))
+							'list-group-item d-flex flex-column justify-content-between align-items-center ' + statusClass(status))
 						]),
 					_List_fromArray(
 						[
+							A2(
+							elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$small,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Overall Activity Status')
+										]))
+								])),
 							A2(
 							elm$html$Html$div,
 							_List_Nil,
@@ -9117,19 +9160,6 @@ var author$project$Main$renderSidebar = F3(
 										]),
 									_List_fromArray(
 										[
-											elm$html$Html$text('Overall Activity Status')
-										]))
-								])),
-							A2(
-							elm$html$Html$div,
-							_List_Nil,
-							_List_fromArray(
-								[
-									A2(
-									elm$html$Html$small,
-									_List_Nil,
-									_List_fromArray(
-										[
 											elm$html$Html$text(
 											author$project$Main$statusToString(status))
 										]))
@@ -9138,45 +9168,69 @@ var author$project$Main$renderSidebar = F3(
 				]));
 		var sectionGroup = F2(
 			function (index, section) {
-				var sectionItem = A2(
+				var toggleIndicator = section.open ? '▼' : '▶';
+				var toggle = function () {
+					var _n0 = _Utils_Tuple2(section.results.rules, section.results.standards);
+					if ((!_n0.a.b) && (!_n0.b.b)) {
+						return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+					} else {
+						return A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('small text-muted d-flex justify-content-center align-items-center pr-3')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(toggleIndicator)
+								]));
+					}
+				}();
+				var sectionHeader = A2(
 					elm$html$Html$a,
 					_List_fromArray(
 						[
 							elm$html$Html$Attributes$class(
-							'list-group-item list-group-item-action d-flex justify-content-between align-items-center ' + statusClass(section.results.status)),
-							elm$html$Html$Attributes$href(
-							'#section-' + elm$core$String$fromInt(index))
+							'list-group-item list-group-item-action ' + statusClass(section.results.status)),
+							A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'collapse'),
+							A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (section.key + '-results')),
+							elm$html$Html$Events$onClick(
+							author$project$Main$ToggleSection(section))
 						]),
 					_List_fromArray(
 						[
 							A2(
 							elm$html$Html$div,
-							_List_Nil,
 							_List_fromArray(
 								[
-									A2(
-									elm$html$Html$h6,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('my-0 py-3')
-										]),
-									_List_fromArray(
-										[
-											elm$html$Html$text(section.name)
-										]))
-								])),
-							A2(
-							elm$html$Html$div,
-							_List_Nil,
+									elm$html$Html$Attributes$class('row px-3')
+								]),
 							_List_fromArray(
 								[
+									toggle,
 									A2(
-									elm$html$Html$small,
+									elm$html$Html$div,
 									_List_Nil,
 									_List_fromArray(
 										[
-											elm$html$Html$text(
-											author$project$Main$statusToString(section.results.status))
+											A2(
+											elm$html$Html$h6,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('my-0')
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text(section.name)
+												])),
+											A2(
+											elm$html$Html$small,
+											_List_Nil,
+											_List_fromArray(
+												[
+													elm$html$Html$text(
+													author$project$Main$statusToString(section.results.status))
+												]))
 										]))
 								]))
 						]));
@@ -9186,16 +9240,24 @@ var author$project$Main$renderSidebar = F3(
 						[
 							elm$html$Html$Attributes$class('list-group list-group-flush')
 						]),
-					A2(
-						elm$core$List$cons,
-						sectionItem,
-						_Utils_ap(
+					_List_fromArray(
+						[
+							sectionHeader,
 							A2(
-								elm$core$List$map,
-								author$project$Main$showRule(
-									elm_community$list_extra$List$Extra$last(section.results.rules)),
-								section.results.rules),
-							A2(elm$core$List$map, author$project$Main$showStandard, section.results.standards))));
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$id(section.key + '-results'),
+									elm$html$Html$Attributes$class('collapse')
+								]),
+							_Utils_ap(
+								A2(
+									elm$core$List$map,
+									author$project$Main$showRule(
+										elm_community$list_extra$List$Extra$last(section.results.rules)),
+									section.results.rules),
+								A2(elm$core$List$map, author$project$Main$showStandard, section.results.standards)))
+						]));
 			});
 		var preapp = A2(
 			elm$html$Html$div,
@@ -9307,7 +9369,7 @@ var author$project$Main$renderSidebar = F3(
 							elm$html$Html$div,
 							_List_fromArray(
 								[
-									elm$html$Html$Attributes$class('overflow-auto rounded border my-3')
+									elm$html$Html$Attributes$class('accordion overflow-auto rounded border my-3')
 								]),
 							A2(elm$core$List$indexedMap, sectionGroup, sections)),
 							preapp
