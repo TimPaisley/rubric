@@ -91,7 +91,6 @@ type alias Rule =
 
 type alias Condition =
     { key : String
-    , mattersOfDiscretion : List String
     , activityStatus : Status
     , status : String
     , title : String
@@ -410,7 +409,6 @@ decodeCondition : Decode.Decoder Condition
 decodeCondition =
     Decode.succeed Condition
         |> required "key" string
-        |> required "matters_of_discretion" (Decode.list string)
         |> required "activityStatus" decodeStatus
         |> required "status" string
         |> required "title" string
@@ -548,7 +546,7 @@ renderSidebar status sections prop =
             in
             div [ class "list-group list-group-flush" ] <|
                 sectionItem
-                    :: List.map showRule section.results.rules
+                    :: List.map (showRule <| ListX.last section.results.rules) section.results.rules
                     ++ List.map showStandard section.results.standards
 
         preapp =
@@ -595,8 +593,8 @@ renderSidebar status sections prop =
         ]
 
 
-showRule : Rule -> Html Msg
-showRule rule =
+showRule : Maybe Rule -> Rule -> Html Msg
+showRule lastRule rule =
     let
         conditions =
             case rule.conditions of
@@ -619,15 +617,20 @@ showRule rule =
                         [ div [ class "small mb-0 mt-2 font-weight-bold" ] [ text "Matters for Discretion" ]
                         , ul [ class "small" ] (List.map (\m -> li [ class "mb-2" ] [ text m ]) rule.mattersOfDiscretion)
                         ]
+
+        highlight =
+            if Just rule.key == Maybe.map .key lastRule && rule.status == "Met" then
+                "text-" ++ statusToClass rule.activityStatus
+
+            else
+                ""
     in
-    a [ class "list-group-item list-group-item-action py-1", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ rule.key ++ "-modal") ]
-        [ div [ class "d-flex justify-content-between align-items-center" ]
-            [ div []
-                [ small [] [ text <| formatKey rule.key ]
-                , h6 [ class "my-0" ] [ text <| rule.title ]
-                ]
+    a [ class "list-group-item list-group-item-action", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ rule.key ++ "-modal") ]
+        [ div [ class "d-flex justify-content-between align-items-center mb-2" ]
+            [ small [] [ text <| "ⓘ " ++ formatKey rule.key ]
             , small [ class "text-muted" ] [ text rule.status ]
             ]
+        , h6 [ class <| "my-0 " ++ highlight ] [ text <| rule.title ]
         , conditions
         , mattersForDiscretion
         ]
@@ -635,12 +638,12 @@ showRule rule =
 
 showStandard : Standard -> Html Msg
 showStandard standard =
-    a [ class "list-group-item list-group-item-action d-flex justify-content-between align-items-center py-1", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ standard.key ++ "-modal") ]
-        [ div []
-            [ small [] [ text <| formatKey standard.key ]
-            , h6 [ class "my-0" ] [ text <| standard.title ]
+    a [ class "list-group-item list-group-item-action", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ standard.key ++ "-modal") ]
+        [ div [ class "d-flex justify-content-between align-items-center mb-2" ]
+            [ small [] [ text <| "ⓘ " ++ formatKey standard.key ]
+            , small [ class "text-muted" ] [ text standard.status ]
             ]
-        , small [ class "text-muted" ] [ text standard.status ]
+        , h6 [ class "my-0" ] [ text <| standard.title ]
         ]
 
 
