@@ -84,6 +84,7 @@ type alias Rule =
     , mattersOfDiscretion : List String
     , activityStatus : Status
     , status : String
+    , report : String
     , conditions : List Condition
     , title : String
     , definition : Maybe String
@@ -94,6 +95,7 @@ type alias Condition =
     { key : String
     , activityStatus : Status
     , status : String
+    , report : String
     , title : String
     , definition : Maybe String
     }
@@ -103,6 +105,7 @@ type alias Standard =
     { key : String
     , engineRule : String
     , status : String
+    , report : String
     , value : String
     , title : String
     , definition : Maybe String
@@ -136,8 +139,12 @@ type Status
 type alias ApplicationSection =
     { name : String
     , info : Maybe (Html Msg)
-    , questions : List ApplicationQuestion
+    , groups : List ApplicationGroup
     }
+
+
+type alias ApplicationGroup =
+    List ApplicationQuestion
 
 
 type alias ApplicationQuestion =
@@ -402,6 +409,7 @@ decodeRule =
         |> required "matters_of_discretion" (Decode.list string)
         |> required "activityStatus" decodeStatus
         |> required "status" string
+        |> required "report" string
         |> required "conditions" (Decode.list decodeCondition)
         |> required "title" string
         |> required "definition" (nullable string)
@@ -413,6 +421,7 @@ decodeStandard =
         |> required "key" string
         |> required "engine_rule" string
         |> required "status" string
+        |> required "report" string
         |> required "value" string
         |> required "title" string
         |> required "definition" (nullable string)
@@ -424,6 +433,7 @@ decodeCondition =
         |> required "key" string
         |> required "activityStatus" decodeStatus
         |> required "status" string
+        |> required "report" string
         |> required "title" string
         |> required "definition" (nullable string)
 
@@ -667,7 +677,7 @@ showRule lastRule rule =
     a [ class "list-group-item list-group-item-action", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ rule.key ++ "-modal") ]
         [ div [ class "d-flex justify-content-between align-items-center mb-2" ]
             [ small [] [ text <| "ⓘ " ++ formatKey rule.key ]
-            , small [ class "text-muted" ] [ text rule.status ]
+            , small [ class "text-muted" ] [ text rule.report ]
             ]
         , h6 [ class <| "my-0 " ++ highlight ] [ text <| rule.title ]
         , conditions
@@ -688,7 +698,7 @@ showStandard standard =
     a [ class "list-group-item list-group-item-action", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ standard.key ++ "-modal") ]
         [ div [ class "d-flex justify-content-between align-items-center mb-2" ]
             [ small [ class mute ] [ text <| "ⓘ " ++ formatKey standard.key ]
-            , small [ class "text-muted" ] [ text standard.status ]
+            , small [ class "text-muted" ] [ text standard.report ]
             ]
         , h6 [ class ("my-0 " ++ mute) ] [ text <| standard.title ]
         ]
@@ -921,7 +931,7 @@ renderModal key modalHeader modalContent =
 renderApplicationForm : List ApplicationSection -> Html Msg
 renderApplicationForm sections =
     let
-        renderAppSection { name, info, questions } =
+        renderAppSection { name, info, groups } =
             let
                 infoCard =
                     case info of
@@ -938,15 +948,13 @@ renderApplicationForm sections =
                 [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
                     [ span [] [ text name ] ]
                 , infoCard
-                , div [ class "questions" ] (List.map renderAppQuestion questions)
+                , div [ class "questions" ] (List.map renderAppGroup groups)
                 , hr [ class "mb-4" ] []
                 ]
 
-        renderAppQuestion { key, input, help } =
-            div [ class "row" ]
-                [ div [ class "col-md-12" ]
-                    [ inputToHtml input key Nothing (\_ -> NoOp) help ]
-                ]
+        renderAppGroup questions =
+            div [ class "row mb-3" ]
+                (List.map (\q -> div [ class "col" ] [ inputToHtml q.input q.key Nothing (\_ -> NoOp) q.help ]) questions)
 
         submitButton =
             button [ type_ "button", class "btn btn-success btn-lg btn-block" ]
@@ -1260,12 +1268,15 @@ createApplication : Model -> List ApplicationSection
 createApplication model =
     let
         personalDetailQuestions key =
-            [ ApplicationQuestion (key ++ "-fname") (Text Nothing "First Name") Nothing
-            , ApplicationQuestion (key ++ "-lname") (Text Nothing "Last Name") Nothing
-            , ApplicationQuestion (key ++ "-address") (Text Nothing "Postal Address") Nothing
-            , ApplicationQuestion (key ++ "-phone") (Text Nothing "Phone (day)") Nothing
-            , ApplicationQuestion (key ++ "-mobile") (Text Nothing "Mobile") Nothing
-            , ApplicationQuestion (key ++ "-email") (Text Nothing "E-mail") Nothing
+            [ [ ApplicationQuestion (key ++ "-fname") (Text Nothing "First Name") Nothing
+              , ApplicationQuestion (key ++ "-lname") (Text Nothing "Last Name") Nothing
+              ]
+            , [ ApplicationQuestion (key ++ "-address") (Text Nothing "Postal Address") Nothing
+              , ApplicationQuestion (key ++ "-phone") (Text Nothing "Phone (day)") Nothing
+              ]
+            , [ ApplicationQuestion (key ++ "-mobile") (Text Nothing "Mobile") Nothing
+              , ApplicationQuestion (key ++ "-email") (Text Nothing "E-mail") Nothing
+              ]
             ]
 
         propertyInformation =
@@ -1285,35 +1296,39 @@ createApplication model =
             in
             ApplicationSection "Property Information"
                 Nothing
-                [ ApplicationQuestion "property-image" (Text image "Image") Nothing
-                , ApplicationQuestion "property-address" (Text address "Address") Nothing
-                , ApplicationQuestion "property-wufi" (Text wufi "WUFI") Nothing
-                , ApplicationQuestion "property-zone" (Text zone "Zone") Nothing
-                , ApplicationQuestion "property-legal-description" (Text Nothing "Legal Description of the Site for this Application") Nothing
-                , ApplicationQuestion "property-aka" (Text Nothing "Any Other Commonly Known Names of the Site") Nothing
-                , ApplicationQuestion "property-description" (Text Nothing "Site Description") <|
-                    Just
-                        (text """
+                [ [ ApplicationQuestion "property-image" (Text image "Image") Nothing ]
+                , [ ApplicationQuestion "property-address" (Text address "Address") Nothing ]
+                , [ ApplicationQuestion "property-wufi" (Text wufi "WUFI") Nothing ]
+                , [ ApplicationQuestion "property-zone" (Text zone "Zone") Nothing ]
+                , [ ApplicationQuestion "property-legal-description" (Text Nothing "Legal Description of the Site for this Application") Nothing ]
+                , [ ApplicationQuestion "property-aka" (Text Nothing "Any Other Commonly Known Names of the Site") Nothing ]
+                , [ ApplicationQuestion "property-description" (Text Nothing "Site Description") <|
+                        Just
+                            (text """
                         Describe the site including its natural and physical characteristics and any adjacent
                         uses that may be relevant to the consideration of the application.
                         """)
+                  ]
                 ]
 
         consentType =
             ApplicationSection "Consent Type"
                 Nothing
-                [ ApplicationQuestion "consent-type" (Text Nothing "Consent Type") Nothing
-                , ApplicationQuestion "consent-type-activity" (Text Nothing "Proposed Activity") Nothing
-                , ApplicationQuestion "consent-type-activity-status" (Text Nothing "Overall Activity Status") <|
-                    Just
-                        (text """
+                [ [ ApplicationQuestion "consent-type" (Text Nothing "Consent Type") Nothing
+                  , ApplicationQuestion "consent-type-activity" (Text Nothing "Proposed Activity") Nothing
+                  ]
+                , [ ApplicationQuestion "consent-type-activity-status" (Text Nothing "Overall Activity Status") <|
+                        Just
+                            (text """
                         This status is indicative only, and must be verified by a Council Planner.
                         """)
-                , ApplicationQuestion "consent-type-fast-track" (Multichoice Nothing "Fast-track Consent" [ "Yes", "No" ]) <|
-                    Just
-                        (text """
+                  ]
+                , [ ApplicationQuestion "consent-type-fast-track" (Multichoice Nothing "Fast-track Consent" [ "Yes", "No" ]) <|
+                        Just
+                            (text """
                         I opt out / do not opt out of the fast track consent process
                         """)
+                  ]
                 ]
 
         applicantDetails =
@@ -1331,28 +1346,31 @@ createApplication model =
         descriptionOfProposedActivity =
             ApplicationSection "Description of Proposed Activity"
                 Nothing
-                [ ApplicationQuestion "activity-description" (Text Nothing "Description of Activity") <|
-                    Just
-                        (text """
+                [ [ ApplicationQuestion "activity-description" (Text Nothing "Description of Activity") <|
+                        Just
+                            (text """
                         Clearly describe the proposal to which this application relates.
                         """)
+                  ]
                 ]
 
         otherResourceConsents =
             ApplicationSection "Other Resource Consents"
                 Nothing
-                [ ApplicationQuestion "other-consents" (Multichoice Nothing "Are there any other resource consents required/granted from any consent authority for this activity?" [ "Yes", "No" ]) <|
-                    Just
-                        (text """
+                [ [ ApplicationQuestion "other-consents" (Multichoice Nothing "Are there any other resource consents required/granted from any consent authority for this activity?" [ "Yes", "No" ]) <|
+                        Just
+                            (text """
                         Applicant to check with Greater Wellington Regional Council to confirm this.
                         """)
-                , ApplicationQuestion "other-consents-details" (Text Nothing "Detail of other resource consents required") <|
-                    Just
-                        (text """
+                  ]
+                , [ ApplicationQuestion "other-consents-details" (Text Nothing "Detail of other resource consents required") <|
+                        Just
+                            (text """
                         A statement specifying all other resource consents that the applicant may require
                         from any consent authority in respect of the activity to which the application relates,
                         and whether or not the applicant has applied for such consents.
                         """)
+                  ]
                 ]
 
         supportingInformation =
@@ -1362,52 +1380,57 @@ createApplication model =
                     and rule 3.2.2 in the District Plan. If all of the required information is not
                     provided we may be unable to accept your application and it will be returned to you.
                     """))
-                [ ApplicationQuestion "supporting-info-consideration" (Text Nothing "Matters for consideration for the Assessment of Environmental Effects") <|
-                    Just
-                        (text """
+                [ [ ApplicationQuestion "supporting-info-consideration" (Text Nothing "Matters for consideration for the Assessment of Environmental Effects") <|
+                        Just
+                            (text """
                         As determined by your answers to questions about the proposed activity in
                         relation to the standards in the District Plan, below are the matters for
                         consideration for the Assessment of Environmental Effects:
 
                         [insert from RuBRIC the matters for consideration] 
                         """)
-                , ApplicationQuestion "supporting-ingo-aee" (File False "Assessment of Environmental Effects") <|
-                    Just
-                        (text """
+                  ]
+                , [ ApplicationQuestion "supporting-ingo-aee" (File False "Assessment of Environmental Effects") <|
+                        Just
+                            (text """
                         The Assessment of Environmental Effects (AEE) is an assessment of any actual
                         or potential effects that the activity may have on the environment, and the ways
                         in which any adverse effects may be mitigated, as per Section 88(6) of the
                         Resource Management Act 1991.
                         """)
-                , ApplicationQuestion "supporting-info-rma" (File False "Assessment against Part 2 of the RMA Matters") <|
-                    Just
-                        (div []
-                            [ text "Assess the consistency of the effects of your proposal against Part 2 of the "
-                            , a [ href "http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1" ]
-                                [ text "Resource Management Act 1991" ]
-                            , text "."
-                            ]
-                        )
-                , ApplicationQuestion "supporting-info-planning-docs" (File False "Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents") <|
-                    Just
-                        (text """
+                  , ApplicationQuestion "supporting-info-rma" (File False "Assessment against Part 2 of the RMA Matters") <|
+                        Just
+                            (div []
+                                [ text "Assess the consistency of the effects of your proposal against Part 2 of the "
+                                , a [ href "http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1" ]
+                                    [ text "Resource Management Act 1991" ]
+                                , text "."
+                                ]
+                            )
+                  ]
+                , [ ApplicationQuestion "supporting-info-planning-docs" (File False "Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents") <|
+                        Just
+                            (text """
                         Assess the consistency of the effects of your proposal against objectives and policies from
                         the District Plan AND against any relevant planning documents in section 104(1)(b) of the
                         Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]
                         """)
-                , ApplicationQuestion "supporting-info-title-records" (File False "Current copies of all Records of Title for the Subject Site") <|
-                    Just
-                        (text """
+                  ]
+                , [ ApplicationQuestion "supporting-info-title-records" (File False "Current copies of all Records of Title for the Subject Site") <|
+                        Just
+                            (text """
                         A 'current' record of title is one that has been issued by Land Information New Zealand within the last 3 months,
                         including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered
                         instruments, such as right of way documents, esplanade instruments, etc.
                         """)
-                , ApplicationQuestion "supporting-info-plan-scale" (Multichoice Nothing "Site Plan Scale" [ "1:100", "1:200", "Other" ]) Nothing
-                , ApplicationQuestion "supporting-info-plan-existing-detail" (File False "Site Plan Existing Detail") Nothing
-                , ApplicationQuestion "supporting-info-plan-proposed-detail" (File False "Site Plan Proposed Detail") Nothing
-                , ApplicationQuestion "supporting-info-elevation-drawings" (File False "Elevation Drawings") Nothing
-                , ApplicationQuestion "supporting-info-other-info" (File False "Other Information which may be required by the District Plan") Nothing
-                , ApplicationQuestion "supporting-info-party-approval" (File False "Written Approvals from Affected Parties") Nothing
+                  ]
+                , [ ApplicationQuestion "supporting-info-plan-scale" (Multichoice Nothing "Site Plan Scale" [ "1:100", "1:200", "Other" ]) Nothing ]
+                , [ ApplicationQuestion "supporting-info-plan-existing-detail" (File False "Site Plan Existing Detail") Nothing
+                  , ApplicationQuestion "supporting-info-plan-proposed-detail" (File False "Site Plan Proposed Detail") Nothing
+                  ]
+                , [ ApplicationQuestion "supporting-info-elevation-drawings" (File False "Elevation Drawings") Nothing ]
+                , [ ApplicationQuestion "supporting-info-other-info" (File False "Other Information which may be required by the District Plan") Nothing ]
+                , [ ApplicationQuestion "supporting-info-party-approval" (File False "Written Approvals from Affected Parties") Nothing ]
                 ]
 
         nationalEnvironmentalStandard =
@@ -1427,14 +1450,15 @@ createApplication model =
                         ]
                     )
                 )
-                [ ApplicationQuestion "nes-hail" (Multichoice Nothing "Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?" [ "Yes", "No" ]) <|
-                    Just
-                        (text """
+                [ [ ApplicationQuestion "nes-hail" (Multichoice Nothing "Has the piece of land subject to this application been used for (including its present use), or is it more likely than not to have been used for an activity on the Hazardous Activities and Industries List (HAIL)?" [ "Yes", "No" ]) <|
+                        Just
+                            (text """
                         If 'Yes', and your application involves subdividing or changing the use of the land, sampling
                         or disturbing soil, or removing or replacing a fuel storage system, then the NES may apply and
                         you may need to seek consent for this concurrently in your application.
                         """)
-                , ApplicationQuestion "nes-assessment" (File False "Assessment against the NES") Nothing
+                  ]
+                , [ ApplicationQuestion "nes-assessment" (File False "Assessment against the NES") Nothing ]
                 ]
 
         siteVisit =
@@ -1443,37 +1467,40 @@ createApplication model =
                 In order to assess your application it will generally be necessary for the Council Planner to visit your site.
                 This typically involves an outdoor inspection only, and there is no need for you to be home for this purpose.
                 """))
-                [ ApplicationQuestion "site-visit-security" (Multichoice Nothing "Are there any locked gates, security systems or anything else restricting access by Council?" [ "Yes", "No" ]) Nothing
-                , ApplicationQuestion "site-visit-dogs" (Multichoice Nothing "Are there any dogs on the property?" [ "Yes", "No" ]) Nothing
-                , ApplicationQuestion "site-visit-notice" (Multichoice Nothing "Do you require notice prior to the site visit?" [ "Yes", "No" ]) Nothing
-                , ApplicationQuestion "site-visit-safety" (Text Nothing "Are there any other Health and Safety requirements Council staff should be aware of before visiting the site. If so, please describe.") Nothing
+                [ [ ApplicationQuestion "site-visit-security" (Multichoice Nothing "Are there any locked gates, security systems or anything else restricting access by Council?" [ "Yes", "No" ]) Nothing
+                  , ApplicationQuestion "site-visit-dogs" (Multichoice Nothing "Are there any dogs on the property?" [ "Yes", "No" ]) Nothing
+                  , ApplicationQuestion "site-visit-notice" (Multichoice Nothing "Do you require notice prior to the site visit?" [ "Yes", "No" ]) Nothing
+                  ]
+                , [ ApplicationQuestion "site-visit-safety" (Text Nothing "Are there any other Health and Safety requirements Council staff should be aware of before visiting the site. If so, please describe.") Nothing ]
                 ]
 
         declaration =
             ApplicationSection "Declaration for the Agent of Authorised Agent or Other"
                 Nothing
-                [ ApplicationQuestion "application-name" (Text Nothing "Name of the Person Submitting this Form") Nothing
-                , ApplicationQuestion "declaration-declaration" (Checkbox False "Declaration" "I agree with these terms") <|
-                    Just
-                        (text """
+                [ [ ApplicationQuestion "application-name" (Text Nothing "Name of the Person Submitting this Form") Nothing ]
+                , [ ApplicationQuestion "declaration-declaration" (Checkbox False "Declaration" "I agree with these terms") <|
+                        Just
+                            (text """
                         I confirm that I have read and understood the notes for the applicant.
                         [link to the guidance pop up on the text 'notes for the applicant']
                         """)
+                  ]
                 ]
 
         declarationOnBehalf =
             ApplicationSection "Declaration for the Agent Authorised to Sign on Behalf of the Applicant"
                 Nothing
-                [ ApplicationQuestion "authorised-declaration-name" (Text Nothing "Full Name of Agent") Nothing
-                , ApplicationQuestion "authorised-declaration-declaration" (Checkbox False "Declaration for Agent" "I agree with these terms") <|
-                    Just
-                        (text """
+                [ [ ApplicationQuestion "authorised-declaration-name" (Text Nothing "Full Name of Agent") Nothing ]
+                , [ ApplicationQuestion "authorised-declaration-declaration" (Checkbox False "Declaration for Agent" "I agree with these terms") <|
+                        Just
+                            (text """
                         As authorised agent for the applicant, I confirm that I have read and understood
                         the notes for the applicant [link to the guidance pop up on the text 'notes for
                         the applicant'] and confirm that I have fully informed the applicant of their/its
                         liability under this application, including for fees and other charges, and that
                         I have the applicant's authority to submit this application on their/its behalf.
                         """)
+                  ]
                 ]
 
         fees =
@@ -1482,19 +1509,20 @@ createApplication model =
                 An initial fee must be paid before we can process your application.
                 The initial fee due for this non-notified land use consent is: $1650
                 """))
-                [ ApplicationQuestion "fees-method" (Multichoice Nothing "Payment Method" [ "Internet Banking", "Online (Credit Card)", "By Phone (Credit Card)" ]) Nothing
-                , ApplicationQuestion "fees-declaration" (Checkbox False "Declaration for Initial Fee" "I agree with these terms") <|
-                    Just
-                        (text """
+                [ [ ApplicationQuestion "fees-method" (Multichoice Nothing "Payment Method" [ "Internet Banking", "Online (Credit Card)", "By Phone (Credit Card)" ]) Nothing ]
+                , [ ApplicationQuestion "fees-declaration" (Checkbox False "Declaration for Initial Fee" "I agree with these terms") <|
+                        Just
+                            (text """
                         I confirm that I have read and understood the fee payment terms, conditions and
                         declaration for the service of applying for a resource consent [link to guidance
                         on text 'fee payment terms, conditions and declaration']
                         """)
+                  ]
                 ]
 
         additionalInvoices =
             ApplicationSection "Additional Invoices" Nothing <|
-                [ ApplicationQuestion "additional-invoices-send" (Multichoice Nothing "Send All Invoices" [ "To Applicant", "To Agent", "Other" ]) Nothing ]
+                [ [ ApplicationQuestion "additional-invoices-send" (Multichoice Nothing "Send All Invoices" [ "To Applicant", "To Agent", "Other" ]) Nothing ] ]
                     ++ personalDetailQuestions "additional-invoices"
     in
     [ propertyInformation
