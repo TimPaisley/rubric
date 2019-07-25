@@ -9031,6 +9031,8 @@ var elm$virtual_dom$VirtualDom$attribute = F2(
 			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
 var elm$html$Html$Attributes$attribute = elm$virtual_dom$VirtualDom$attribute;
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
 var author$project$Main$renderModal = F3(
 	function (key, modalHeader, modalContent) {
 		var title = key + '-modal-title';
@@ -9101,7 +9103,8 @@ var author$project$Main$renderModal = F3(
 			elm$html$Html$div,
 			_List_fromArray(
 				[
-					elm$html$Html$Attributes$class('modal-body')
+					elm$html$Html$Attributes$class('modal-body'),
+					A2(elm$html$Html$Attributes$style, 'white-space', 'pre-line')
 				]),
 			_List_fromArray(
 				[modalContent]));

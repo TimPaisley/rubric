@@ -988,7 +988,7 @@ renderModal key modalHeader modalContent =
                 ]
 
         body =
-            div [ class "modal-body" ] [ modalContent ]
+            div [ class "modal-body", style "white-space" "pre-line" ] [ modalContent ]
 
         footer =
             div [ class "modal-footer" ]
