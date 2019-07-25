@@ -6263,6 +6263,16 @@ var author$project$Main$Property = function (fullAddress) {
 		};
 	};
 };
+var author$project$Main$decodeBoolFromEmpty = A2(
+	elm$json$Json$Decode$andThen,
+	function (bool) {
+		if (bool === '') {
+			return elm$json$Json$Decode$succeed(false);
+		} else {
+			return elm$json$Json$Decode$succeed(true);
+		}
+	},
+	elm$json$Json$Decode$string);
 var elm$json$Json$Decode$int = _Json_decodeInt;
 var elm$json$Json$Decode$maybe = function (decoder) {
 	return elm$json$Json$Decode$oneOf(
@@ -6279,8 +6289,8 @@ var author$project$Main$decodeProperty = A3(
 	A4(
 		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 		'hazardFaultLineArea',
-		elm$json$Json$Decode$maybe(elm$json$Json$Decode$string),
-		elm$core$Maybe$Nothing,
+		author$project$Main$decodeBoolFromEmpty,
+		false,
 		A4(
 			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 			'specialResidentialArea',
@@ -6728,8 +6738,7 @@ var author$project$Main$encodeProposal = F2(
 						A2(elm$core$Maybe$withDefault, '', p.specialResidentialArea))),
 					_Utils_Tuple2(
 					'hazard_fault_line_area',
-					elm$json$Json$Encode$string(
-						A2(elm$core$Maybe$withDefault, '', p.hazardFaultLineArea)))
+					elm$json$Json$Encode$bool(p.hazardFaultLineArea))
 				]));
 	});
 var author$project$Main$encodePayload = F3(
@@ -8268,6 +8277,7 @@ var author$project$Main$renderProposal = F2(
 							return A2(elm$html$Html$div, _List_Nil, _List_Nil);
 						}
 					});
+				var hazard = p.hazardFaultLineArea ? elm$core$Maybe$Just('Yes') : elm$core$Maybe$Nothing;
 				return A2(
 					elm$html$Html$div,
 					_List_fromArray(
@@ -8333,7 +8343,7 @@ var author$project$Main$renderProposal = F2(
 													A2(row, 'Valuation ID', p.valuationId),
 													A2(row, 'Zone', p.zone),
 													A2(maybeRow, 'Special Residential Area', p.specialResidentialArea),
-													A2(maybeRow, 'Hazard (Fault Line) Area', p.hazardFaultLineArea)
+													A2(maybeRow, 'Hazard (Fault Line) Area', hazard)
 												]))
 										]))
 								]))

@@ -25,7 +25,7 @@ require([
     {
       name: "hazardFaultLineArea",
       id: "49",
-      field: "status"
+      field: "gis1_vector_GISADM_dp_hazards_f"
     }
   ];
 
@@ -134,7 +134,7 @@ require([
         if (res[i].src) {
           property["image"] = res.src;
         } else if (res[i].features[0]) {
-          property[name] = res[i].features[0].attributes[field];
+          property[name] = res[i].features[0].attributes[field].toString();
         }
       });
 

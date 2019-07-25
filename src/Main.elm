@@ -47,7 +47,7 @@ type alias Property =
     , valuationWufi : Int
     , zone : String
     , specialResidentialArea : Maybe String
-    , hazardFaultLineArea : Maybe String
+    , hazardFaultLineArea : Bool
     , imageUrl : String
     }
 
@@ -314,7 +314,7 @@ encodeProposal a p =
         , ( "valuation_wufi", Encode.int p.valuationWufi )
         , ( "zone", Encode.string p.zone )
         , ( "area_specific_layers", Encode.string (Maybe.withDefault "" p.specialResidentialArea) )
-        , ( "hazard_fault_line_area", Encode.string (Maybe.withDefault "" p.hazardFaultLineArea) )
+        , ( "hazard_fault_line_area", Encode.bool p.hazardFaultLineArea )
         ]
 
 
@@ -363,7 +363,7 @@ decodeProperty =
         |> required "valuationWufi" int
         |> required "zone" string
         |> optional "specialResidentialArea" (Decode.maybe string) Nothing
-        |> optional "hazardFaultLineArea" (Decode.maybe string) Nothing
+        |> optional "hazardFaultLineArea" decodeBoolFromEmpty False
         |> required "imageUrl" string
 
 
@@ -517,6 +517,20 @@ decodeBool =
 
                     _ ->
                         Decode.succeed False
+            )
+
+
+decodeBoolFromEmpty : Decode.Decoder Bool
+decodeBoolFromEmpty =
+    string
+        |> Decode.andThen
+            (\bool ->
+                case bool of
+                    "" ->
+                        Decode.succeed False
+
+                    _ ->
+                        Decode.succeed True
             )
 
 
@@ -822,6 +836,13 @@ renderProposal activities selectedProperty =
 
                                 Nothing ->
                                     div [] []
+
+                        hazard =
+                            if p.hazardFaultLineArea then
+                                Just "Yes"
+
+                            else
+                                Nothing
                     in
                     div [ class "card my-3" ]
                         [ div [ class "row no-gutters" ]
@@ -836,7 +857,7 @@ renderProposal activities selectedProperty =
                                     , row "Valuation ID" p.valuationId
                                     , row "Zone" p.zone
                                     , maybeRow "Special Residential Area" p.specialResidentialArea
-                                    , maybeRow "Hazard (Fault Line) Area" p.hazardFaultLineArea
+                                    , maybeRow "Hazard (Fault Line) Area" hazard
                                     ]
                                 ]
                             ]
