@@ -5539,26 +5539,6 @@ var author$project$Main$subscriptions = function (_n0) {
 				author$project$Main$receiveStatus(author$project$Main$ReceiveStatus)
 			]));
 };
-var author$project$Main$Checkbox = F3(
-	function (a, b, c) {
-		return {$: 'Checkbox', a: a, b: b, c: c};
-	});
-var author$project$Main$File = F2(
-	function (a, b) {
-		return {$: 'File', a: a, b: b};
-	});
-var author$project$Main$Multichoice = F3(
-	function (a, b, c) {
-		return {$: 'Multichoice', a: a, b: b, c: c};
-	});
-var author$project$Main$Number = F2(
-	function (a, b) {
-		return {$: 'Number', a: a, b: b};
-	});
-var author$project$Main$Text = F2(
-	function (a, b) {
-		return {$: 'Text', a: a, b: b};
-	});
 var author$project$Main$answerDictionary = function (sections) {
 	return elm$core$Dict$fromList(
 		A2(
@@ -5576,13 +5556,6 @@ var author$project$Main$answerDictionary = function (sections) {
 				sections)));
 };
 var author$project$Main$askRubric = _Platform_outgoingPort('askRubric', elm$core$Basics$identity);
-var author$project$Main$boolFromString = function (s) {
-	if (s === 'true') {
-		return true;
-	} else {
-		return false;
-	}
-};
 var author$project$Main$ApplicationQuestion = F3(
 	function (key, input, help) {
 		return {help: help, input: input, key: key};
@@ -5590,6 +5563,22 @@ var author$project$Main$ApplicationQuestion = F3(
 var author$project$Main$ApplicationSection = F3(
 	function (name, info, groups) {
 		return {groups: groups, info: info, name: name};
+	});
+var author$project$Main$Checkbox = F3(
+	function (a, b, c) {
+		return {$: 'Checkbox', a: a, b: b, c: c};
+	});
+var author$project$Main$File = F2(
+	function (a, b) {
+		return {$: 'File', a: a, b: b};
+	});
+var author$project$Main$Multichoice = F3(
+	function (a, b, c) {
+		return {$: 'Multichoice', a: a, b: b, c: c};
+	});
+var author$project$Main$Text = F2(
+	function (a, b) {
+		return {$: 'Text', a: a, b: b};
 	});
 var elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -6348,6 +6337,10 @@ var author$project$Main$Question = F4(
 	function (key, input, unit, prerequisites) {
 		return {input: input, key: key, prerequisites: prerequisites, unit: unit};
 	});
+var author$project$Main$Number = F2(
+	function (a, b) {
+		return {$: 'Number', a: a, b: b};
+	});
 var elm$json$Json$Decode$nullable = function (decoder) {
 	return elm$json$Json$Decode$oneOf(
 		_List_fromArray(
@@ -6754,6 +6747,52 @@ var author$project$Main$encodePayload = F3(
 					author$project$Main$encodeAnswers(answers))
 				]));
 	});
+var author$project$Main$boolFromString = function (s) {
+	if (s === 'true') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var author$project$Main$updateInput = F2(
+	function (input, answer) {
+		switch (input.$) {
+			case 'Text':
+				var p = input.b;
+				return A2(
+					author$project$Main$Text,
+					elm$core$Maybe$Just(answer),
+					p);
+			case 'Number':
+				var p = input.b;
+				return A2(
+					author$project$Main$Number,
+					elm$core$String$toInt(answer),
+					p);
+			case 'Multichoice':
+				var p = input.b;
+				var ops = input.c;
+				return A3(
+					author$project$Main$Multichoice,
+					elm$core$Maybe$Just(answer),
+					p,
+					ops);
+			case 'File':
+				var p = input.b;
+				return A2(
+					author$project$Main$File,
+					author$project$Main$boolFromString(answer),
+					p);
+			default:
+				var p = input.b;
+				var s = input.c;
+				return A3(
+					author$project$Main$Checkbox,
+					author$project$Main$boolFromString(answer),
+					p,
+					s);
+		}
+	});
 var elm$core$Basics$not = _Basics_not;
 var elm$core$Debug$log = _Debug_log;
 var elm_community$list_extra$List$Extra$updateIf = F3(
@@ -6835,49 +6874,11 @@ var author$project$Main$update = F2(
 				var section = msg.a;
 				var question = msg.b;
 				var answer = msg.c;
-				var updateInput = function (i) {
-					switch (i.$) {
-						case 'Text':
-							var p = i.b;
-							return A2(
-								author$project$Main$Text,
-								elm$core$Maybe$Just(answer),
-								p);
-						case 'Number':
-							var p = i.b;
-							return A2(
-								author$project$Main$Number,
-								elm$core$String$toInt(answer),
-								p);
-						case 'Multichoice':
-							var p = i.b;
-							var ops = i.c;
-							return A3(
-								author$project$Main$Multichoice,
-								elm$core$Maybe$Just(answer),
-								p,
-								ops);
-						case 'File':
-							var p = i.b;
-							return A2(
-								author$project$Main$File,
-								author$project$Main$boolFromString(answer),
-								p);
-						default:
-							var p = i.b;
-							var s = i.c;
-							return A3(
-								author$project$Main$Checkbox,
-								author$project$Main$boolFromString(answer),
-								p,
-								s);
-					}
-				};
 				var updateQuestion = function (q) {
 					return _Utils_update(
 						q,
 						{
-							input: updateInput(q.input)
+							input: A2(author$project$Main$updateInput, q.input, answer)
 						});
 				};
 				var updateSection = function (s) {
@@ -6905,6 +6906,45 @@ var author$project$Main$update = F2(
 						model,
 						{sections: newSections}),
 					elm$core$Platform$Cmd$none);
+			case 'InputApplicationAnswer':
+				var section = msg.a;
+				var question = msg.b;
+				var answer = msg.c;
+				var updateQuestion = function (q) {
+					return _Utils_update(
+						q,
+						{
+							input: A2(author$project$Main$updateInput, q.input, answer)
+						});
+				};
+				var updateGroup = function (g) {
+					return A3(
+						elm_community$list_extra$List$Extra$updateIf,
+						function (q) {
+							return _Utils_eq(q.key, question.key);
+						},
+						updateQuestion,
+						g);
+				};
+				var updateSection = function (s) {
+					return _Utils_update(
+						s,
+						{
+							groups: A2(elm$core$List$map, updateGroup, s.groups)
+						});
+				};
+				var newApplication = A3(
+					elm_community$list_extra$List$Extra$updateIf,
+					function (s) {
+						return _Utils_eq(s.name, section.name);
+					},
+					updateSection,
+					model.application);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{application: newApplication}),
+					elm$core$Platform$Cmd$none);
 			case 'ToggleSection':
 				var section = msg.a;
 				var updateSection = function (s) {
@@ -6925,10 +6965,10 @@ var author$project$Main$update = F2(
 						{sections: newSections}),
 					elm$core$Platform$Cmd$none);
 			case 'AskRubric':
-				var _n5 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
-				if ((_n5.a.$ === 'Just') && (_n5.b.$ === 'Just')) {
-					var a = _n5.a.a;
-					var p = _n5.b.a;
+				var _n4 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
+				if ((_n4.a.$ === 'Just') && (_n4.b.$ === 'Just')) {
+					var a = _n4.a.a;
+					var p = _n4.b.a;
 					return _Utils_Tuple2(
 						model,
 						author$project$Main$askRubric(
@@ -6952,6 +6992,17 @@ var author$project$Main$update = F2(
 		}
 	});
 var author$project$Main$ToggleApplication = {$: 'ToggleApplication'};
+var author$project$Main$InputApplicationAnswer = F3(
+	function (a, b, c) {
+		return {$: 'InputApplicationAnswer', a: a, b: b, c: c};
+	});
+var author$project$Main$boolToString = function (b) {
+	if (b) {
+		return 'true';
+	} else {
+		return 'false';
+	}
+};
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
 var elm$html$Html$p = _VirtualDom_node('p');
@@ -7034,7 +7085,8 @@ var author$project$Main$checkboxInput = F6(
 									elm$html$Html$Attributes$type_('checkbox'),
 									elm$html$Html$Attributes$checked(_switch),
 									elm$html$Html$Events$onClick(
-									message(''))
+									message(
+										author$project$Main$boolToString(!_switch)))
 								]),
 							_List_Nil),
 							A2(
@@ -8074,44 +8126,39 @@ var author$project$Main$renderApplicationForm = function (sections) {
 			[
 				elm$html$Html$text('Submit')
 			]));
-	var renderAppGroup = function (questions) {
-		return A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('row mb-3')
-				]),
-			A2(
-				elm$core$List$map,
-				function (q) {
-					return A2(
-						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('col')
-							]),
-						_List_fromArray(
-							[
-								A5(
-								author$project$Main$inputToHtml,
-								q.input,
-								q.key,
-								elm$core$Maybe$Nothing,
-								function (_n2) {
-									return author$project$Main$NoOp;
-								},
-								q.help)
-							]));
-				},
-				questions));
-	};
-	var renderAppSection = function (_n1) {
-		var name = _n1.name;
-		var info = _n1.info;
-		var groups = _n1.groups;
+	var renderAppGroup = F2(
+		function (section, questions) {
+			var showQuestion = function (q) {
+				return A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('col')
+						]),
+					_List_fromArray(
+						[
+							A5(
+							author$project$Main$inputToHtml,
+							q.input,
+							q.key,
+							elm$core$Maybe$Nothing,
+							A2(author$project$Main$InputApplicationAnswer, section, q),
+							q.help)
+						]));
+			};
+			return A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('row mb-3')
+					]),
+				A2(elm$core$List$map, showQuestion, questions));
+		});
+	var renderAppSection = function (section) {
 		var infoCard = function () {
-			if (info.$ === 'Just') {
-				var i = info.a;
+			var _n0 = section.info;
+			if (_n0.$ === 'Just') {
+				var i = _n0.a;
 				return A2(
 					elm$html$Html$div,
 					_List_fromArray(
@@ -8160,7 +8207,7 @@ var author$project$Main$renderApplicationForm = function (sections) {
 							_List_Nil,
 							_List_fromArray(
 								[
-									elm$html$Html$text(name)
+									elm$html$Html$text(section.name)
 								]))
 						])),
 					infoCard,
@@ -8170,7 +8217,10 @@ var author$project$Main$renderApplicationForm = function (sections) {
 						[
 							elm$html$Html$Attributes$class('questions')
 						]),
-					A2(elm$core$List$map, renderAppGroup, groups)),
+					A2(
+						elm$core$List$map,
+						renderAppGroup(section),
+						section.groups)),
 					A2(
 					elm$html$Html$hr,
 					_List_fromArray(

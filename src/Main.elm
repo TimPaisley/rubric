@@ -161,6 +161,7 @@ type Msg
     | ReceiveSections Decode.Value
     | ReceiveStatus Decode.Value
     | InputAnswer Section Question String
+    | InputApplicationAnswer ApplicationSection ApplicationQuestion String
     | ToggleSection Section
     | AskRubric
     | ToggleApplication
@@ -231,26 +232,8 @@ update msg model =
 
         InputAnswer section question answer ->
             let
-                -- oof ouch elm
-                updateInput i =
-                    case i of
-                        Text _ p ->
-                            Text (Just answer) p
-
-                        Number _ p ->
-                            Number (String.toInt answer) p
-
-                        Multichoice _ p ops ->
-                            Multichoice (Just answer) p ops
-
-                        File _ p ->
-                            File (boolFromString answer) p
-
-                        Checkbox _ p s ->
-                            Checkbox (boolFromString answer) p s
-
                 updateQuestion q =
-                    { q | input = updateInput q.input }
+                    { q | input = updateInput q.input answer }
 
                 updateSection s =
                     { s | questions = ListX.updateIf (\q -> q.key == question.key) updateQuestion s.questions }
@@ -259,6 +242,22 @@ update msg model =
                     ListX.updateIf (\s -> s.key == section.key) updateSection model.sections
             in
             ( { model | sections = newSections }, Cmd.none )
+
+        InputApplicationAnswer section question answer ->
+            let
+                updateQuestion q =
+                    { q | input = updateInput q.input answer }
+
+                updateGroup g =
+                    ListX.updateIf (\q -> q.key == question.key) updateQuestion g
+
+                updateSection s =
+                    { s | groups = List.map updateGroup s.groups }
+
+                newApplication =
+                    ListX.updateIf (\s -> s.name == section.name) updateSection model.application
+            in
+            ( { model | application = newApplication }, Cmd.none )
 
         ToggleSection section ->
             let
@@ -952,10 +951,10 @@ renderModal key modalHeader modalContent =
 renderApplicationForm : List ApplicationSection -> Html Msg
 renderApplicationForm sections =
     let
-        renderAppSection { name, info, groups } =
+        renderAppSection section =
             let
                 infoCard =
-                    case info of
+                    case section.info of
                         Just i ->
                             div [ class "card mb-3" ]
                                 [ div [ class "card-body" ]
@@ -967,15 +966,19 @@ renderApplicationForm sections =
             in
             div []
                 [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
-                    [ span [] [ text name ] ]
+                    [ span [] [ text section.name ] ]
                 , infoCard
-                , div [ class "questions" ] (List.map renderAppGroup groups)
+                , div [ class "questions" ] (List.map (renderAppGroup section) section.groups)
                 , hr [ class "mb-4" ] []
                 ]
 
-        renderAppGroup questions =
-            div [ class "row mb-3" ]
-                (List.map (\q -> div [ class "col" ] [ inputToHtml q.input q.key Nothing (\_ -> NoOp) q.help ]) questions)
+        renderAppGroup section questions =
+            let
+                showQuestion q =
+                    div [ class "col" ]
+                        [ inputToHtml q.input q.key Nothing (InputApplicationAnswer section q) q.help ]
+            in
+            div [ class "row mb-3" ] (List.map showQuestion questions)
 
         submitButton =
             button [ type_ "button", class "btn btn-success btn-lg btn-block" ]
@@ -1022,6 +1025,25 @@ main =
 
 
 -- HELPERS
+
+
+updateInput : Input -> String -> Input
+updateInput input answer =
+    case input of
+        Text _ p ->
+            Text (Just answer) p
+
+        Number _ p ->
+            Number (String.toInt answer) p
+
+        Multichoice _ p ops ->
+            Multichoice (Just answer) p ops
+
+        File _ p ->
+            File (boolFromString answer) p
+
+        Checkbox _ p s ->
+            Checkbox (boolFromString answer) p s
 
 
 inputToHtml : Input -> String -> Maybe String -> (String -> Msg) -> Maybe (Html Msg) -> Html Msg
@@ -1168,7 +1190,7 @@ checkboxInput message switch key prompt statement help =
                 , class "form-check-input"
                 , type_ "checkbox"
                 , checked switch
-                , onClick (message "")
+                , onClick (message <| boolToString (not switch))
                 ]
                 []
             , label [ class "form-check-label", for key ] [ text statement ]
@@ -1252,6 +1274,13 @@ formatKey key =
 answerDictionary : List Section -> Dict String Input
 answerDictionary sections =
     List.foldl (\s l -> s.questions ++ l) [] sections
+        |> List.map (\q -> ( q.key, q.input ))
+        |> Dict.fromList
+
+
+applicationAnswerDictionary : List ApplicationSection -> Dict String Input
+applicationAnswerDictionary application =
+    List.foldl (\s l -> List.concat s.groups ++ l) [] application
         |> List.map (\q -> ( q.key, q.input ))
         |> Dict.fromList
 
