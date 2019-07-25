@@ -377,7 +377,7 @@ encodeAnswersReadable : Dict String Input -> Encode.Value
 encodeAnswersReadable answers =
     let
         encodeAnswer key input l =
-            l ++ [( getInputQuestion input, getInputAnswer input )]
+            l ++ [ ( getInputQuestion input, getInputAnswer input ) ]
 
         encodeMaybe encoder =
             Maybe.map encoder >> Maybe.withDefault Encode.null
@@ -697,7 +697,7 @@ renderSidebar status sections prop =
         [ div [ class "sticky-top py-3 vh-100 d-flex flex-column" ]
             [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
                 [ span [ class "text-muted" ] [ text "Summary of Compliance" ]
-                , span [ class "text-muted badge" ]
+                , span [ class "text-muted" ]
                     [ text <| String.fromInt (List.length sections) ]
                 ]
             , statusCard

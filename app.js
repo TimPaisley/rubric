@@ -9650,7 +9650,7 @@ var author$project$Main$renderSidebar = F3(
 									elm$html$Html$span,
 									_List_fromArray(
 										[
-											elm$html$Html$Attributes$class('text-muted badge')
+											elm$html$Html$Attributes$class('text-muted')
 										]),
 									_List_fromArray(
 										[

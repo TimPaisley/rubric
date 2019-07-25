@@ -77,23 +77,6 @@ require([
     );
   };
 
-  // default for development
-  app.ports.selectMapProperty.send({
-    zone: "Inner Residential",
-    fullAddress: "101 Wakefield Street, Wellington Central",
-    postCode: "6011",
-    specialResidentialArea: "IR 3 - Aro Valley",
-    streetName: "Wakefield Street",
-    streetNumber: "101",
-    suburb: "Wellington Central",
-    title: "724107",
-    valuationId: "17270-11800",
-    valuationWufi: 1921748,
-    imageUrl: generateImageServerURL(
-      "19456000.33%2C-5055336.81%2C19456337.49%2C-5054883.31"
-    )
-  });
-
   searchWidget.on("select-result", function(event) {
     var attributes = event.result.feature.attributes;
 
