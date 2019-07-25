@@ -165,6 +165,7 @@ type Msg
     | ToggleSection Section
     | AskRubric
     | ToggleApplication
+    | GeneratePDF
 
 
 init : List String -> ( Model, Cmd Msg )
@@ -280,6 +281,17 @@ update msg model =
         ToggleApplication ->
             ( { model | applying = not model.applying, application = createApplication model }, Cmd.none )
 
+        GeneratePDF ->
+            case ( model.selectedActivity, model.selectedProperty ) of
+                ( Just a, Just p ) ->
+                    ( model
+                    , generatePDF <|
+                        encodePDF a p (answerDictionary model.sections) (applicationAnswerDictionary model.application)
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 
 -- INTEROP
@@ -288,13 +300,16 @@ update msg model =
 port selectMapProperty : (Decode.Value -> msg) -> Sub msg
 
 
-port askRubric : Encode.Value -> Cmd msg
-
-
 port receiveSections : (Decode.Value -> msg) -> Sub msg
 
 
 port receiveStatus : (Decode.Value -> msg) -> Sub msg
+
+
+port askRubric : Encode.Value -> Cmd msg
+
+
+port generatePDF : Encode.Value -> Cmd msg
 
 
 encodePayload : Activity -> Property -> Dict String Input -> Encode.Value
@@ -314,6 +329,15 @@ encodeProposal a p =
         , ( "zone", Encode.string p.zone )
         , ( "area_specific_layers", Encode.string (Maybe.withDefault "" p.specialResidentialArea) )
         , ( "hazard_fault_line_area", Encode.bool p.hazardFaultLineArea )
+        ]
+
+
+encodePDF : Activity -> Property -> Dict String Input -> Dict String Input -> Encode.Value
+encodePDF activity property answers applicationAnswers =
+    Encode.object
+        [ ( "proposal", encodeProposal activity property )
+        , ( "answers", encodeAnswersReadable answers )
+        , ( "application", encodeAnswersReadable applicationAnswers )
         ]
 
 
@@ -346,6 +370,37 @@ encodeAnswers answers =
     answers
         |> Dict.map encodeAnswer
         |> Dict.toList
+        |> Encode.object
+
+
+encodeAnswersReadable : Dict String Input -> Encode.Value
+encodeAnswersReadable answers =
+    let
+        encodeAnswer key input l =
+            l ++ [( getInputQuestion input, getInputAnswer input )]
+
+        encodeMaybe encoder =
+            Maybe.map encoder >> Maybe.withDefault Encode.null
+
+        getInputAnswer i =
+            case i of
+                Text a _ ->
+                    encodeMaybe Encode.string a
+
+                Number a _ ->
+                    encodeMaybe Encode.int a
+
+                Multichoice a _ _ ->
+                    encodeMaybe Encode.string a
+
+                File a _ ->
+                    Encode.bool a
+
+                Checkbox a _ _ ->
+                    Encode.bool a
+    in
+    answers
+        |> Dict.foldl encodeAnswer []
         |> Encode.object
 
 
@@ -980,11 +1035,11 @@ renderApplicationForm sections =
             in
             div [ class "row mb-3" ] (List.map showQuestion questions)
 
-        submitButton =
-            button [ type_ "button", class "btn btn-success btn-lg btn-block" ]
-                [ text "Submit" ]
+        generateButton =
+            button [ type_ "button", class "btn btn-success btn-lg btn-block", onClick GeneratePDF ]
+                [ text "Generate Application" ]
     in
-    div [] <| List.map renderAppSection sections
+    div [] <| List.map renderAppSection sections ++ [ generateButton ]
 
 
 
@@ -1091,6 +1146,25 @@ inputToHtml input key unit msg help =
                 (unescape prompt)
                 statement
                 help
+
+
+getInputQuestion : Input -> String
+getInputQuestion input =
+    case input of
+        Text _ prompt ->
+            prompt
+
+        Number _ prompt ->
+            prompt
+
+        Multichoice _ prompt _ ->
+            prompt
+
+        File _ prompt ->
+            prompt
+
+        Checkbox _ prompt _ ->
+            prompt
 
 
 textInput : (String -> Msg) -> String -> String -> String -> Maybe (Html Msg) -> Html Msg

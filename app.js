@@ -5555,6 +5555,35 @@ var author$project$Main$answerDictionary = function (sections) {
 				_List_Nil,
 				sections)));
 };
+var elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+		}
+	});
+var elm$core$List$concat = function (lists) {
+	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
+};
+var author$project$Main$applicationAnswerDictionary = function (application) {
+	return elm$core$Dict$fromList(
+		A2(
+			elm$core$List$map,
+			function (q) {
+				return _Utils_Tuple2(q.key, q.input);
+			},
+			A3(
+				elm$core$List$foldl,
+				F2(
+					function (s, l) {
+						return _Utils_ap(
+							elm$core$List$concat(s.groups),
+							l);
+					}),
+				_List_Nil,
+				application)));
+};
 var author$project$Main$askRubric = _Platform_outgoingPort('askRubric', elm$core$Basics$identity);
 var author$project$Main$ApplicationQuestion = F3(
 	function (key, input, help) {
@@ -6630,25 +6659,25 @@ var author$project$Main$decodeSection = A2(
 								elm$json$Json$Decode$string,
 								elm$json$Json$Decode$succeed(author$project$Main$Section)))))))));
 var author$project$Main$decodeSections = elm$json$Json$Decode$list(author$project$Main$decodeSection);
-var elm$core$Dict$map = F2(
-	function (func, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			return A5(
-				elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				A2(func, key, value),
-				A2(elm$core$Dict$map, func, left),
-				A2(elm$core$Dict$map, func, right));
-		}
-	});
+var author$project$Main$getInputQuestion = function (input) {
+	switch (input.$) {
+		case 'Text':
+			var prompt = input.b;
+			return prompt;
+		case 'Number':
+			var prompt = input.b;
+			return prompt;
+		case 'Multichoice':
+			var prompt = input.b;
+			return prompt;
+		case 'File':
+			var prompt = input.b;
+			return prompt;
+		default:
+			var prompt = input.b;
+			return prompt;
+	}
+};
 var elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -6674,6 +6703,107 @@ var elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
+var author$project$Main$encodeAnswersReadable = function (answers) {
+	var encodeMaybe = function (encoder) {
+		return A2(
+			elm$core$Basics$composeR,
+			elm$core$Maybe$map(encoder),
+			elm$core$Maybe$withDefault(elm$json$Json$Encode$null));
+	};
+	var getInputAnswer = function (i) {
+		switch (i.$) {
+			case 'Text':
+				var a = i.a;
+				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
+			case 'Number':
+				var a = i.a;
+				return A2(encodeMaybe, elm$json$Json$Encode$int, a);
+			case 'Multichoice':
+				var a = i.a;
+				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
+			case 'File':
+				var a = i.a;
+				return elm$json$Json$Encode$bool(a);
+			default:
+				var a = i.a;
+				return elm$json$Json$Encode$bool(a);
+		}
+	};
+	var encodeAnswer = F3(
+		function (key, input, l) {
+			return _Utils_ap(
+				l,
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						author$project$Main$getInputQuestion(input),
+						getInputAnswer(input))
+					]));
+		});
+	return elm$json$Json$Encode$object(
+		A3(elm$core$Dict$foldl, encodeAnswer, _List_Nil, answers));
+};
+var author$project$Main$encodeProposal = F2(
+	function (a, p) {
+		return elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'activity',
+					elm$json$Json$Encode$string(a)),
+					_Utils_Tuple2(
+					'address',
+					elm$json$Json$Encode$string(p.fullAddress)),
+					_Utils_Tuple2(
+					'valuation_wufi',
+					elm$json$Json$Encode$int(p.valuationWufi)),
+					_Utils_Tuple2(
+					'zone',
+					elm$json$Json$Encode$string(p.zone)),
+					_Utils_Tuple2(
+					'area_specific_layers',
+					elm$json$Json$Encode$string(
+						A2(elm$core$Maybe$withDefault, '', p.specialResidentialArea))),
+					_Utils_Tuple2(
+					'hazard_fault_line_area',
+					elm$json$Json$Encode$bool(p.hazardFaultLineArea))
+				]));
+	});
+var author$project$Main$encodePDF = F4(
+	function (activity, property, answers, applicationAnswers) {
+		return elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'proposal',
+					A2(author$project$Main$encodeProposal, activity, property)),
+					_Utils_Tuple2(
+					'answers',
+					author$project$Main$encodeAnswersReadable(answers)),
+					_Utils_Tuple2(
+					'application',
+					author$project$Main$encodeAnswersReadable(applicationAnswers))
+				]));
+	});
+var elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2(elm$core$Dict$map, func, left),
+				A2(elm$core$Dict$map, func, right));
+		}
+	});
 var author$project$Main$encodeAnswers = function (answers) {
 	var encodeMaybe = function (encoder) {
 		return A2(
@@ -6708,32 +6838,6 @@ var author$project$Main$encodeAnswers = function (answers) {
 		elm$core$Dict$toList(
 			A2(elm$core$Dict$map, encodeAnswer, answers)));
 };
-var author$project$Main$encodeProposal = F2(
-	function (a, p) {
-		return elm$json$Json$Encode$object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(
-					'activity',
-					elm$json$Json$Encode$string(a)),
-					_Utils_Tuple2(
-					'address',
-					elm$json$Json$Encode$string(p.fullAddress)),
-					_Utils_Tuple2(
-					'valuation_wufi',
-					elm$json$Json$Encode$int(p.valuationWufi)),
-					_Utils_Tuple2(
-					'zone',
-					elm$json$Json$Encode$string(p.zone)),
-					_Utils_Tuple2(
-					'area_specific_layers',
-					elm$json$Json$Encode$string(
-						A2(elm$core$Maybe$withDefault, '', p.specialResidentialArea))),
-					_Utils_Tuple2(
-					'hazard_fault_line_area',
-					elm$json$Json$Encode$bool(p.hazardFaultLineArea))
-				]));
-	});
 var author$project$Main$encodePayload = F3(
 	function (activity, property, answers) {
 		return elm$json$Json$Encode$object(
@@ -6747,6 +6851,7 @@ var author$project$Main$encodePayload = F3(
 					author$project$Main$encodeAnswers(answers))
 				]));
 	});
+var author$project$Main$generatePDF = _Platform_outgoingPort('generatePDF', elm$core$Basics$identity);
 var author$project$Main$boolFromString = function (s) {
 	if (s === 'true') {
 		return true;
@@ -6980,7 +7085,7 @@ var author$project$Main$update = F2(
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
-			default:
+			case 'ToggleApplication':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6989,9 +7094,27 @@ var author$project$Main$update = F2(
 							applying: !model.applying
 						}),
 					elm$core$Platform$Cmd$none);
+			default:
+				var _n5 = _Utils_Tuple2(model.selectedActivity, model.selectedProperty);
+				if ((_n5.a.$ === 'Just') && (_n5.b.$ === 'Just')) {
+					var a = _n5.a.a;
+					var p = _n5.b.a;
+					return _Utils_Tuple2(
+						model,
+						author$project$Main$generatePDF(
+							A4(
+								author$project$Main$encodePDF,
+								a,
+								p,
+								author$project$Main$answerDictionary(model.sections),
+								author$project$Main$applicationAnswerDictionary(model.application))));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var author$project$Main$ToggleApplication = {$: 'ToggleApplication'};
+var author$project$Main$GeneratePDF = {$: 'GeneratePDF'};
 var author$project$Main$InputApplicationAnswer = F3(
 	function (a, b, c) {
 		return {$: 'InputApplicationAnswer', a: a, b: b, c: c};
@@ -7353,23 +7476,12 @@ var marcosh$elm_html_to_unicode$ElmEscapeHtml$convert = F2(
 				convertChars(
 					elm$core$String$toList(string))));
 	});
-var elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
-		}
-	});
 var elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
 		return true;
 	} else {
 		return false;
 	}
-};
-var elm$core$List$concat = function (lists) {
-	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
 };
 var elm$core$String$fromList = _String_fromList;
 var marcosh$elm_html_to_unicode$ElmEscapeHtml$convertCode = F5(
@@ -8115,17 +8227,6 @@ var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$h4 = _VirtualDom_node('h4');
 var elm$html$Html$hr = _VirtualDom_node('hr');
 var author$project$Main$renderApplicationForm = function (sections) {
-	var submitButton = A2(
-		elm$html$Html$button,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$type_('button'),
-				elm$html$Html$Attributes$class('btn btn-success btn-lg btn-block')
-			]),
-		_List_fromArray(
-			[
-				elm$html$Html$text('Submit')
-			]));
 	var renderAppGroup = F2(
 		function (section, questions) {
 			var showQuestion = function (q) {
@@ -8230,10 +8331,25 @@ var author$project$Main$renderApplicationForm = function (sections) {
 					_List_Nil)
 				]));
 	};
+	var generateButton = A2(
+		elm$html$Html$button,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$type_('button'),
+				elm$html$Html$Attributes$class('btn btn-success btn-lg btn-block'),
+				elm$html$Html$Events$onClick(author$project$Main$GeneratePDF)
+			]),
+		_List_fromArray(
+			[
+				elm$html$Html$text('Generate Application')
+			]));
 	return A2(
 		elm$html$Html$div,
 		_List_Nil,
-		A2(elm$core$List$map, renderAppSection, sections));
+		_Utils_ap(
+			A2(elm$core$List$map, renderAppSection, sections),
+			_List_fromArray(
+				[generateButton])));
 };
 var author$project$Main$SelectActivity = function (a) {
 	return {$: 'SelectActivity', a: a};
