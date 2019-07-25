@@ -114,7 +114,7 @@ type alias Standard =
 
 type Input
     = Text (Maybe String) String
-    | Number (Maybe Int) String
+    | Number (Maybe Float) String
     | Multichoice (Maybe String) String (List String)
     | File Bool String
     | Checkbox Bool String String
@@ -356,7 +356,7 @@ encodeAnswers answers =
                     encodeMaybe Encode.string a
 
                 Number a _ ->
-                    encodeMaybe Encode.int a
+                    encodeMaybe Encode.float a
 
                 Multichoice a _ _ ->
                     encodeMaybe Encode.string a
@@ -388,7 +388,7 @@ encodeAnswersReadable answers =
                     encodeMaybe Encode.string a
 
                 Number a _ ->
-                    encodeMaybe Encode.int a
+                    encodeMaybe Encode.float a
 
                 Multichoice a _ _ ->
                     encodeMaybe Encode.string a
@@ -508,7 +508,7 @@ matchInput format =
 
         "number" ->
             Decode.succeed Number
-                |> required "previousAnswer" (nullable int)
+                |> required "previousAnswer" (nullable float)
                 |> required "prompt" string
 
         "multichoice" ->
@@ -956,7 +956,7 @@ renderQuestion answers section question =
                     a == Just value
 
                 ( Just (Number a _), "equal" ) ->
-                    Maybe.map String.fromInt a == Just value
+                    Maybe.map String.fromFloat a == Just value
 
                 ( Just (Multichoice a _ _), "equal" ) ->
                     a == Just value
@@ -1089,7 +1089,7 @@ updateInput input answer =
             Text (Just answer) p
 
         Number _ p ->
-            Number (String.toInt answer) p
+            Number (String.toFloat answer) p
 
         Multichoice _ p ops ->
             Multichoice (Just answer) p ops
@@ -1115,7 +1115,7 @@ inputToHtml input key unit msg help =
         Number answer prompt ->
             numberInput
                 msg
-                (answer |> Maybe.map String.fromInt >> Maybe.withDefault "")
+                (answer |> Maybe.map String.fromFloat >> Maybe.withDefault "")
                 key
                 (unescape prompt)
                 unit

@@ -6388,6 +6388,7 @@ var author$project$Main$decodeBool = A2(
 		}
 	},
 	elm$json$Json$Decode$nullable(elm$json$Json$Decode$string));
+var elm$json$Json$Decode$float = _Json_decodeFloat;
 var elm$json$Json$Decode$list = _Json_decodeList;
 var author$project$Main$matchInput = function (format) {
 	switch (format) {
@@ -6409,7 +6410,7 @@ var author$project$Main$matchInput = function (format) {
 				A3(
 					NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 					'previousAnswer',
-					elm$json$Json$Decode$nullable(elm$json$Json$Decode$int),
+					elm$json$Json$Decode$nullable(elm$json$Json$Decode$float),
 					elm$json$Json$Decode$succeed(author$project$Main$Number)));
 		case 'multichoice':
 			return A3(
@@ -6688,7 +6689,7 @@ var elm$core$Maybe$withDefault = F2(
 		}
 	});
 var elm$json$Json$Encode$bool = _Json_wrap;
-var elm$json$Json$Encode$int = _Json_wrap;
+var elm$json$Json$Encode$float = _Json_wrap;
 var elm$json$Json$Encode$null = _Json_encodeNull;
 var elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
@@ -6717,7 +6718,7 @@ var author$project$Main$encodeAnswersReadable = function (answers) {
 				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
 			case 'Number':
 				var a = i.a;
-				return A2(encodeMaybe, elm$json$Json$Encode$int, a);
+				return A2(encodeMaybe, elm$json$Json$Encode$float, a);
 			case 'Multichoice':
 				var a = i.a;
 				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
@@ -6743,6 +6744,7 @@ var author$project$Main$encodeAnswersReadable = function (answers) {
 	return elm$json$Json$Encode$object(
 		A3(elm$core$Dict$foldl, encodeAnswer, _List_Nil, answers));
 };
+var elm$json$Json$Encode$int = _Json_wrap;
 var author$project$Main$encodeProposal = F2(
 	function (a, p) {
 		return elm$json$Json$Encode$object(
@@ -6818,7 +6820,7 @@ var author$project$Main$encodeAnswers = function (answers) {
 				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
 			case 'Number':
 				var a = i.a;
-				return A2(encodeMaybe, elm$json$Json$Encode$int, a);
+				return A2(encodeMaybe, elm$json$Json$Encode$float, a);
 			case 'Multichoice':
 				var a = i.a;
 				return A2(encodeMaybe, elm$json$Json$Encode$string, a);
@@ -6859,6 +6861,7 @@ var author$project$Main$boolFromString = function (s) {
 		return false;
 	}
 };
+var elm$core$String$toFloat = _String_toFloat;
 var author$project$Main$updateInput = F2(
 	function (input, answer) {
 		switch (input.$) {
@@ -6872,7 +6875,7 @@ var author$project$Main$updateInput = F2(
 				var p = input.b;
 				return A2(
 					author$project$Main$Number,
-					elm$core$String$toInt(answer),
+					elm$core$String$toFloat(answer),
 					p);
 			case 'Multichoice':
 				var p = input.b;
@@ -7456,6 +7459,7 @@ var author$project$Main$textInput = F5(
 					_List_Nil)
 				]));
 	});
+var elm$core$String$fromFloat = _String_fromNumber;
 var elm$core$String$concat = function (strings) {
 	return A2(elm$core$String$join, '', strings);
 };
@@ -8180,7 +8184,7 @@ var author$project$Main$inputToHtml = F5(
 					msg,
 					A3(
 						elm$core$Basics$composeR,
-						elm$core$Maybe$map(elm$core$String$fromInt),
+						elm$core$Maybe$map(elm$core$String$fromFloat),
 						elm$core$Maybe$withDefault(''),
 						answer),
 					key,
@@ -8717,7 +8721,7 @@ var author$project$Main$renderQuestion = F3(
 							var _n2 = _n0.a.a;
 							var a = _n2.a;
 							return _Utils_eq(
-								A2(elm$core$Maybe$map, elm$core$String$fromInt, a),
+								A2(elm$core$Maybe$map, elm$core$String$fromFloat, a),
 								elm$core$Maybe$Just(value));
 						case 'Multichoice':
 							var _n3 = _n0.a.a;
