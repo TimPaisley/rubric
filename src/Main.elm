@@ -1507,18 +1507,22 @@ createApplication model =
                 ]
 
         consentType =
+            let
+                overallActivityStatus =
+                    statusToString model.status
+            in
             ApplicationSection "Consent Type"
                 Nothing
-                [ [ ApplicationQuestion "consent-type" (Text Nothing "Consent Type") Nothing
-                  , ApplicationQuestion "consent-type-activity" (Text Nothing "Proposed Activity") Nothing
+                [ [ ApplicationQuestion "consent-type" (Text (Just "Land Use") "Consent Type") Nothing
+                  , ApplicationQuestion "consent-type-activity" (Text model.selectedActivity "Proposed Activity") Nothing
                   ]
-                , [ ApplicationQuestion "consent-type-activity-status" (Text Nothing "Overall Activity Status") <|
+                , [ ApplicationQuestion "consent-type-activity-status" (Text (Just overallActivityStatus) "Overall Activity Status") <|
                         Just
                             (text """
                         This status is indicative only, and must be verified by a Council Planner.
                         """)
                   ]
-                , [ ApplicationQuestion "consent-type-fast-track" (Multichoice Nothing "Fast-track Consent" [ "Yes", "No" ]) <|
+                , [ ApplicationQuestion "consent-type-fast-track" (Multichoice Nothing "Fast-track Consent" [ "I opt out", "I do not opt out" ]) <|
                         Just
                             (text """
                         I opt out / do not opt out of the fast track consent process

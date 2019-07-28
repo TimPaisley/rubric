@@ -5609,6 +5609,22 @@ var author$project$Main$Text = F2(
 	function (a, b) {
 		return {$: 'Text', a: a, b: b};
 	});
+var author$project$Main$statusToString = function (status) {
+	switch (status.$) {
+		case 'Controlled':
+			return 'Controlled';
+		case 'DiscretionaryRestricted':
+			return 'Discretionary Restricted';
+		case 'DiscretionaryUnrestricted':
+			return 'Discretionary Unrestricted';
+		case 'NonCompliant':
+			return 'Non-complying';
+		case 'Permitted':
+			return 'Permitted';
+		default:
+			return 'Status Unknown';
+	}
+};
 var elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -6113,49 +6129,58 @@ var author$project$Main$createApplication = function (model) {
 						elm$html$Html$text('\n                        I confirm that I have read and understood the notes for the applicant.\n                        [link to the guidance pop up on the text \'notes for the applicant\']\n                        ')))
 				])
 			]));
-	var consentType = A3(
-		author$project$Main$ApplicationSection,
-		'Consent Type',
-		elm$core$Maybe$Nothing,
-		_List_fromArray(
-			[
-				_List_fromArray(
+	var consentType = function () {
+		var overallActivityStatus = author$project$Main$statusToString(model.status);
+		return A3(
+			author$project$Main$ApplicationSection,
+			'Consent Type',
+			elm$core$Maybe$Nothing,
+			_List_fromArray(
 				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'consent-type',
-					A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Consent Type'),
-					elm$core$Maybe$Nothing),
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'consent-type-activity',
-					A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Proposed Activity'),
-					elm$core$Maybe$Nothing)
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'consent-type-activity-status',
-					A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Overall Activity Status'),
-					elm$core$Maybe$Just(
-						elm$html$Html$text('\n                        This status is indicative only, and must be verified by a Council Planner.\n                        ')))
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'consent-type-fast-track',
-					A3(
-						author$project$Main$Multichoice,
-						elm$core$Maybe$Nothing,
-						'Fast-track Consent',
-						_List_fromArray(
-							['Yes', 'No'])),
-					elm$core$Maybe$Just(
-						elm$html$Html$text('\n                        I opt out / do not opt out of the fast track consent process\n                        ')))
-				])
-			]));
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'consent-type',
+						A2(
+							author$project$Main$Text,
+							elm$core$Maybe$Just('Land Use'),
+							'Consent Type'),
+						elm$core$Maybe$Nothing),
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'consent-type-activity',
+						A2(author$project$Main$Text, model.selectedActivity, 'Proposed Activity'),
+						elm$core$Maybe$Nothing)
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'consent-type-activity-status',
+						A2(
+							author$project$Main$Text,
+							elm$core$Maybe$Just(overallActivityStatus),
+							'Overall Activity Status'),
+						elm$core$Maybe$Just(
+							elm$html$Html$text('\n                        This status is indicative only, and must be verified by a Council Planner.\n                        ')))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'consent-type-fast-track',
+						A3(
+							author$project$Main$Multichoice,
+							elm$core$Maybe$Nothing,
+							'Fast-track Consent',
+							_List_fromArray(
+								['I opt out', 'I do not opt out'])),
+						elm$core$Maybe$Just(
+							elm$html$Html$text('\n                        I opt out / do not opt out of the fast track consent process\n                        ')))
+					])
+				]));
+	}();
 	var applicantDetails = A3(
 		author$project$Main$ApplicationSection,
 		'Applicant Details',
@@ -9539,22 +9564,6 @@ var author$project$Main$showStandard = function (standard) {
 						elm$html$Html$text(standard.title)
 					]))
 			]));
-};
-var author$project$Main$statusToString = function (status) {
-	switch (status.$) {
-		case 'Controlled':
-			return 'Controlled';
-		case 'DiscretionaryRestricted':
-			return 'Discretionary Restricted';
-		case 'DiscretionaryUnrestricted':
-			return 'Discretionary Unrestricted';
-		case 'NonCompliant':
-			return 'Non-complying';
-		case 'Permitted':
-			return 'Permitted';
-		default:
-			return 'Status Unknown';
-	}
 };
 var elm$core$List$concatMap = F2(
 	function (f, list) {
