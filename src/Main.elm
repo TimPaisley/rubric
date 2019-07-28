@@ -829,7 +829,7 @@ renderContent model =
             if model.applying then
                 case ( model.selectedActivity, model.selectedProperty ) of
                     ( Just a, Just p ) ->
-                        renderApplicationForm model.application
+                        renderApplicationForm model model.application
 
                     _ ->
                         compliance
@@ -1003,10 +1003,10 @@ renderModal key modalHeader modalContent =
     modalDialog
 
 
-renderApplicationForm : List ApplicationSection -> Html Msg
-renderApplicationForm sections =
+renderApplicationForm : Model -> List ApplicationSection -> Html Msg
+renderApplicationForm model sections =
     let
-        renderAppSection section =
+        renderAppSection index section =
             let
                 infoCard =
                     case section.info of
@@ -1023,9 +1023,79 @@ renderApplicationForm sections =
                 [ h4 [ class "d-flex justify-content-between align-items-center mb-3" ]
                     [ span [] [ text section.name ] ]
                 , infoCard
-                , div [ class "questions" ] (List.map (renderAppGroup section) section.groups)
+                , div [ class "questions" ]
+                    (if index == 0 then
+                        renderPropertyGroups ++ (List.map (renderAppGroup section) <| Maybe.withDefault [] <| List.tail section.groups)
+
+                     else
+                        List.map (renderAppGroup section) section.groups
+                    )
                 , hr [ class "mb-4" ] []
                 ]
+
+        renderPropertyGroups =
+            let
+                image =
+                    Maybe.map .imageUrl model.selectedProperty
+
+                address =
+                    Maybe.map .fullAddress model.selectedProperty
+
+                wufi =
+                    Maybe.map .valuationWufi model.selectedProperty
+                        |> Maybe.map String.fromInt
+
+                zone =
+                    Maybe.map .zone model.selectedProperty
+
+                addressQuestion =
+                    ApplicationQuestion "property-address" (Text address "Address") Nothing
+
+                wufiQuestion =
+                    ApplicationQuestion "property-wufi" (Text wufi "WUFI") Nothing
+
+                zoneQuestion =
+                    ApplicationQuestion "property-zone" (Text zone "Zone") Nothing
+
+                others =
+                    [ [ ApplicationQuestion "property-legal-description" (Text Nothing "Legal Description of the Site for this Application") Nothing ]
+                    , [ ApplicationQuestion "property-aka" (Text Nothing "Any Other Commonly Known Names of the Site") Nothing ]
+                    , [ ApplicationQuestion "property-description" (Text Nothing "Site Description") <|
+                            Just
+                                (text """
+                            Describe the site including its natural and physical characteristics and any adjacent
+                            uses that may be relevant to the consideration of the application.
+                            """)
+                      ]
+                    ]
+
+                section =
+                    ApplicationSection "Property Information"
+                        Nothing
+                    <|
+                        [ [ addressQuestion ]
+                        , [ wufiQuestion ]
+                        , [ zoneQuestion ]
+                        ]
+                            ++ others
+
+                inputForQuestion q =
+                    inputToHtml q.input q.key Nothing (InputApplicationAnswer section q) q.help
+
+                showQuestion q =
+                    div [ class "col" ]
+                        [ inputToHtml q.input q.key Nothing (InputApplicationAnswer section q) q.help ]
+            in
+            [ div [ class "row mb-3" ]
+                [ div [ class "col" ]
+                    [ img [ src (Maybe.withDefault "" image), class "cover" ] [] ]
+                , div [ class "col" ]
+                    [ inputForQuestion addressQuestion
+                    , inputForQuestion wufiQuestion
+                    , inputForQuestion zoneQuestion
+                    ]
+                ]
+            ]
 
         renderAppGroup section questions =
             let
@@ -1039,7 +1109,7 @@ renderApplicationForm sections =
             button [ type_ "button", class "btn btn-success btn-lg btn-block", onClick GeneratePDF ]
                 [ text "Generate Application" ]
     in
-    div [] <| List.map renderAppSection sections ++ [ generateButton ]
+    div [] <| List.indexedMap renderAppSection sections ++ [ generateButton ]
 
 
 
@@ -1420,10 +1490,11 @@ createApplication model =
             in
             ApplicationSection "Property Information"
                 Nothing
-                [ [ ApplicationQuestion "property-image" (Text image "Image") Nothing ]
-                , [ ApplicationQuestion "property-address" (Text address "Address") Nothing ]
-                , [ ApplicationQuestion "property-wufi" (Text wufi "WUFI") Nothing ]
-                , [ ApplicationQuestion "property-zone" (Text zone "Zone") Nothing ]
+                [ [ ApplicationQuestion "property-image" (Text image "Image") Nothing
+                  , ApplicationQuestion "property-address" (Text address "Address") Nothing
+                  , ApplicationQuestion "property-wufi" (Text wufi "WUFI") Nothing
+                  , ApplicationQuestion "property-zone" (Text zone "Zone") Nothing
+                  ]
                 , [ ApplicationQuestion "property-legal-description" (Text Nothing "Legal Description of the Site for this Application") Nothing ]
                 , [ ApplicationQuestion "property-aka" (Text Nothing "Any Other Commonly Known Names of the Site") Nothing ]
                 , [ ApplicationQuestion "property-description" (Text Nothing "Site Description") <|

@@ -5844,26 +5844,17 @@ var author$project$Main$createApplication = function (model) {
 						author$project$Main$ApplicationQuestion,
 						'property-image',
 						A2(author$project$Main$Text, image, 'Image'),
-						elm$core$Maybe$Nothing)
-					]),
-					_List_fromArray(
-					[
+						elm$core$Maybe$Nothing),
 						A3(
 						author$project$Main$ApplicationQuestion,
 						'property-address',
 						A2(author$project$Main$Text, address, 'Address'),
-						elm$core$Maybe$Nothing)
-					]),
-					_List_fromArray(
-					[
+						elm$core$Maybe$Nothing),
 						A3(
 						author$project$Main$ApplicationQuestion,
 						'property-wufi',
 						A2(author$project$Main$Text, wufi, 'WUFI'),
-						elm$core$Maybe$Nothing)
-					]),
-					_List_fromArray(
-					[
+						elm$core$Maybe$Nothing),
 						A3(
 						author$project$Main$ApplicationQuestion,
 						'property-zone',
@@ -8227,12 +8218,122 @@ var author$project$Main$inputToHtml = F5(
 					help);
 		}
 	});
+var elm$core$List$tail = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(xs);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$h4 = _VirtualDom_node('h4');
 var elm$html$Html$hr = _VirtualDom_node('hr');
-var author$project$Main$renderApplicationForm = function (sections) {
-	var renderAppGroup = F2(
-		function (section, questions) {
+var elm$html$Html$img = _VirtualDom_node('img');
+var elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var author$project$Main$renderApplicationForm = F2(
+	function (model, sections) {
+		var renderPropertyGroups = function () {
+			var zone = A2(
+				elm$core$Maybe$map,
+				function ($) {
+					return $.zone;
+				},
+				model.selectedProperty);
+			var zoneQuestion = A3(
+				author$project$Main$ApplicationQuestion,
+				'property-zone',
+				A2(author$project$Main$Text, zone, 'Zone'),
+				elm$core$Maybe$Nothing);
+			var wufi = A2(
+				elm$core$Maybe$map,
+				elm$core$String$fromInt,
+				A2(
+					elm$core$Maybe$map,
+					function ($) {
+						return $.valuationWufi;
+					},
+					model.selectedProperty));
+			var wufiQuestion = A3(
+				author$project$Main$ApplicationQuestion,
+				'property-wufi',
+				A2(author$project$Main$Text, wufi, 'WUFI'),
+				elm$core$Maybe$Nothing);
+			var others = _List_fromArray(
+				[
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'property-legal-description',
+						A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Legal Description of the Site for this Application'),
+						elm$core$Maybe$Nothing)
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'property-aka',
+						A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Any Other Commonly Known Names of the Site'),
+						elm$core$Maybe$Nothing)
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'property-description',
+						A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Site Description'),
+						elm$core$Maybe$Just(
+							elm$html$Html$text('\n                            Describe the site including its natural and physical characteristics and any adjacent\n                            uses that may be relevant to the consideration of the application.\n                            ')))
+					])
+				]);
+			var image = A2(
+				elm$core$Maybe$map,
+				function ($) {
+					return $.imageUrl;
+				},
+				model.selectedProperty);
+			var address = A2(
+				elm$core$Maybe$map,
+				function ($) {
+					return $.fullAddress;
+				},
+				model.selectedProperty);
+			var addressQuestion = A3(
+				author$project$Main$ApplicationQuestion,
+				'property-address',
+				A2(author$project$Main$Text, address, 'Address'),
+				elm$core$Maybe$Nothing);
+			var section = A3(
+				author$project$Main$ApplicationSection,
+				'Property Information',
+				elm$core$Maybe$Nothing,
+				_Utils_ap(
+					_List_fromArray(
+						[
+							_List_fromArray(
+							[addressQuestion]),
+							_List_fromArray(
+							[wufiQuestion]),
+							_List_fromArray(
+							[zoneQuestion])
+						]),
+					others));
+			var inputForQuestion = function (q) {
+				return A5(
+					author$project$Main$inputToHtml,
+					q.input,
+					q.key,
+					elm$core$Maybe$Nothing,
+					A2(author$project$Main$InputApplicationAnswer, section, q),
+					q.help);
+			};
 			var showQuestion = function (q) {
 				return A2(
 					elm$html$Html$div,
@@ -8251,24 +8352,13 @@ var author$project$Main$renderApplicationForm = function (sections) {
 							q.help)
 						]));
 			};
-			return A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('row mb-3')
-					]),
-				A2(elm$core$List$map, showQuestion, questions));
-		});
-	var renderAppSection = function (section) {
-		var infoCard = function () {
-			var _n0 = section.info;
-			if (_n0.$ === 'Just') {
-				var i = _n0.a;
-				return A2(
+			return _List_fromArray(
+				[
+					A2(
 					elm$html$Html$div,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$class('card mb-3')
+							elm$html$Html$Attributes$class('row mb-3')
 						]),
 					_List_fromArray(
 						[
@@ -8276,90 +8366,172 @@ var author$project$Main$renderApplicationForm = function (sections) {
 							elm$html$Html$div,
 							_List_fromArray(
 								[
-									elm$html$Html$Attributes$class('card-body')
+									elm$html$Html$Attributes$class('col')
 								]),
 							_List_fromArray(
 								[
 									A2(
-									elm$html$Html$p,
+									elm$html$Html$img,
 									_List_fromArray(
 										[
-											elm$html$Html$Attributes$class('card-text')
+											elm$html$Html$Attributes$src(
+											A2(elm$core$Maybe$withDefault, '', image)),
+											elm$html$Html$Attributes$class('cover')
 										]),
-									_List_fromArray(
-										[i]))
-								]))
-						]));
-			} else {
-				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-			}
-		}();
-		return A2(
-			elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$h4,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center mb-3')
-						]),
-					_List_fromArray(
-						[
+									_List_Nil)
+								])),
 							A2(
-							elm$html$Html$span,
-							_List_Nil,
+							elm$html$Html$div,
 							_List_fromArray(
 								[
-									elm$html$Html$text(section.name)
+									elm$html$Html$Attributes$class('col')
+								]),
+							_List_fromArray(
+								[
+									inputForQuestion(addressQuestion),
+									inputForQuestion(wufiQuestion),
+									inputForQuestion(zoneQuestion)
 								]))
-						])),
-					infoCard,
-					A2(
+						]))
+				]);
+		}();
+		var renderAppGroup = F2(
+			function (section, questions) {
+				var showQuestion = function (q) {
+					return A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('col')
+							]),
+						_List_fromArray(
+							[
+								A5(
+								author$project$Main$inputToHtml,
+								q.input,
+								q.key,
+								elm$core$Maybe$Nothing,
+								A2(author$project$Main$InputApplicationAnswer, section, q),
+								q.help)
+							]));
+				};
+				return A2(
 					elm$html$Html$div,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$class('questions')
+							elm$html$Html$Attributes$class('row mb-3')
 						]),
-					A2(
-						elm$core$List$map,
-						renderAppGroup(section),
-						section.groups)),
-					A2(
-					elm$html$Html$hr,
+					A2(elm$core$List$map, showQuestion, questions));
+			});
+		var renderAppSection = F2(
+			function (index, section) {
+				var infoCard = function () {
+					var _n0 = section.info;
+					if (_n0.$ === 'Just') {
+						var i = _n0.a;
+						return A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('card mb-3')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('card-body')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$p,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('card-text')
+												]),
+											_List_fromArray(
+												[i]))
+										]))
+								]));
+					} else {
+						return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+					}
+				}();
+				return A2(
+					elm$html$Html$div,
+					_List_Nil,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$class('mb-4')
-						]),
-					_List_Nil)
-				]));
-	};
-	var generateButton = A2(
-		elm$html$Html$button,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$type_('button'),
-				elm$html$Html$Attributes$class('btn btn-success btn-lg btn-block'),
-				elm$html$Html$Events$onClick(author$project$Main$GeneratePDF)
-			]),
-		_List_fromArray(
-			[
-				elm$html$Html$text('Generate Application')
-			]));
-	return A2(
-		elm$html$Html$div,
-		_List_Nil,
-		_Utils_ap(
-			A2(elm$core$List$map, renderAppSection, sections),
+							A2(
+							elm$html$Html$h4,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center mb-3')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$span,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text(section.name)
+										]))
+								])),
+							infoCard,
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('questions')
+								]),
+							(!index) ? _Utils_ap(
+								renderPropertyGroups,
+								A2(
+									elm$core$List$map,
+									renderAppGroup(section),
+									A2(
+										elm$core$Maybe$withDefault,
+										_List_Nil,
+										elm$core$List$tail(section.groups)))) : A2(
+								elm$core$List$map,
+								renderAppGroup(section),
+								section.groups)),
+							A2(
+							elm$html$Html$hr,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('mb-4')
+								]),
+							_List_Nil)
+						]));
+			});
+		var generateButton = A2(
+			elm$html$Html$button,
 			_List_fromArray(
-				[generateButton])));
-};
+				[
+					elm$html$Html$Attributes$type_('button'),
+					elm$html$Html$Attributes$class('btn btn-success btn-lg btn-block'),
+					elm$html$Html$Events$onClick(author$project$Main$GeneratePDF)
+				]),
+			_List_fromArray(
+				[
+					elm$html$Html$text('Generate Application')
+				]));
+		return A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_Utils_ap(
+				A2(elm$core$List$indexedMap, renderAppSection, sections),
+				_List_fromArray(
+					[generateButton])));
+	});
 var author$project$Main$SelectActivity = function (a) {
 	return {$: 'SelectActivity', a: a};
 };
 var elm$html$Html$h5 = _VirtualDom_node('h5');
-var elm$html$Html$img = _VirtualDom_node('img');
 var elm$html$Html$option = _VirtualDom_node('option');
 var elm$html$Html$select = _VirtualDom_node('select');
 var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
@@ -8367,12 +8539,6 @@ var elm$html$Html$Attributes$hidden = elm$html$Html$Attributes$boolProperty('hid
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
 var elm$html$Html$Attributes$readonly = elm$html$Html$Attributes$boolProperty('readOnly');
 var elm$html$Html$Attributes$selected = elm$html$Html$Attributes$boolProperty('selected');
-var elm$html$Html$Attributes$src = function (url) {
-	return A2(
-		elm$html$Html$Attributes$stringProperty,
-		'src',
-		_VirtualDom_noJavaScriptOrHtmlUri(url));
-};
 var author$project$Main$renderProposal = F2(
 	function (activities, selectedProperty) {
 		var propertyCard = function () {
@@ -9003,7 +9169,7 @@ var author$project$Main$renderContent = function (model) {
 			if ((_n0.a.$ === 'Just') && (_n0.b.$ === 'Just')) {
 				var a = _n0.a.a;
 				var p = _n0.b.a;
-				return author$project$Main$renderApplicationForm(model.application);
+				return A2(author$project$Main$renderApplicationForm, model, model.application);
 			} else {
 				return compliance;
 			}
