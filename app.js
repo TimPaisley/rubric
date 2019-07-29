@@ -5637,8 +5637,12 @@ var elm$core$Maybe$map = F2(
 	});
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$h6 = _VirtualDom_node('h6');
+var elm$html$Html$li = _VirtualDom_node('li');
+var elm$html$Html$p = _VirtualDom_node('p');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$html$Html$ul = _VirtualDom_node('ul');
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5647,6 +5651,7 @@ var elm$html$Html$Attributes$stringProperty = F2(
 			key,
 			elm$json$Json$Encode$string(string));
 	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
@@ -5654,123 +5659,821 @@ var elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var author$project$Main$createApplication = function (model) {
-	var supportingInformation = A3(
-		author$project$Main$ApplicationSection,
-		'Supporting Information',
-		elm$core$Maybe$Just(
-			elm$html$Html$text('\n                    To satisfy the requirement of Section 88(2) of the Resource Management Act 1991\n                    and rule 3.2.2 in the District Plan. If all of the required information is not\n                    provided we may be unable to accept your application and it will be returned to you.\n                    ')),
-		_List_fromArray(
-			[
-				_List_fromArray(
+	var supportingInformation = function () {
+		var matters = A3(
+			elm$core$List$foldl,
+			F2(
+				function (r, l) {
+					return _Utils_ap(l, r.mattersOfDiscretion);
+				}),
+			_List_Nil,
+			A3(
+				elm$core$List$foldl,
+				F2(
+					function (s, l) {
+						return _Utils_ap(l, s.results.rules);
+					}),
+				_List_Nil,
+				model.sections));
+		var showMatters = function () {
+			if (!matters.b) {
+				return _List_fromArray(
+					['none']);
+			} else {
+				return matters;
+			}
+		}();
+		return A3(
+			author$project$Main$ApplicationSection,
+			'Supporting Information',
+			elm$core$Maybe$Just(
+				elm$html$Html$text('\n                    To satisfy the requirement of Section 88(2) of the Resource Management Act 1991\n                    and rule 3.2.2 in the District Plan. If all of the required information is not\n                    provided we may be unable to accept your application and it will be returned to you.\n                    ')),
+			_List_fromArray(
 				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-consideration',
-					A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Matters for consideration for the Assessment of Environmental Effects'),
-					elm$core$Maybe$Just(
-						elm$html$Html$text('\n                        As determined by your answers to questions about the proposed activity in\n                        relation to the standards in the District Plan, below are the matters for\n                        consideration for the Assessment of Environmental Effects:\n\n                        [insert from RuBRIC the matters for consideration] \n                        ')))
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-ingo-aee',
-					A2(author$project$Main$File, false, 'Assessment of Environmental Effects'),
-					elm$core$Maybe$Just(
-						elm$html$Html$text('\n                        The Assessment of Environmental Effects (AEE) is an assessment of any actual\n                        or potential effects that the activity may have on the environment, and the ways\n                        in which any adverse effects may be mitigated, as per Section 88(6) of the\n                        Resource Management Act 1991.\n                        '))),
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-rma',
-					A2(author$project$Main$File, false, 'Assessment against Part 2 of the RMA Matters'),
-					elm$core$Maybe$Just(
-						A2(
-							elm$html$Html$div,
-							_List_Nil,
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-consideration',
+						A2(author$project$Main$Text, elm$core$Maybe$Nothing, 'Matters for consideration for the Assessment of Environmental Effects'),
+						elm$core$Maybe$Just(
+							A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('\n                                        As determined by your answers to questions about the proposed activity in\n                                        relation to the standards in the District Plan, below are the matters for\n                                        consideration for the Assessment of Environmental Effects:\n                                        '),
+												A2(
+												elm$html$Html$ul,
+												_List_Nil,
+												A2(
+													elm$core$List$map,
+													function (m) {
+														return A2(
+															elm$html$Html$li,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	elm$html$Html$text(m)
+																]));
+													},
+													showMatters))
+											]))
+									]))))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-aee',
+						A2(author$project$Main$File, false, 'Assessment of Environmental Effects'),
+						elm$core$Maybe$Just(
+							elm$html$Html$text('\n                        The Assessment of Environmental Effects (AEE) is an assessment of any actual\n                        or potential effects that the activity may have on the environment, and the ways\n                        in which any adverse effects may be mitigated, as per Section 88(6) of the\n                        Resource Management Act 1991.\n                        ')))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-rma',
+						A2(author$project$Main$File, false, 'Assessment against Part 2 of the RMA Matters'),
+						elm$core$Maybe$Just(
+							A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('\n                                    The Assessment of Environmental Effects (AEE) is an assessment of any actual or potential effects that the activity may have on the environment,\n                                    and the ways in which any adverse effects may be mitigated, as per Section 88(6) of the Resource Management Act 1991. See the guidance below for\n                                    further details.\n                                    ')
+											])),
+										A2(
+										elm$html$Html$h6,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('Guidance')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('\n                                        The comprehensiveness of your AEE should be proportional to the scale and significance of the actual and potential effects of your proposed activity.\n                                        Information provided, should, as a minimum provide enough information for the Council to evaluate the potential effects on individual parties as well\n                                        as the wider environment.\n                                        ')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('font-weight-bold')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('The process of identifying and assessing effects')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('If the District Plan has not identified the specific effects to be considered (matters for discretion) then you will need to assess all of the\n                                        effects related to your proposal. The effects to be considered will depend on the type of the application and the nature of the activity proposed.\n                                        The Quality Planning website (https://www.qualityplanning.org.nz/index.php/node/836) has useful information that may be helpful in preparing your\n                                        assessment of effects.\n                                        ')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('font-weight-bold')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('Permitted Baseline')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('\n                                        The Permitted baseline is a term that has developed through case law and relates to the point of comparison in assessing environmental effects\n                                        when you propose to do something on your land that is allowed as of right, or without resource consent. Put simply, the Council has the discretion\n                                        to consider only those effects generate over and above those that are permitted. You may wish to undertake an assessment of a permitted baseline\n                                        in support of your proposal however as noted above the discretion as to whether the permitted baseline is accepted or not is up to the Council Officers.\n                                        ')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('font-weight-bold')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('What to include in your AEE')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('\n                                        You may wish to include the following, noting that it is not an exhaustive list and other matters may also need to be considered: \n                                        ')
+											])),
+										A2(
+										elm$html$Html$ul,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Affected Parties: List any parties you consider may be affected and identify those who have given their written approval')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Assessment of Environmental Effects (In this section you must outline all the adverse effects your proposal is likely to create (such as but not limited to)'),
+														A2(
+														elm$html$Html$ul,
+														_List_Nil,
+														_List_fromArray(
+															[
+																A2(
+																elm$html$Html$li,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		elm$html$Html$text('Residential Amenity (shading, bulk and location, loss of privacy)')
+																	])),
+																A2(
+																elm$html$Html$li,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		elm$html$Html$text('Residential Character (Streetscape)')
+																	])),
+																A2(
+																elm$html$Html$li,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		elm$html$Html$text('Visual impact')
+																	])),
+																A2(
+																elm$html$Html$li,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		elm$html$Html$text('Traffic (where applicable)')
+																	])),
+																A2(
+																elm$html$Html$li,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		elm$html$Html$text('Landscape')
+																	])),
+																A2(
+																elm$html$Html$li,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		elm$html$Html$text('Earthworks')
+																	])),
+																A2(
+																elm$html$Html$li,
+																_List_Nil,
+																_List_fromArray(
+																	[
+																		elm$html$Html$text('Other')
+																	]))
+															]))
+													]))
+											]))
+									]))))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-planning-docs',
+						A2(author$project$Main$File, false, 'Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents'),
+						elm$core$Maybe$Just(
+							A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('\n                                    Assess the consistency of the effects of your proposal against objectives and policies from\n                                    the District Plan AND against any relevant planning documents in section 104(1)(b) of the\n                                    Resource Management Act 1991. See the guidance below for further details.\n                                    ')
+											])),
+										A2(
+										elm$html$Html$h6,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('Guidance')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('\n                                        Assess the consistency of the effects of your proposal against the below objectives and policies from the District Plan. \n                                        Note that this is an indicative list of relevant policies; applicants should check all policies for relevance to a particular consent application.\n                                        ')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('See the following sections of '),
+												A2(
+												elm$html$Html$a,
+												_List_fromArray(
+													[
+														elm$html$Html$Attributes$href('https://wellington.govt.nz/~/media/your-council/plans-policies-and-bylaws/district-plan/volume01/files/v1chap04.pdf?la=en')
+													]),
+												_List_fromArray(
+													[
+														elm$html$Html$text('Chapter 4 of the District Plan')
+													]))
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('\n                                        4.3.2.2, 4.2.1.2, 4.2.1.3, 4.2.1.4, 4.2.1.5, 4.2.1.6, 4.2.2.1, 4.2.2.2, 4.2.3.1, 4.2.3.2, 4.2.3.3, 4.2.3.5, 4.2.3.7, 4.2.4.1, 4.2.4.2,\n                                        4.2.4.3, 4.2.2.4, 4.2.8.3, 4.2.8.4, 4.2.10.2, 4.2.10.3, 4.2.12.1, 4.2.12.2, 4.2.12.4, 4.2.12.5, 4.2.13.1, 4.2.13.2, 4.2.13.3\n                                        ')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('And assess against any relevant planning documents in section 104(1)(b) of the Resource Management Act 1991, including, but not limited to:')
+											])),
+										A2(
+										elm$html$Html$ul,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('National Policy Statements')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('National Environmental Standards and other regulations')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('The New Zealand Coastal Policy Statement')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Wellington Regional Policy Statement')
+													]))
+											]))
+									]))))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-title-records',
+						A2(author$project$Main$File, false, 'Current copies of all Records of Title for the Subject Site'),
+						elm$core$Maybe$Just(
+							elm$html$Html$text('\n                        A \'current\' record of title is one that has been issued by Land Information New Zealand within the last 3 months,\n                        including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered\n                        instruments, such as right of way documents, esplanade instruments, etc.\n                        ')))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-plan-scale',
+						A3(
+							author$project$Main$Multichoice,
+							elm$core$Maybe$Nothing,
+							'Site Plan Scale',
 							_List_fromArray(
-								[
-									elm$html$Html$text('Assess the consistency of the effects of your proposal against Part 2 of the '),
-									A2(
-									elm$html$Html$a,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$href('http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1')
-										]),
-									_List_fromArray(
-										[
-											elm$html$Html$text('Resource Management Act 1991')
-										])),
-									elm$html$Html$text('.')
-								]))))
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-planning-docs',
-					A2(author$project$Main$File, false, 'Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents'),
-					elm$core$Maybe$Just(
-						elm$html$Html$text('\n                        Assess the consistency of the effects of your proposal against objectives and policies from\n                        the District Plan AND against any relevant planning documents in section 104(1)(b) of the\n                        Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]\n                        ')))
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-title-records',
-					A2(author$project$Main$File, false, 'Current copies of all Records of Title for the Subject Site'),
-					elm$core$Maybe$Just(
-						elm$html$Html$text('\n                        A \'current\' record of title is one that has been issued by Land Information New Zealand within the last 3 months,\n                        including any relevant consent notice(s) registered on the computer register, or any encumbrances or any other registered\n                        instruments, such as right of way documents, esplanade instruments, etc.\n                        ')))
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-plan-scale',
-					A3(
-						author$project$Main$Multichoice,
-						elm$core$Maybe$Nothing,
-						'Site Plan Scale',
-						_List_fromArray(
-							['1:100', '1:200', 'Other'])),
-					elm$core$Maybe$Nothing)
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-plan-existing-detail',
-					A2(author$project$Main$File, false, 'Site Plan Existing Detail'),
-					elm$core$Maybe$Nothing),
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-plan-proposed-detail',
-					A2(author$project$Main$File, false, 'Site Plan Proposed Detail'),
-					elm$core$Maybe$Nothing)
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-elevation-drawings',
-					A2(author$project$Main$File, false, 'Elevation Drawings'),
-					elm$core$Maybe$Nothing)
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-other-info',
-					A2(author$project$Main$File, false, 'Other Information which may be required by the District Plan'),
-					elm$core$Maybe$Nothing)
-				]),
-				_List_fromArray(
-				[
-					A3(
-					author$project$Main$ApplicationQuestion,
-					'supporting-info-party-approval',
-					A2(author$project$Main$File, false, 'Written Approvals from Affected Parties'),
-					elm$core$Maybe$Nothing)
-				])
-			]));
+								['1:100', '1:200', 'Other'])),
+						elm$core$Maybe$Just(
+							elm$html$Html$text('\n                            Site plans must be drawn at a 1:100 or 1:200 metric scale where possible, or to such a scale to show sufficient detail of the proposal to enable\n                            Council to determine its effects. If the plans are larger than A3 size copies reduced to A3 must also be provided. The site plans must show, a\n                            north point accurately orientated, a unique plan number and title describing the proposal and the site.\n                            ')))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-plan-existing-detail',
+						A2(author$project$Main$File, false, 'Site Plan Existing Detail'),
+						elm$core$Maybe$Just(
+							A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('The site plan must detail where relevant the existing situation including:')
+											])),
+										A2(
+										elm$html$Html$ul,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('details of hazardous areas (for example uncompacted filling or flood prone areas)')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[levels and contours of the]  topography (noting significant landforms natural features [and identified ridgelines and hilltops]  )')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[gradients of existing slopes (angle)]')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[banks, walls or steep slopes on the site, or on adjoining sites, that may be relevant to an assessment of earthworks stability]')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[drainage and underground services]')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('water bodies and catchment orientation')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('vegetation (including that located on adjacent road reserve or surrounding properties) and/or habitats of indigenous fauna')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('all certificate of title boundaries')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('road frontages')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('existing buildings (indicating those to be retained)')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('buildings on adjacent sites')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[all the features and information must be shown in relation to the boundaries if the site, and the boundaries of other sites where it is relevant to understanding the proposal.')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('the location of any high voltage transmission lines')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('streams, wetland and water bodies located within the site and/or streams, wetlands and waterbodies located outside the site where these are within 20 horizontal metres of the proposed development in the Rural Area or 5 horizontal metres in all other Areas.')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('The location of any NZHPT Registered items or recorded archaeological sites and/or Wellington City Council listed heritage items or sites of significance to Maori')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Streams, wetland and water bodies located within the site.]')
+													]))
+											]))
+									]))))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-plan-proposed-detail',
+						A2(author$project$Main$File, false, 'Site Plan Proposed Detail'),
+						elm$core$Maybe$Just(
+							A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('The applicant must provide a site plan detailing where relevant the proposed development including:')
+											])),
+										A2(
+										elm$html$Html$ul,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('design of earthworks and final levels and contours of the site')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[gradients of earthwork slopes')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('drainage and underground services]')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('layout and location of proposed structures and buildings or alterations to existing structures and buildings')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('location of proposed activities, vehicle parking, servicing, circulation and manoeuvring, pedestrian and vehicular access')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('floor plans')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('calculation of site coverage')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[a landscaping plan that outlines]   all landscape design, site planting and fencing.')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[all the features and information must be shown in relation to the boundaries of the site, and the boundaries of other sites where it is relevant to understanding the proposal]')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[details of assessed ground levels for the purposes of calculating maximum building mass for the site. The plan must show those corners that were used to calculate the assessed ground level. Where assessed ground levels have been determined from corners that have been fixed by survey, the accuracy of this information must be certified by a licensed surveyor.')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('calculations demonstrating compliance with the maximum building volume')
+													]))
+											]))
+									]))))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-elevation-drawings',
+						A2(author$project$Main$File, false, 'Elevation Drawings'),
+						elm$core$Maybe$Just(
+							A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('The applicant must provide, where relevant, elevation drawings [and cross sections], numbered and drawn to a metric scale of generally 1:100 or such')
+											])),
+										A2(
+										elm$html$Html$ul,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[gradients of existing and proposed slopes and the location of any associated structures')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('drainage and underground services relevant to earthworks and associated structures]')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('relationship of buildings to existing and finished ground levels')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('extent of compliance with relevant plan rules including solar access and maximum building height')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('elevations from the street showing the relationship of proposed structures to structures on adjacent sites, including the location of existing private outdoor spaces and main living area windows (where these have outlook over the development).')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('[all the features and information must be shown in relation to the boundaries of the site, and the boundaries of other sites where it is relevant to understanding of the proposal.')
+													]))
+											]))
+									]))))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-other-info',
+						A2(author$project$Main$File, false, 'Other Information which may be required by the District Plan'),
+						elm$core$Maybe$Just(
+							A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('Including:')
+											])),
+										A2(
+										elm$html$Html$ul,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Design statement where design guides apply (multi-units, Central Area buildings, character areas, etc)')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Wind report for Central Are buildings above 18.6 metres')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Noise report')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Traffic report')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Other')
+													]))
+											]))
+									]))))
+					]),
+					_List_fromArray(
+					[
+						A3(
+						author$project$Main$ApplicationQuestion,
+						'supporting-info-party-approval',
+						A2(author$project$Main$File, false, 'Written Approvals from Affected Parties'),
+						elm$core$Maybe$Just(
+							A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('\n                                        Letter or neighbours approval form dated and signed by the affected parties AND their signature and the date on the plans submitted with this application.\n                                        Please note conditional written approval cannot be accepted. \n                                        ')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('You can use the ')
+											])),
+										A2(
+										elm$html$Html$a,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$href('https://wellington.govt.nz/~/media/services/consents-and-licenses/resource-consents/files/application-forms/written approval.pdf')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('written approval form')
+											])),
+										A2(
+										elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('Where effects are generated on neighbouring properties it is encouraged that neighbour approval is sought. Providing neighbour approval can be beneficial for several reasons')
+											])),
+										A2(
+										elm$html$Html$ul,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Can reduce costs and delays later on')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Creates goodwill by alerting people who may be affected by your proposal')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Create efficiencies in not requiring Council to ask for the approvals later through the process')
+													])),
+												A2(
+												elm$html$Html$li,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('The effects on those properties in which written approval has been provided can be disregarded. This can save both time and cost in not only the preparation of the AEE but also the extent of time Council Planners spend in assessing your application. ')
+													]))
+											]))
+									]))))
+					])
+				]));
+	}();
 	var siteVisit = A3(
 		author$project$Main$ApplicationSection,
 		'Site Visit',
@@ -6053,7 +6756,74 @@ var author$project$Main$createApplication = function (model) {
 						'Payment Method',
 						_List_fromArray(
 							['Internet Banking', 'Online (Credit Card)', 'By Phone (Credit Card)'])),
-					elm$core$Maybe$Nothing)
+					elm$core$Maybe$Just(
+						A2(
+							elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Internet Banking')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('The Council\'s bank account number is 06 0582 0106111 00. Use \'RC\' followed by the site address as a reference.')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Online')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$a,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$href('https://wellington.govt.nz/do-it-online/pay-online')
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text('Pay online')
+												])),
+											elm$html$Html$text(' using your credit card by selecting \'Property\' from the dropdown box and following the instructions.')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('By phone')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('You can pay over the phone with your credit card. Phone the Council on 04 801 3718')
+										]))
+								]))))
 				]),
 				_List_fromArray(
 				[
@@ -6062,7 +6832,101 @@ var author$project$Main$createApplication = function (model) {
 					'fees-declaration',
 					A3(author$project$Main$Checkbox, false, 'Declaration for Initial Fee', 'I agree with these terms'),
 					elm$core$Maybe$Just(
-						elm$html$Html$text('\n                        I confirm that I have read and understood the fee payment terms, conditions and\n                        declaration for the service of applying for a resource consent [link to guidance\n                        on text \'fee payment terms, conditions and declaration\']\n                        ')))
+						A2(
+							elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        I confirm that I have read and understood the fee payment terms, conditions and\n                                        declaration for the service of applying for a resource consent [link to guidance\n                                        on text \'fee payment terms, conditions and declaration\']\n                                        ')
+										])),
+									A2(
+									elm$html$Html$h6,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Guidance')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Fee payment terms, conditions and declaration')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        I understand that the Council may invoice me for the actual and reasonable costs incurred to process this application\n                                        - as identified in Section 36 of the Resource Management Act and the Council\'s current fee schedule.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Additional fees')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        If the Council spend time processing requests or incur expenses the Council needs to invoice additional fees.\n                                        This may happen during processing or once a decision on your application is made. The Council only charge amounts over $65.\n                                        Likewise, refunds will only be made for unused amounts over $65.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Council payment terms')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        Additional fees are due by the 20th of the month following an invoice. If payment is not received, you will be liable for all legal and collection fees.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Declaration')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        This declaration must be made by the person or entity responsible for paying the application processing costs.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        Subject to my rights under Section 357B and 358 of the Resource Management Act to object to any costs, I undertake to pay all costs associated with this application.\n                                        I also agree to pay all the costs (including debt collection or legal fees) of recovering any unpaid costs\n                                        ')
+										]))
+								]))))
 				])
 			]));
 	var descriptionOfProposedActivity = A3(
@@ -6102,7 +6966,105 @@ var author$project$Main$createApplication = function (model) {
 					'authorised-declaration-declaration',
 					A3(author$project$Main$Checkbox, false, 'Declaration for Agent', 'I agree with these terms'),
 					elm$core$Maybe$Just(
-						elm$html$Html$text('\n                        As authorised agent for the applicant, I confirm that I have read and understood\n                        the notes for the applicant [link to the guidance pop up on the text \'notes for\n                        the applicant\'] and confirm that I have fully informed the applicant of their/its\n                        liability under this application, including for fees and other charges, and that\n                        I have the applicant\'s authority to submit this application on their/its behalf.\n                        ')))
+						A2(
+							elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('I confirm that I have read and understood the notes for the applicant.')
+										])),
+									A2(
+									elm$html$Html$h6,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Guidance')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Notes for the applicant')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        Incomplete applications will be returned. The Council may also request further information under Section 92 of the Resource Management Act 1991,\n                                        to better understand the potential effects of the proposal.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Once this application is lodged with the Council, it becomes public information. If there is sensitive information in the proposal, please let us know.')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        The Council may require a registered surveyor to certify contours, natural ground level, building site(s) or structure(s),\n                                        location of boundaries or any other feature which may affect this proposal.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Fast-track Application')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        Under the fast-track resource consent process, notice of the decision must be given within 10 working days after the date the application was\n                                        first lodged with the authority, unless the applicant opts out of that process at the time of lodgement. \n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('A fast-track application may cease to be a fast-track application under Section 87AAC(2) of the Resource Management Act 1991.')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Privacy Information')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        The information you have provided on this form is required so that your application can be processed under the Resource Management Act 1991, and so that statistics can be collected by the Council. The information will be stored on a public register and held by the Council.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Under the Privacy Act 1993, you have the right to see and correct personal information.')
+										]))
+								]))))
 				])
 			]));
 	var declaration = A3(
@@ -6126,7 +7088,105 @@ var author$project$Main$createApplication = function (model) {
 					'declaration-declaration',
 					A3(author$project$Main$Checkbox, false, 'Declaration', 'I agree with these terms'),
 					elm$core$Maybe$Just(
-						elm$html$Html$text('\n                        I confirm that I have read and understood the notes for the applicant.\n                        [link to the guidance pop up on the text \'notes for the applicant\']\n                        ')))
+						A2(
+							elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('I confirm that I have read and understood the notes for the applicant.')
+										])),
+									A2(
+									elm$html$Html$h6,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Guidance')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Notes for the applicant')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        Incomplete applications will be returned. The Council may also request further information under Section 92 of the Resource Management Act 1991,\n                                        to better understand the potential effects of the proposal.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Once this application is lodged with the Council, it becomes public information. If there is sensitive information in the proposal, please let us know.')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        The Council may require a registered surveyor to certify contours, natural ground level, building site(s) or structure(s),\n                                        location of boundaries or any other feature which may affect this proposal.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Fast-track Application')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        Under the fast-track resource consent process, notice of the decision must be given within 10 working days after the date the application was\n                                        first lodged with the authority, unless the applicant opts out of that process at the time of lodgement. \n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('A fast-track application may cease to be a fast-track application under Section 87AAC(2) of the Resource Management Act 1991.')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('font-weight-bold')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text('Privacy Information')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('\n                                        The information you have provided on this form is required so that your application can be processed under the Resource Management Act 1991, and so that statistics can be collected by the Council. The information will be stored on a public register and held by the Council.\n                                        ')
+										])),
+									A2(
+									elm$html$Html$p,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Under the Privacy Act 1993, you have the right to see and correct personal information.')
+										]))
+								]))))
 				])
 			]));
 	var consentType = function () {
@@ -7147,7 +8207,6 @@ var author$project$Main$boolToString = function (b) {
 };
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
-var elm$html$Html$p = _VirtualDom_node('p');
 var elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
 		return A2(
@@ -7156,7 +8215,6 @@ var elm$html$Html$Attributes$boolProperty = F2(
 			elm$json$Json$Encode$bool(bool));
 	});
 var elm$html$Html$Attributes$checked = elm$html$Html$Attributes$boolProperty('checked');
-var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
@@ -9358,10 +10416,7 @@ var author$project$Main$statusToClass = function (status) {
 			return 'secondary';
 	}
 };
-var elm$html$Html$h6 = _VirtualDom_node('h6');
-var elm$html$Html$li = _VirtualDom_node('li');
 var elm$html$Html$small = _VirtualDom_node('small');
-var elm$html$Html$ul = _VirtualDom_node('ul');
 var author$project$Main$showRule = F2(
 	function (lastRule, rule) {
 		var mattersForDiscretion = function () {

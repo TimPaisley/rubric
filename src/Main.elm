@@ -1573,6 +1573,20 @@ createApplication model =
                 ]
 
         supportingInformation =
+            let
+                matters =
+                    model.sections
+                        |> List.foldl (\s l -> l ++ s.results.rules) []
+                        |> List.foldl (\r l -> l ++ r.mattersOfDiscretion) []
+
+                showMatters =
+                    case matters of
+                        [] ->
+                            [ "none" ]
+
+                        _ ->
+                            matters
+            in
             ApplicationSection "Supporting Information"
                 (Just (text """
                     To satisfy the requirement of Section 88(2) of the Resource Management Act 1991
@@ -1581,15 +1595,20 @@ createApplication model =
                     """))
                 [ [ ApplicationQuestion "supporting-info-consideration" (Text Nothing "Matters for consideration for the Assessment of Environmental Effects") <|
                         Just
-                            (text """
-                        As determined by your answers to questions about the proposed activity in
-                        relation to the standards in the District Plan, below are the matters for
-                        consideration for the Assessment of Environmental Effects:
-
-                        [insert from RuBRIC the matters for consideration] 
-                        """)
+                            (div []
+                                [ p []
+                                    [ text
+                                        """
+                                        As determined by your answers to questions about the proposed activity in
+                                        relation to the standards in the District Plan, below are the matters for
+                                        consideration for the Assessment of Environmental Effects:
+                                        """
+                                    , ul [] (List.map (\m -> li [] [ text m ]) showMatters)
+                                    ]
+                                ]
+                            )
                   ]
-                , [ ApplicationQuestion "supporting-ingo-aee" (File False "Assessment of Environmental Effects") <|
+                , [ ApplicationQuestion "supporting-info-aee" (File False "Assessment of Environmental Effects") <|
                         Just
                             (text """
                         The Assessment of Environmental Effects (AEE) is an assessment of any actual
@@ -1597,23 +1616,111 @@ createApplication model =
                         in which any adverse effects may be mitigated, as per Section 88(6) of the
                         Resource Management Act 1991.
                         """)
-                  , ApplicationQuestion "supporting-info-rma" (File False "Assessment against Part 2 of the RMA Matters") <|
+                  ]
+                , [ ApplicationQuestion "supporting-info-rma" (File False "Assessment against Part 2 of the RMA Matters") <|
                         Just
                             (div []
-                                [ text "Assess the consistency of the effects of your proposal against Part 2 of the "
-                                , a [ href "http://legislation.govt.nz/act/public/1991/0069/latest/DLM230265.html?search=qs_act%40bill%40regulation%40deemedreg_resource+management+act+part+2_resel_25_h&p=1" ]
-                                    [ text "Resource Management Act 1991" ]
-                                , text "."
+                                [ p []
+                                    [ text
+                                        """
+                                    The Assessment of Environmental Effects (AEE) is an assessment of any actual or potential effects that the activity may have on the environment,
+                                    and the ways in which any adverse effects may be mitigated, as per Section 88(6) of the Resource Management Act 1991. See the guidance below for
+                                    further details.
+                                    """
+                                    ]
+                                , h6 [] [ text "Guidance" ]
+                                , p []
+                                    [ text
+                                        """
+                                        The comprehensiveness of your AEE should be proportional to the scale and significance of the actual and potential effects of your proposed activity.
+                                        Information provided, should, as a minimum provide enough information for the Council to evaluate the potential effects on individual parties as well
+                                        as the wider environment.
+                                        """
+                                    ]
+                                , p [ class "font-weight-bold" ] [ text "The process of identifying and assessing effects" ]
+                                , p []
+                                    [ text
+                                        """If the District Plan has not identified the specific effects to be considered (matters for discretion) then you will need to assess all of the
+                                        effects related to your proposal. The effects to be considered will depend on the type of the application and the nature of the activity proposed.
+                                        The Quality Planning website (https://www.qualityplanning.org.nz/index.php/node/836) has useful information that may be helpful in preparing your
+                                        assessment of effects.
+                                        """
+                                    ]
+                                , p [ class "font-weight-bold" ] [ text "Permitted Baseline" ]
+                                , p []
+                                    [ text
+                                        """
+                                        The Permitted baseline is a term that has developed through case law and relates to the point of comparison in assessing environmental effects
+                                        when you propose to do something on your land that is allowed as of right, or without resource consent. Put simply, the Council has the discretion
+                                        to consider only those effects generate over and above those that are permitted. You may wish to undertake an assessment of a permitted baseline
+                                        in support of your proposal however as noted above the discretion as to whether the permitted baseline is accepted or not is up to the Council Officers.
+                                        """
+                                    ]
+                                , p [ class "font-weight-bold" ] [ text "What to include in your AEE" ]
+                                , p []
+                                    [ text
+                                        """
+                                        You may wish to include the following, noting that it is not an exhaustive list and other matters may also need to be considered: 
+                                        """
+                                    ]
+                                , ul []
+                                    [ li [] [ text "Affected Parties: List any parties you consider may be affected and identify those who have given their written approval" ]
+                                    , li []
+                                        [ text "Assessment of Environmental Effects (In this section you must outline all the adverse effects your proposal is likely to create (such as but not limited to)"
+                                        , ul []
+                                            [ li [] [ text "Residential Amenity (shading, bulk and location, loss of privacy)" ]
+                                            , li [] [ text "Residential Character (Streetscape)" ]
+                                            , li [] [ text "Visual impact" ]
+                                            , li [] [ text "Traffic (where applicable)" ]
+                                            , li [] [ text "Landscape" ]
+                                            , li [] [ text "Earthworks" ]
+                                            , li [] [ text "Other" ]
+                                            ]
+                                        ]
+                                    ]
                                 ]
                             )
                   ]
                 , [ ApplicationQuestion "supporting-info-planning-docs" (File False "Assessment against Relevant Objectives and Policies and Provisions of other Planning Documents") <|
                         Just
-                            (text """
-                        Assess the consistency of the effects of your proposal against objectives and policies from
-                        the District Plan AND against any relevant planning documents in section 104(1)(b) of the
-                        Resource Management Act 1991. See the guidance for further details [link to the guidance pop up]
-                        """)
+                            (div []
+                                [ p []
+                                    [ text
+                                        """
+                                    Assess the consistency of the effects of your proposal against objectives and policies from
+                                    the District Plan AND against any relevant planning documents in section 104(1)(b) of the
+                                    Resource Management Act 1991. See the guidance below for further details.
+                                    """
+                                    ]
+                                , h6 [] [ text "Guidance" ]
+                                , p []
+                                    [ text
+                                        """
+                                        Assess the consistency of the effects of your proposal against the below objectives and policies from the District Plan. 
+                                        Note that this is an indicative list of relevant policies; applicants should check all policies for relevance to a particular consent application.
+                                        """
+                                    ]
+                                , p []
+                                    [ text "See the following sections of "
+                                    , a [ href "https://wellington.govt.nz/~/media/your-council/plans-policies-and-bylaws/district-plan/volume01/files/v1chap04.pdf?la=en" ]
+                                        [ text "Chapter 4 of the District Plan" ]
+                                    ]
+                                , p []
+                                    [ text
+                                        """
+                                        4.3.2.2, 4.2.1.2, 4.2.1.3, 4.2.1.4, 4.2.1.5, 4.2.1.6, 4.2.2.1, 4.2.2.2, 4.2.3.1, 4.2.3.2, 4.2.3.3, 4.2.3.5, 4.2.3.7, 4.2.4.1, 4.2.4.2,
+                                        4.2.4.3, 4.2.2.4, 4.2.8.3, 4.2.8.4, 4.2.10.2, 4.2.10.3, 4.2.12.1, 4.2.12.2, 4.2.12.4, 4.2.12.5, 4.2.13.1, 4.2.13.2, 4.2.13.3
+                                        """
+                                    ]
+                                , p [] [ text "And assess against any relevant planning documents in section 104(1)(b) of the Resource Management Act 1991, including, but not limited to:" ]
+                                , ul []
+                                    [ li [] [ text "National Policy Statements" ]
+                                    , li [] [ text "National Environmental Standards and other regulations" ]
+                                    , li [] [ text "The New Zealand Coastal Policy Statement" ]
+                                    , li [] [ text "Wellington Regional Policy Statement" ]
+                                    ]
+                                ]
+                            )
                   ]
                 , [ ApplicationQuestion "supporting-info-title-records" (File False "Current copies of all Records of Title for the Subject Site") <|
                         Just
@@ -1623,13 +1730,111 @@ createApplication model =
                         instruments, such as right of way documents, esplanade instruments, etc.
                         """)
                   ]
-                , [ ApplicationQuestion "supporting-info-plan-scale" (Multichoice Nothing "Site Plan Scale" [ "1:100", "1:200", "Other" ]) Nothing ]
-                , [ ApplicationQuestion "supporting-info-plan-existing-detail" (File False "Site Plan Existing Detail") Nothing
-                  , ApplicationQuestion "supporting-info-plan-proposed-detail" (File False "Site Plan Proposed Detail") Nothing
+                , [ ApplicationQuestion "supporting-info-plan-scale" (Multichoice Nothing "Site Plan Scale" [ "1:100", "1:200", "Other" ]) <|
+                        Just
+                            (text """
+                            Site plans must be drawn at a 1:100 or 1:200 metric scale where possible, or to such a scale to show sufficient detail of the proposal to enable
+                            Council to determine its effects. If the plans are larger than A3 size copies reduced to A3 must also be provided. The site plans must show, a
+                            north point accurately orientated, a unique plan number and title describing the proposal and the site.
+                            """)
                   ]
-                , [ ApplicationQuestion "supporting-info-elevation-drawings" (File False "Elevation Drawings") Nothing ]
-                , [ ApplicationQuestion "supporting-info-other-info" (File False "Other Information which may be required by the District Plan") Nothing ]
-                , [ ApplicationQuestion "supporting-info-party-approval" (File False "Written Approvals from Affected Parties") Nothing ]
+                , [ ApplicationQuestion "supporting-info-plan-existing-detail" (File False "Site Plan Existing Detail") <|
+                        Just
+                            (div []
+                                [ p [] [ text "The site plan must detail where relevant the existing situation including:" ]
+                                , ul []
+                                    [ li [] [ text "details of hazardous areas (for example uncompacted filling or flood prone areas)" ]
+                                    , li [] [ text "[levels and contours of the]  topography (noting significant landforms natural features [and identified ridgelines and hilltops]  )" ]
+                                    , li [] [ text "[gradients of existing slopes (angle)]" ]
+                                    , li [] [ text "[banks, walls or steep slopes on the site, or on adjoining sites, that may be relevant to an assessment of earthworks stability]" ]
+                                    , li [] [ text "[drainage and underground services]" ]
+                                    , li [] [ text "water bodies and catchment orientation" ]
+                                    , li [] [ text "vegetation (including that located on adjacent road reserve or surrounding properties) and/or habitats of indigenous fauna" ]
+                                    , li [] [ text "all certificate of title boundaries" ]
+                                    , li [] [ text "road frontages" ]
+                                    , li [] [ text "existing buildings (indicating those to be retained)" ]
+                                    , li [] [ text "buildings on adjacent sites" ]
+                                    , li [] [ text "[all the features and information must be shown in relation to the boundaries if the site, and the boundaries of other sites where it is relevant to understanding the proposal." ]
+                                    , li [] [ text "the location of any high voltage transmission lines" ]
+                                    , li [] [ text "streams, wetland and water bodies located within the site and/or streams, wetlands and waterbodies located outside the site where these are within 20 horizontal metres of the proposed development in the Rural Area or 5 horizontal metres in all other Areas." ]
+                                    , li [] [ text "The location of any NZHPT Registered items or recorded archaeological sites and/or Wellington City Council listed heritage items or sites of significance to Maori" ]
+                                    , li [] [ text "Streams, wetland and water bodies located within the site.]" ]
+                                    ]
+                                ]
+                            )
+                  ]
+                , [ ApplicationQuestion "supporting-info-plan-proposed-detail" (File False "Site Plan Proposed Detail") <|
+                        Just
+                            (div []
+                                [ p [] [ text "The applicant must provide a site plan detailing where relevant the proposed development including:" ]
+                                , ul []
+                                    [ li [] [ text "design of earthworks and final levels and contours of the site" ]
+                                    , li [] [ text "[gradients of earthwork slopes" ]
+                                    , li [] [ text "drainage and underground services]" ]
+                                    , li [] [ text "layout and location of proposed structures and buildings or alterations to existing structures and buildings" ]
+                                    , li [] [ text "location of proposed activities, vehicle parking, servicing, circulation and manoeuvring, pedestrian and vehicular access" ]
+                                    , li [] [ text "floor plans" ]
+                                    , li [] [ text "calculation of site coverage" ]
+                                    , li [] [ text "[a landscaping plan that outlines]   all landscape design, site planting and fencing." ]
+                                    , li [] [ text "[all the features and information must be shown in relation to the boundaries of the site, and the boundaries of other sites where it is relevant to understanding the proposal]" ]
+                                    , li [] [ text "[details of assessed ground levels for the purposes of calculating maximum building mass for the site. The plan must show those corners that were used to calculate the assessed ground level. Where assessed ground levels have been determined from corners that have been fixed by survey, the accuracy of this information must be certified by a licensed surveyor." ]
+                                    , li [] [ text "calculations demonstrating compliance with the maximum building volume" ]
+                                    ]
+                                ]
+                            )
+                  ]
+                , [ ApplicationQuestion "supporting-info-elevation-drawings" (File False "Elevation Drawings") <|
+                        Just
+                            (div []
+                                [ p [] [ text "The applicant must provide, where relevant, elevation drawings [and cross sections], numbered and drawn to a metric scale of generally 1:100 or such" ]
+                                , ul []
+                                    [ li [] [ text "[gradients of existing and proposed slopes and the location of any associated structures" ]
+                                    , li [] [ text "drainage and underground services relevant to earthworks and associated structures]" ]
+                                    , li [] [ text "relationship of buildings to existing and finished ground levels" ]
+                                    , li [] [ text "extent of compliance with relevant plan rules including solar access and maximum building height" ]
+                                    , li [] [ text "elevations from the street showing the relationship of proposed structures to structures on adjacent sites, including the location of existing private outdoor spaces and main living area windows (where these have outlook over the development)." ]
+                                    , li [] [ text "[all the features and information must be shown in relation to the boundaries of the site, and the boundaries of other sites where it is relevant to understanding of the proposal." ]
+                                    ]
+                                ]
+                            )
+                  ]
+                , [ ApplicationQuestion "supporting-info-other-info" (File False "Other Information which may be required by the District Plan") <|
+                        Just
+                            (div []
+                                [ p [] [ text "Including:" ]
+                                , ul []
+                                    [ li [] [ text "Design statement where design guides apply (multi-units, Central Area buildings, character areas, etc)" ]
+                                    , li [] [ text "Wind report for Central Are buildings above 18.6 metres" ]
+                                    , li [] [ text "Noise report" ]
+                                    , li [] [ text "Traffic report" ]
+                                    , li [] [ text "Other" ]
+                                    ]
+                                ]
+                            )
+                  ]
+                , [ ApplicationQuestion "supporting-info-party-approval" (File False "Written Approvals from Affected Parties") <|
+                        Just
+                            (div []
+                                [ p []
+                                    [ text
+                                        """
+                                        Letter or neighbours approval form dated and signed by the affected parties AND their signature and the date on the plans submitted with this application.
+                                        Please note conditional written approval cannot be accepted. 
+                                        """
+                                    ]
+                                , p [] [ text "You can use the " ]
+                                , a [ href "https://wellington.govt.nz/~/media/services/consents-and-licenses/resource-consents/files/application-forms/written approval.pdf" ]
+                                    [ text "written approval form" ]
+                                , p [] [ text "Where effects are generated on neighbouring properties it is encouraged that neighbour approval is sought. Providing neighbour approval can be beneficial for several reasons" ]
+                                , ul []
+                                    [ li [] [ text "Can reduce costs and delays later on" ]
+                                    , li [] [ text "Creates goodwill by alerting people who may be affected by your proposal" ]
+                                    , li [] [ text "Create efficiencies in not requiring Council to ask for the approvals later through the process" ]
+                                    , li [] [ text "The effects on those properties in which written approval has been provided can be disregarded. This can save both time and cost in not only the preparation of the AEE but also the extent of time Council Planners spend in assessing your application. " ]
+                                    ]
+                                ]
+                            )
+                  ]
                 ]
 
         nationalEnvironmentalStandard =
@@ -1679,10 +1884,44 @@ createApplication model =
                 [ [ ApplicationQuestion "application-name" (Text Nothing "Name of the Person Submitting this Form") Nothing ]
                 , [ ApplicationQuestion "declaration-declaration" (Checkbox False "Declaration" "I agree with these terms") <|
                         Just
-                            (text """
-                        I confirm that I have read and understood the notes for the applicant.
-                        [link to the guidance pop up on the text 'notes for the applicant']
-                        """)
+                            (div []
+                                [ p [] [ text "I confirm that I have read and understood the notes for the applicant." ]
+                                , h6 [] [ text "Guidance" ]
+                                , p [ class "font-weight-bold" ] [ text "Notes for the applicant" ]
+                                , p []
+                                    [ text
+                                        """
+                                        Incomplete applications will be returned. The Council may also request further information under Section 92 of the Resource Management Act 1991,
+                                        to better understand the potential effects of the proposal.
+                                        """
+                                    ]
+                                , p [] [ text "Once this application is lodged with the Council, it becomes public information. If there is sensitive information in the proposal, please let us know." ]
+                                , p []
+                                    [ text
+                                        """
+                                        The Council may require a registered surveyor to certify contours, natural ground level, building site(s) or structure(s),
+                                        location of boundaries or any other feature which may affect this proposal.
+                                        """
+                                    ]
+                                , p [ class "font-weight-bold" ] [ text "Fast-track Application" ]
+                                , p []
+                                    [ text
+                                        """
+                                        Under the fast-track resource consent process, notice of the decision must be given within 10 working days after the date the application was
+                                        first lodged with the authority, unless the applicant opts out of that process at the time of lodgement. 
+                                        """
+                                    ]
+                                , p [] [ text "A fast-track application may cease to be a fast-track application under Section 87AAC(2) of the Resource Management Act 1991." ]
+                                , p [ class "font-weight-bold" ] [ text "Privacy Information" ]
+                                , p []
+                                    [ text
+                                        """
+                                        The information you have provided on this form is required so that your application can be processed under the Resource Management Act 1991, and so that statistics can be collected by the Council. The information will be stored on a public register and held by the Council.
+                                        """
+                                    ]
+                                , p [] [ text "Under the Privacy Act 1993, you have the right to see and correct personal information." ]
+                                ]
+                            )
                   ]
                 ]
 
@@ -1692,13 +1931,44 @@ createApplication model =
                 [ [ ApplicationQuestion "authorised-declaration-name" (Text Nothing "Full Name of Agent") Nothing ]
                 , [ ApplicationQuestion "authorised-declaration-declaration" (Checkbox False "Declaration for Agent" "I agree with these terms") <|
                         Just
-                            (text """
-                        As authorised agent for the applicant, I confirm that I have read and understood
-                        the notes for the applicant [link to the guidance pop up on the text 'notes for
-                        the applicant'] and confirm that I have fully informed the applicant of their/its
-                        liability under this application, including for fees and other charges, and that
-                        I have the applicant's authority to submit this application on their/its behalf.
-                        """)
+                            (div []
+                                [ p [] [ text "I confirm that I have read and understood the notes for the applicant." ]
+                                , h6 [] [ text "Guidance" ]
+                                , p [ class "font-weight-bold" ] [ text "Notes for the applicant" ]
+                                , p []
+                                    [ text
+                                        """
+                                        Incomplete applications will be returned. The Council may also request further information under Section 92 of the Resource Management Act 1991,
+                                        to better understand the potential effects of the proposal.
+                                        """
+                                    ]
+                                , p [] [ text "Once this application is lodged with the Council, it becomes public information. If there is sensitive information in the proposal, please let us know." ]
+                                , p []
+                                    [ text
+                                        """
+                                        The Council may require a registered surveyor to certify contours, natural ground level, building site(s) or structure(s),
+                                        location of boundaries or any other feature which may affect this proposal.
+                                        """
+                                    ]
+                                , p [ class "font-weight-bold" ] [ text "Fast-track Application" ]
+                                , p []
+                                    [ text
+                                        """
+                                        Under the fast-track resource consent process, notice of the decision must be given within 10 working days after the date the application was
+                                        first lodged with the authority, unless the applicant opts out of that process at the time of lodgement. 
+                                        """
+                                    ]
+                                , p [] [ text "A fast-track application may cease to be a fast-track application under Section 87AAC(2) of the Resource Management Act 1991." ]
+                                , p [ class "font-weight-bold" ] [ text "Privacy Information" ]
+                                , p []
+                                    [ text
+                                        """
+                                        The information you have provided on this form is required so that your application can be processed under the Resource Management Act 1991, and so that statistics can be collected by the Council. The information will be stored on a public register and held by the Council.
+                                        """
+                                    ]
+                                , p [] [ text "Under the Privacy Act 1993, you have the right to see and correct personal information." ]
+                                ]
+                            )
                   ]
                 ]
 
@@ -1708,14 +1978,73 @@ createApplication model =
                 An initial fee must be paid before we can process your application.
                 The initial fee due for this non-notified land use consent is: $1650
                 """))
-                [ [ ApplicationQuestion "fees-method" (Multichoice Nothing "Payment Method" [ "Internet Banking", "Online (Credit Card)", "By Phone (Credit Card)" ]) Nothing ]
+                [ [ ApplicationQuestion "fees-method" (Multichoice Nothing "Payment Method" [ "Internet Banking", "Online (Credit Card)", "By Phone (Credit Card)" ]) <|
+                    Just
+                        (div []
+                            [ p [ class "font-weight-bold" ] [ text "Internet Banking" ]
+                            , p [] [ text "The Council's bank account number is 06 0582 0106111 00. Use 'RC' followed by the site address as a reference." ]
+                            , p [ class "font-weight-bold" ] [ text "Online" ]
+                            , p []
+                                [ a [ href "https://wellington.govt.nz/do-it-online/pay-online" ] [ text "Pay online" ]
+                                , text " using your credit card by selecting 'Property' from the dropdown box and following the instructions."
+                                ]
+                            , p [ class "font-weight-bold" ] [ text "By phone" ]
+                            , p [] [ text "You can pay over the phone with your credit card. Phone the Council on 04 801 3718" ]
+                            ]
+                        )
+                  ]
                 , [ ApplicationQuestion "fees-declaration" (Checkbox False "Declaration for Initial Fee" "I agree with these terms") <|
                         Just
-                            (text """
-                        I confirm that I have read and understood the fee payment terms, conditions and
-                        declaration for the service of applying for a resource consent [link to guidance
-                        on text 'fee payment terms, conditions and declaration']
-                        """)
+                            (div []
+                                [ p []
+                                    [ text
+                                        """
+                                        I confirm that I have read and understood the fee payment terms, conditions and
+                                        declaration for the service of applying for a resource consent [link to guidance
+                                        on text 'fee payment terms, conditions and declaration']
+                                        """
+                                    ]
+                                , h6 [] [ text "Guidance" ]
+                                , p [ class "font-weight-bold" ] [ text "Fee payment terms, conditions and declaration" ]
+                                , p []
+                                    [ text
+                                        """
+                                        I understand that the Council may invoice me for the actual and reasonable costs incurred to process this application
+                                        - as identified in Section 36 of the Resource Management Act and the Council's current fee schedule.
+                                        """
+                                    ]
+                                , p [ class "font-weight-bold" ] [ text "Additional fees" ]
+                                , p []
+                                    [ text
+                                        """
+                                        If the Council spend time processing requests or incur expenses the Council needs to invoice additional fees.
+                                        This may happen during processing or once a decision on your application is made. The Council only charge amounts over $65.
+                                        Likewise, refunds will only be made for unused amounts over $65.
+                                        """
+                                    ]
+                                , p [ class "font-weight-bold" ] [ text "Council payment terms" ]
+                                , p []
+                                    [ text
+                                        """
+                                        Additional fees are due by the 20th of the month following an invoice. If payment is not received, you will be liable for all legal and collection fees.
+                                        """
+                                    ]
+                                , p [ class "font-weight-bold" ] [ text "Declaration" ]
+                                , p []
+                                    [ text
+                                        """
+                                        This declaration must be made by the person or entity responsible for paying the application processing costs.
+                                        """
+                                    ]
+                                , p []
+                                    [ text
+                                        """
+                                        Subject to my rights under Section 357B and 358 of the Resource Management Act to object to any costs, I undertake to pay all costs associated with this application.
+                                        I also agree to pay all the costs (including debt collection or legal fees) of recovering any unpaid costs
+                                        """
+                                    ]
+                                ]
+                            )
                   ]
                 ]
 
