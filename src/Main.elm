@@ -273,7 +273,7 @@ update msg model =
         AskRubric ->
             case ( model.selectedActivity, model.selectedProperty ) of
                 ( Just a, Just p ) ->
-                    ( model, askRubric <| encodePayload a p (answerDictionary model.sections) )
+                    ( model, askRubric <| encodePayload a p (answerDictionary model.selectedActivity model.selectedProperty model.sections) )
 
                 _ ->
                     ( model, Cmd.none )
@@ -286,7 +286,7 @@ update msg model =
                 ( Just a, Just p ) ->
                     ( model
                     , generatePDF <|
-                        encodePDF a p (answerDictionary model.sections) (applicationAnswerDictionary model.application)
+                        encodePDF a p (answerDictionary model.selectedActivity model.selectedProperty model.sections) (applicationAnswerDictionary model.application)
                     )
 
                 _ ->
@@ -822,7 +822,7 @@ renderContent model =
         compliance =
             Html.form [] <|
                 renderProposal model.activities model.selectedProperty
-                    :: List.indexedMap (renderSection <| answerDictionary model.sections) model.sections
+                    :: List.indexedMap (renderSection <| answerDictionary model.selectedActivity model.selectedProperty model.sections) model.sections
                     ++ continueButton
 
         content =
@@ -960,6 +960,9 @@ renderQuestion answers section question =
 
                 ( Just (Multichoice a _ _), "equal" ) ->
                     a == Just value
+
+                ( Just (Text a _), "doesNotContain" ) ->
+                    a /= Just value
 
                 _ ->
                     False
@@ -1415,11 +1418,33 @@ formatKey key =
     String.replace "_" "." key
 
 
-answerDictionary : List Section -> Dict String Input
-answerDictionary sections =
+answerDictionary : Maybe Activity -> Maybe Property -> List Section -> Dict String Input
+answerDictionary activity property sections =
+    let
+        activityAnswers =
+            case activity of
+                Just a ->
+                    [ ( "activity", Text (Just a) "" ) ]
+
+                Nothing ->
+                    []
+
+        propertyAnswers =
+            case property of
+                Just p ->
+                    [ ( "zone", Text (Just p.zone) "" )
+                    , ( "area_specific_layers", Text p.specialResidentialArea "" )
+                    , ( "hazard_fault_line_area", Checkbox p.hazardFaultLineArea "" "" )
+                    ]
+
+                Nothing ->
+                    []
+    in
     List.foldl (\s l -> s.questions ++ l) [] sections
         |> List.map (\q -> ( q.key, q.input ))
         |> Dict.fromList
+        |> Dict.union (Dict.fromList activityAnswers)
+        |> Dict.union (Dict.fromList propertyAnswers)
 
 
 applicationAnswerDictionary : List ApplicationSection -> Dict String Input
@@ -1979,19 +2004,19 @@ createApplication model =
                 The initial fee due for this non-notified land use consent is: $1650
                 """))
                 [ [ ApplicationQuestion "fees-method" (Multichoice Nothing "Payment Method" [ "Internet Banking", "Online (Credit Card)", "By Phone (Credit Card)" ]) <|
-                    Just
-                        (div []
-                            [ p [ class "font-weight-bold" ] [ text "Internet Banking" ]
-                            , p [] [ text "The Council's bank account number is 06 0582 0106111 00. Use 'RC' followed by the site address as a reference." ]
-                            , p [ class "font-weight-bold" ] [ text "Online" ]
-                            , p []
-                                [ a [ href "https://wellington.govt.nz/do-it-online/pay-online" ] [ text "Pay online" ]
-                                , text " using your credit card by selecting 'Property' from the dropdown box and following the instructions."
+                        Just
+                            (div []
+                                [ p [ class "font-weight-bold" ] [ text "Internet Banking" ]
+                                , p [] [ text "The Council's bank account number is 06 0582 0106111 00. Use 'RC' followed by the site address as a reference." ]
+                                , p [ class "font-weight-bold" ] [ text "Online" ]
+                                , p []
+                                    [ a [ href "https://wellington.govt.nz/do-it-online/pay-online" ] [ text "Pay online" ]
+                                    , text " using your credit card by selecting 'Property' from the dropdown box and following the instructions."
+                                    ]
+                                , p [ class "font-weight-bold" ] [ text "By phone" ]
+                                , p [] [ text "You can pay over the phone with your credit card. Phone the Council on 04 801 3718" ]
                                 ]
-                            , p [ class "font-weight-bold" ] [ text "By phone" ]
-                            , p [] [ text "You can pay over the phone with your credit card. Phone the Council on 04 801 3718" ]
-                            ]
-                        )
+                            )
                   ]
                 , [ ApplicationQuestion "fees-declaration" (Checkbox False "Declaration for Initial Fee" "I agree with these terms") <|
                         Just

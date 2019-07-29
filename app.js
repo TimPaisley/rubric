@@ -5539,22 +5539,75 @@ var author$project$Main$subscriptions = function (_n0) {
 				author$project$Main$receiveStatus(author$project$Main$ReceiveStatus)
 			]));
 };
-var author$project$Main$answerDictionary = function (sections) {
-	return elm$core$Dict$fromList(
-		A2(
-			elm$core$List$map,
-			function (q) {
-				return _Utils_Tuple2(q.key, q.input);
-			},
-			A3(
-				elm$core$List$foldl,
-				F2(
-					function (s, l) {
-						return _Utils_ap(s.questions, l);
-					}),
-				_List_Nil,
-				sections)));
-};
+var author$project$Main$Checkbox = F3(
+	function (a, b, c) {
+		return {$: 'Checkbox', a: a, b: b, c: c};
+	});
+var author$project$Main$Text = F2(
+	function (a, b) {
+		return {$: 'Text', a: a, b: b};
+	});
+var author$project$Main$answerDictionary = F3(
+	function (activity, property, sections) {
+		var propertyAnswers = function () {
+			if (property.$ === 'Just') {
+				var p = property.a;
+				return _List_fromArray(
+					[
+						_Utils_Tuple2(
+						'zone',
+						A2(
+							author$project$Main$Text,
+							elm$core$Maybe$Just(p.zone),
+							'')),
+						_Utils_Tuple2(
+						'area_specific_layers',
+						A2(author$project$Main$Text, p.specialResidentialArea, '')),
+						_Utils_Tuple2(
+						'hazard_fault_line_area',
+						A3(author$project$Main$Checkbox, p.hazardFaultLineArea, '', ''))
+					]);
+			} else {
+				return _List_Nil;
+			}
+		}();
+		var activityAnswers = function () {
+			if (activity.$ === 'Just') {
+				var a = activity.a;
+				return _List_fromArray(
+					[
+						_Utils_Tuple2(
+						'activity',
+						A2(
+							author$project$Main$Text,
+							elm$core$Maybe$Just(a),
+							''))
+					]);
+			} else {
+				return _List_Nil;
+			}
+		}();
+		return A2(
+			elm$core$Dict$union,
+			elm$core$Dict$fromList(propertyAnswers),
+			A2(
+				elm$core$Dict$union,
+				elm$core$Dict$fromList(activityAnswers),
+				elm$core$Dict$fromList(
+					A2(
+						elm$core$List$map,
+						function (q) {
+							return _Utils_Tuple2(q.key, q.input);
+						},
+						A3(
+							elm$core$List$foldl,
+							F2(
+								function (s, l) {
+									return _Utils_ap(s.questions, l);
+								}),
+							_List_Nil,
+							sections)))));
+	});
 var elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -5593,10 +5646,6 @@ var author$project$Main$ApplicationSection = F3(
 	function (name, info, groups) {
 		return {groups: groups, info: info, name: name};
 	});
-var author$project$Main$Checkbox = F3(
-	function (a, b, c) {
-		return {$: 'Checkbox', a: a, b: b, c: c};
-	});
 var author$project$Main$File = F2(
 	function (a, b) {
 		return {$: 'File', a: a, b: b};
@@ -5604,10 +5653,6 @@ var author$project$Main$File = F2(
 var author$project$Main$Multichoice = F3(
 	function (a, b, c) {
 		return {$: 'Multichoice', a: a, b: b, c: c};
-	});
-var author$project$Main$Text = F2(
-	function (a, b) {
-		return {$: 'Text', a: a, b: b};
 	});
 var author$project$Main$statusToString = function (status) {
 	switch (status.$) {
@@ -8160,7 +8205,7 @@ var author$project$Main$update = F2(
 								author$project$Main$encodePayload,
 								a,
 								p,
-								author$project$Main$answerDictionary(model.sections))));
+								A3(author$project$Main$answerDictionary, model.selectedActivity, model.selectedProperty, model.sections))));
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
@@ -8185,7 +8230,7 @@ var author$project$Main$update = F2(
 								author$project$Main$encodePDF,
 								a,
 								p,
-								author$project$Main$answerDictionary(model.sections),
+								A3(author$project$Main$answerDictionary, model.selectedActivity, model.selectedProperty, model.sections),
 								author$project$Main$applicationAnswerDictionary(model.application))));
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
@@ -9917,6 +9962,7 @@ var author$project$Main$InputAnswer = F3(
 	function (a, b, c) {
 		return {$: 'InputAnswer', a: a, b: b, c: c};
 	});
+var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -9949,40 +9995,55 @@ var elm$core$List$member = F2(
 	});
 var author$project$Main$renderQuestion = F3(
 	function (answers, section, question) {
-		var met = function (_n4) {
-			var field = _n4.field;
-			var operator = _n4.operator;
-			var value = _n4.value;
+		var met = function (_n5) {
+			var field = _n5.field;
+			var operator = _n5.operator;
+			var value = _n5.value;
 			var _n0 = _Utils_Tuple2(
 				A2(elm$core$Dict$get, field, answers),
 				operator);
-			_n0$3:
+			_n0$4:
 			while (true) {
-				if ((_n0.a.$ === 'Just') && (_n0.b === 'equal')) {
-					switch (_n0.a.a.$) {
-						case 'Text':
-							var _n1 = _n0.a.a;
-							var a = _n1.a;
-							return _Utils_eq(
-								a,
-								elm$core$Maybe$Just(value));
-						case 'Number':
-							var _n2 = _n0.a.a;
-							var a = _n2.a;
-							return _Utils_eq(
-								A2(elm$core$Maybe$map, elm$core$String$fromFloat, a),
-								elm$core$Maybe$Just(value));
-						case 'Multichoice':
-							var _n3 = _n0.a.a;
-							var a = _n3.a;
-							return _Utils_eq(
-								a,
-								elm$core$Maybe$Just(value));
+				if (_n0.a.$ === 'Just') {
+					switch (_n0.b) {
+						case 'equal':
+							switch (_n0.a.a.$) {
+								case 'Text':
+									var _n1 = _n0.a.a;
+									var a = _n1.a;
+									return _Utils_eq(
+										a,
+										elm$core$Maybe$Just(value));
+								case 'Number':
+									var _n2 = _n0.a.a;
+									var a = _n2.a;
+									return _Utils_eq(
+										A2(elm$core$Maybe$map, elm$core$String$fromFloat, a),
+										elm$core$Maybe$Just(value));
+								case 'Multichoice':
+									var _n3 = _n0.a.a;
+									var a = _n3.a;
+									return _Utils_eq(
+										a,
+										elm$core$Maybe$Just(value));
+								default:
+									break _n0$4;
+							}
+						case 'doesNotContain':
+							if (_n0.a.a.$ === 'Text') {
+								var _n4 = _n0.a.a;
+								var a = _n4.a;
+								return !_Utils_eq(
+									a,
+									elm$core$Maybe$Just(value));
+							} else {
+								break _n0$4;
+							}
 						default:
-							break _n0$3;
+							break _n0$4;
 					}
 				} else {
-					break _n0$3;
+					break _n0$4;
 				}
 			}
 			return false;
@@ -10243,7 +10304,7 @@ var author$project$Main$renderContent = function (model) {
 				A2(
 					elm$core$List$indexedMap,
 					author$project$Main$renderSection(
-						author$project$Main$answerDictionary(model.sections)),
+						A3(author$project$Main$answerDictionary, model.selectedActivity, model.selectedProperty, model.sections)),
 					model.sections),
 				continueButton)));
 	var content = function () {
