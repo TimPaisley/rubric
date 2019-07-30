@@ -10478,8 +10478,8 @@ var author$project$Main$statusToClass = function (status) {
 	}
 };
 var elm$html$Html$small = _VirtualDom_node('small');
-var author$project$Main$showRule = F2(
-	function (lastRule, rule) {
+var author$project$Main$showRule = F3(
+	function (section, lastRule, rule) {
 		var mattersForDiscretion = function () {
 			var _n1 = rule.mattersOfDiscretion;
 			if (!_n1.b) {
@@ -10582,7 +10582,7 @@ var author$project$Main$showRule = F2(
 				[
 					elm$html$Html$Attributes$class('list-group-item list-group-item-action'),
 					A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'modal'),
-					A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (rule.key + '-modal'))
+					A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (section.key + (rule.key + '-modal')))
 				]),
 			_List_fromArray(
 				[
@@ -10846,7 +10846,9 @@ var author$project$Main$renderSidebar = F3(
 							_Utils_ap(
 								A2(
 									elm$core$List$map,
-									author$project$Main$showRule(
+									A2(
+										author$project$Main$showRule,
+										section,
 										elm_community$list_extra$List$Extra$last(section.results.rules)),
 									section.results.rules),
 								A2(elm$core$List$map, author$project$Main$showStandard, section.results.standards)))
@@ -10902,14 +10904,15 @@ var author$project$Main$renderSidebar = F3(
 								]))
 						]))
 				]));
-		var itemModal = function (item) {
-			return A3(
-				author$project$Main$renderModal,
-				item.key + '-modal',
-				item.title,
-				elm$html$Html$text(
-					A2(elm$core$Maybe$withDefault, 'placeholder', item.definition)));
-		};
+		var itemModal = F2(
+			function (section, item) {
+				return A3(
+					author$project$Main$renderModal,
+					section.key + (item.key + '-modal'),
+					item.title,
+					elm$html$Html$text(
+						A2(elm$core$Maybe$withDefault, 'placeholder', item.definition)));
+			});
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -10976,7 +10979,10 @@ var author$project$Main$renderSidebar = F3(
 					A2(
 						elm$core$List$concatMap,
 						function (s) {
-							return A2(elm$core$List$map, itemModal, s.results.rules);
+							return A2(
+								elm$core$List$map,
+								itemModal(s),
+								s.results.rules);
 						},
 						sections)),
 					A2(
@@ -10988,7 +10994,10 @@ var author$project$Main$renderSidebar = F3(
 					A2(
 						elm$core$List$concatMap,
 						function (s) {
-							return A2(elm$core$List$map, itemModal, s.results.standards);
+							return A2(
+								elm$core$List$map,
+								itemModal(s),
+								s.results.standards);
 						},
 						sections))
 				]));

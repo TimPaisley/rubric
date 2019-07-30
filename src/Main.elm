@@ -661,7 +661,7 @@ renderSidebar status sections prop =
             div [ class "list-group list-group-flush" ]
                 [ sectionHeader
                 , div [ id (section.key ++ "-results"), class "collapse" ]
-                    (List.map (showRule <| ListX.last section.results.rules) section.results.rules
+                    (List.map (showRule section <| ListX.last section.results.rules) section.results.rules
                         ++ List.map showStandard section.results.standards
                     )
                 ]
@@ -681,8 +681,8 @@ renderSidebar status sections prop =
                     ]
                 ]
 
-        itemModal item =
-            renderModal (item.key ++ "-modal") item.title (text <| Maybe.withDefault "placeholder" item.definition)
+        itemModal section item =
+            renderModal (section.key ++ item.key ++ "-modal") item.title (text <| Maybe.withDefault "placeholder" item.definition)
 
         statusCard =
             div [ class "list-group" ]
@@ -705,13 +705,13 @@ renderSidebar status sections prop =
                 |> div [ class "accordion overflow-auto rounded border my-3" ]
             , preapp
             ]
-        , div [ class "rule-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.rules) sections
-        , div [ class "standard-modals" ] <| List.concatMap (\s -> List.map itemModal s.results.standards) sections
+        , div [ class "rule-modals" ] <| List.concatMap (\s -> List.map (itemModal s) s.results.rules) sections
+        , div [ class "standard-modals" ] <| List.concatMap (\s -> List.map (itemModal s) s.results.standards) sections
         ]
 
 
-showRule : Maybe Rule -> Rule -> Html Msg
-showRule lastRule rule =
+showRule : Section -> Maybe Rule -> Rule -> Html Msg
+showRule section lastRule rule =
     let
         conditions =
             case rule.conditions of
@@ -742,7 +742,7 @@ showRule lastRule rule =
             else
                 ""
     in
-    a [ class "list-group-item list-group-item-action", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ rule.key ++ "-modal") ]
+    a [ class "list-group-item list-group-item-action", attribute "data-toggle" "modal", attribute "data-target" ("#" ++ section.key ++ rule.key ++ "-modal") ]
         [ div [ class "d-flex justify-content-between align-items-center mb-2" ]
             [ small [] [ text <| "ⓘ " ++ formatKey rule.key ]
             , small [ class "text-muted" ] [ text rule.report ]
