@@ -11049,7 +11049,7 @@ var author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						elm$html$Html$text('\n                        This Proof of Concept tool provides an indication of your proposal\'s compliance\n                        with the District Plan. Results must be verified by a Council Planner. Council\n                        accepts no responsibility of liability for the public\'s use or misuse of this tool.\n                        ')
+						elm$html$Html$text('\n                        This Proof of Concept demonstrates a way to receive an indication of a resource consent proposal\'s compliance with the District Plan.\n                        It is purposefully incomplete and is not intended to be used for resource consent applications.\n                        Council accepts no responsibility of liability for the public\'s use or misuse of this tool.\n                        ')
 					]))
 			]));
 	return A2(

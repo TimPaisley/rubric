@@ -602,9 +602,10 @@ view model =
                 , p [ class "lead" ]
                     [ text
                         """
-                        This Proof of Concept tool provides an indication of your proposal's compliance
-                        with the District Plan. Results must be verified by a Council Planner. Council
-                        accepts no responsibility of liability for the public's use or misuse of this tool.
+                        This Proof of Concept is not a formal council tool. It aims to demonstrate a way to provide an indication of a resource
+                        consent proposal's compliance with the District Plan. It is purposefully incomplete and is not intended to be used for
+                        resource consent applications. Wellington City Council accepts no responsibility of liability for the public's use or
+                        misuse of this tool.
                         """
                     ]
                 ]
