@@ -3,6 +3,16 @@ app.ports.askRubric.subscribe(function(data) {
   console.log(data);
 
   if (engine) {
+    engine.setField("activity", data.scenario.activity);
+    engine.setField("address", data.scenario.address);
+    engine.setField("valuation_wufi", data.scenario.valuation_wufi);
+    engine.setField("zone", data.scenario.zone);
+    engine.setField("area_specific_layers", data.scenario.area_specific_layers);
+    engine.setField(
+      "hazard_fault_line_area",
+      data.scenario.hazard_fault_line_area
+    );
+
     engine.process(data.answers).then(() => {
       console.log(engine.standards);
       app.ports.receiveSections.send(engine.standards);

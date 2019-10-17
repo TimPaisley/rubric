@@ -1,9 +1,0 @@
-filename, language, HTML, JavaScript, CSS, JSON, Elm, comment, blank, total
-app.js, JavaScript, 0, 7500, 0, 0, 0, 206, 885, 8591
-css/styles.css, CSS, 0, 0, 66, 0, 0, 2, 12, 80
-elm.json, JSON, 0, 0, 0, 31, 0, 0, 1, 32
-index.html, HTML, 54, 0, 0, 0, 0, 2, 14, 70
-js/engine.js, JavaScript, 0, 13, 0, 0, 0, 0, 2, 15
-js/map.js, JavaScript, 0, 129, 0, 0, 0, 1, 16, 146
-src/Main.elm, Elm, 0, 0, 0, 0, 1040, 11, 230, 1281
-Total, -, 54, 7642, 66, 31, 1040, 222, 1160, 10215
