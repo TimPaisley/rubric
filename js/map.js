@@ -4,8 +4,11 @@ require([
   "esri/layers/FeatureLayer",
   "esri/widgets/Search",
   "esri/tasks/support/Query",
-  "esri/tasks/QueryTask"
-], function(Map, MapView, FeatureLayer, Search, Query, QueryTask) {
+  "esri/tasks/QueryTask",
+  "esri/geometry/Extent",
+  "esri/geometry/SpatialReference",
+  "esri/geometry/geometryEngine"
+], function (Map, MapView, FeatureLayer, Search, Query, QueryTask, Extent, SpatialReference, geometryEngine) {
   const property = new FeatureLayer({
     url:
       "https://gis.wcc.govt.nz/arcgis/rest/services/PropertyAndBoundaries/Property/MapServer"
@@ -77,11 +80,13 @@ require([
     );
   };
 
-  searchWidget.on("select-result", function(event) {
+  searchWidget.on("select-result", function (event) {
     var attributes = event.result.feature.attributes;
 
-    var extent = event.result.feature.geometry.extent;
-    var bbox = [extent.xmin, extent.ymin, extent.xmax, extent.ymax].join("%2C");
+    var bounds = event.result.feature.geometry.extent;
+    var extent = new Extent(bounds.xmin, bounds.ymin, bounds.xmax, bounds.ymax, new SpatialReference({ wkid: 3857 }));
+    var buffer = geometryEngine.geodesicBuffer(extent.center, Math.max(extent.width, extent.height) / 2, "meters");
+    var bbox = [buffer.extent.xmin, buffer.extent.ymin, buffer.extent.xmax, buffer.extent.ymax].join("%2C");
 
     var property = {
       fullAddress: attributes.FullAddress,
