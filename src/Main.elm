@@ -632,7 +632,7 @@ renderSidebar status sections prop =
                         "▼"
 
                     else
-                        "▶"
+                        "►"
 
                 toggle =
                     case ( section.results.rules, section.results.standards ) of
