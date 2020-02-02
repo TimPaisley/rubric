@@ -10759,101 +10759,100 @@ var author$project$Main$renderSidebar = F3(
 								]))
 						]))
 				]));
-		var sectionGroup = F2(
-			function (index, section) {
-				var toggleIndicator = section.open ? '▼' : '▶';
-				var toggle = function () {
-					var _n0 = _Utils_Tuple2(section.results.rules, section.results.standards);
-					if ((!_n0.a.b) && (!_n0.b.b)) {
-						return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-					} else {
-						return A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('small text-muted d-flex justify-content-center align-items-center pr-3')
-								]),
-							_List_fromArray(
-								[
-									elm$html$Html$text(toggleIndicator)
-								]));
-					}
-				}();
-				var sectionHeader = A2(
-					elm$html$Html$a,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class(
-							'list-group-item list-group-item-action ' + statusClass(section.results.status)),
-							A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'collapse'),
-							A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (section.key + '-results')),
-							elm$html$Html$Events$onClick(
-							author$project$Main$ToggleSection(section))
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('row px-3')
-								]),
-							_List_fromArray(
-								[
-									toggle,
-									A2(
-									elm$html$Html$div,
-									_List_Nil,
-									_List_fromArray(
-										[
-											A2(
-											elm$html$Html$h6,
-											_List_fromArray(
-												[
-													elm$html$Html$Attributes$class('my-0')
-												]),
-											_List_fromArray(
-												[
-													elm$html$Html$text(section.name)
-												])),
-											A2(
-											elm$html$Html$small,
-											_List_Nil,
-											_List_fromArray(
-												[
-													elm$html$Html$text(
-													author$project$Main$statusToString(section.results.status))
-												]))
-										]))
-								]))
-						]));
-				return A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('list-group list-group-flush')
-						]),
-					_List_fromArray(
-						[
-							sectionHeader,
-							A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$id(section.key + '-results'),
-									elm$html$Html$Attributes$class('collapse')
-								]),
-							_Utils_ap(
+		var sectionGroup = function (section) {
+			var toggleIndicator = section.open ? '▼' : '►';
+			var toggle = function () {
+				var _n0 = _Utils_Tuple2(section.results.rules, section.results.standards);
+				if ((!_n0.a.b) && (!_n0.b.b)) {
+					return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+				} else {
+					return A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('small text-muted d-flex justify-content-center align-items-center pr-3')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(toggleIndicator)
+							]));
+				}
+			}();
+			var sectionHeader = A2(
+				elm$html$Html$a,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class(
+						'list-group-item list-group-item-action ' + statusClass(section.results.status)),
+						A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'collapse'),
+						A2(elm$html$Html$Attributes$attribute, 'data-target', '#' + (section.key + '-results')),
+						elm$html$Html$Events$onClick(
+						author$project$Main$ToggleSection(section))
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('row px-3')
+							]),
+						_List_fromArray(
+							[
+								toggle,
 								A2(
-									elm$core$List$map,
-									A2(
-										author$project$Main$showRule,
-										section,
-										elm_community$list_extra$List$Extra$last(section.results.rules)),
-									section.results.rules),
-								A2(elm$core$List$map, author$project$Main$showStandard, section.results.standards)))
-						]));
-			});
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$h6,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('my-0')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(section.name)
+											])),
+										A2(
+										elm$html$Html$small,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text(
+												author$project$Main$statusToString(section.results.status))
+											]))
+									]))
+							]))
+					]));
+			return A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('list-group list-group-flush')
+					]),
+				_List_fromArray(
+					[
+						sectionHeader,
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$id(section.key + '-results'),
+								elm$html$Html$Attributes$class('collapse')
+							]),
+						_Utils_ap(
+							A2(
+								elm$core$List$map,
+								A2(
+									author$project$Main$showRule,
+									section,
+									elm_community$list_extra$List$Extra$last(section.results.rules)),
+								section.results.rules),
+							A2(elm$core$List$map, author$project$Main$showStandard, section.results.standards)))
+					]));
+		};
 		var preapp = A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -10967,7 +10966,7 @@ var author$project$Main$renderSidebar = F3(
 								[
 									elm$html$Html$Attributes$class('accordion overflow-auto rounded border my-3')
 								]),
-							A2(elm$core$List$indexedMap, sectionGroup, sections)),
+							A2(elm$core$List$map, sectionGroup, sections)),
 							preapp
 						])),
 					A2(
@@ -11049,7 +11048,7 @@ var author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						elm$html$Html$text('\n                        This Proof of Concept demonstrates a way to receive an indication of a resource consent proposal\'s compliance with the District Plan.\n                        It is purposefully incomplete and is not intended to be used for resource consent applications.\n                        Council accepts no responsibility of liability for the public\'s use or misuse of this tool.\n                        ')
+						elm$html$Html$text('\n                        This Proof of Concept is not a formal council tool. It aims to demonstrate a way to provide an indication of a resource\n                        consent proposal\'s compliance with the District Plan. It is purposefully incomplete and is not intended to be used for\n                        resource consent applications. Wellington City Council accepts no responsibility of liability for the public\'s use or\n                        misuse of this tool.\n                        ')
 					]))
 			]));
 	return A2(

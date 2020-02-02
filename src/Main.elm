@@ -625,7 +625,7 @@ renderSidebar status sections prop =
         statusClass s =
             "list-group-item-" ++ statusToClass s
 
-        sectionGroup index section =
+        sectionGroup section =
             let
                 toggleIndicator =
                     if section.open then
@@ -702,7 +702,7 @@ renderSidebar status sections prop =
                     [ text <| String.fromInt (List.length sections) ]
                 ]
             , statusCard
-            , List.indexedMap sectionGroup sections
+            , List.map sectionGroup sections
                 |> div [ class "accordion overflow-auto rounded border my-3" ]
             , preapp
             ]
